@@ -1,4 +1,4 @@
-package release_markdown
+package release_inspection
 
 import (
 	"context"
@@ -12,18 +12,15 @@ import (
 	"k8s.io/utils/set"
 )
 
-type releaseEnvironmentInfo struct {
-	releaseName         string
-	environmentFilename string
-	changedComponents   set.Set[string]
+type ReleaseEnvironmentInfo struct {
+	ReleaseName         string
+	EnvironmentFilename string
+	ChangedComponents   set.Set[string]
 	configJSON          *arohcpapi.ConfigSchemaJSON
-	pertinentInfo       configPertinentInfo
+	DeployedImages      map[string]*DeployedImageInfo
 }
 
 // configPertinentInfo tracks the information that we want to show a diff for and summarize
-type configPertinentInfo struct {
-	deployedImages map[string]*DeployedImageInfo
-}
 
 type DeployedImageInfo struct {
 	Name                           string
@@ -37,61 +34,64 @@ type DeployedImageInfo struct {
 	CommitsSincePreviousSHA        []DeployedSourceCommits
 }
 
-func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, environmentFilename string, config *arohcpapi.ConfigSchemaJSON, prevConfigInfo *releaseEnvironmentInfo) (*releaseEnvironmentInfo, error) {
-	currConfigInfo := &releaseEnvironmentInfo{
-		releaseName:         releaseName,
-		environmentFilename: environmentFilename,
+type DeployedSourceCommits struct {
+	PRURL     *url.URL
+	SourceSHA string
+}
+
+func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, environmentFilename string, config *arohcpapi.ConfigSchemaJSON, prevConfigInfo *ReleaseEnvironmentInfo) (*ReleaseEnvironmentInfo, error) {
+	currConfigInfo := &ReleaseEnvironmentInfo{
+		ReleaseName:         releaseName,
+		EnvironmentFilename: environmentFilename,
 		configJSON:          config,
-		changedComponents:   make(set.Set[string]),
-		pertinentInfo: configPertinentInfo{
-			deployedImages: map[string]*DeployedImageInfo{},
-		},
+		ChangedComponents:   make(set.Set[string]),
+		DeployedImages:      map[string]*DeployedImageInfo{},
 	}
 
 	prevDeployedImages := map[string]*DeployedImageInfo{}
 	if prevConfigInfo != nil {
-		prevDeployedImages = prevConfigInfo.pertinentInfo.deployedImages
+		prevDeployedImages = prevConfigInfo.DeployedImages
 	}
 
-	currConfigInfo.pertinentInfo.deployedImages["Cluster Service"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["Cluster Service"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Cluster Service",
 		"https://gitlab.cee.redhat.com/service/uhc-clusters-service",
 		&config.ClustersService.Image,
 		prevDeployedImages)
-	currConfigInfo.pertinentInfo.deployedImages["Hypershift"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["Hypershift"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Hypershift",
 		"https://github.com/openshift/hypershift",
 		config.Hypershift.Image,
 		prevDeployedImages)
 	if config.Backend != nil {
-		currConfigInfo.pertinentInfo.deployedImages["Backend"] = createDeployedImageInfo(ctx,
+		currConfigInfo.DeployedImages["Backend"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Backend",
 			"https://example.com",
 			&config.Backend.Image,
 			prevDeployedImages)
 	}
-	currConfigInfo.pertinentInfo.deployedImages["Backplane"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["Backplane"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Backplane",
 		"https://gitlab.cee.redhat.com/service/backplane-api",
 		&config.BackplaneAPI.Image,
 		prevDeployedImages)
-	currConfigInfo.pertinentInfo.deployedImages["Frontend"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["Frontend"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Frontend",
 		"https://example.com",
 		&config.Frontend.Image,
 		prevDeployedImages)
-	currConfigInfo.pertinentInfo.deployedImages["ComponentSync"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["ComponentSync"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"ComponentSync",
 		"https://example.com",
 		&config.ImageSync.ComponentSync.Image,
 		prevDeployedImages)
-	currConfigInfo.pertinentInfo.deployedImages["OcMirror"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"OcMirror",
 		"https://example.com",
@@ -103,7 +103,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	//	"https://example.com",
 	//	&config.Maestro.Agent.Sidecar, // this isn't properly schema'd awesome
 	//	prevDeployedImages)
-	currConfigInfo.pertinentInfo.deployedImages["Maestro"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["Maestro"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Maestro",
 		"https://github.com/openshift-online/maestro/",
@@ -116,7 +116,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	//	&config.Mgmt.Prometheus.PrometheusOperator, // this isn't properly schema'd awesome
 	//	prevDeployedImages)
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.pertinentInfo.deployedImages["Management Prometheus Spec"] = createDeployedImageInfo(ctx,
+		currConfigInfo.DeployedImages["Management Prometheus Spec"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Management Prometheus Spec",
 			"https://example.com",
@@ -129,14 +129,14 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	//	&config.Mise, // this isn't properly schema'd awesome
 	//	prevDeployedImages)
 	if config.Svc.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.pertinentInfo.deployedImages["Service Prometheus Spec"] = createDeployedImageInfo(ctx,
+		currConfigInfo.DeployedImages["Service Prometheus Spec"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Service Prometheus Spec",
 			"https://example.com",
 			config.Svc.Prometheus.PrometheusSpec.Image,
 			prevDeployedImages)
 	}
-	currConfigInfo.pertinentInfo.deployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
+	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"ACR Pull",
 		"https://example.com",
@@ -144,12 +144,12 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		prevDeployedImages)
 
 	if prevConfigInfo == nil {
-		currConfigInfo.changedComponents = set.KeySet(currConfigInfo.pertinentInfo.deployedImages)
+		currConfigInfo.ChangedComponents = set.KeySet(currConfigInfo.DeployedImages)
 	} else {
-		for _, currDeployedImageInfo := range currConfigInfo.pertinentInfo.deployedImages {
-			prevDeployedImageInfo := prevConfigInfo.pertinentInfo.deployedImages[currDeployedImageInfo.Name]
+		for _, currDeployedImageInfo := range currConfigInfo.DeployedImages {
+			prevDeployedImageInfo := prevConfigInfo.DeployedImages[currDeployedImageInfo.Name]
 			if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
-				currConfigInfo.changedComponents.Insert(currDeployedImageInfo.Name)
+				currConfigInfo.ChangedComponents.Insert(currDeployedImageInfo.Name)
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"github.com/openshift-online/service-status/pkg/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -76,7 +77,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 	return &ReleaseMarkdownOptions{
 		AROHCPDir:         f.AROHCPDir,
 		OutputDir:         f.OutputDir,
-		ImageInfoAccessor: newThreadSafeImageInfoAccessor(),
+		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(),
 
 		IOStreams: f.IOStreams,
 	}, nil
