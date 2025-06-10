@@ -5,27 +5,25 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"github.com/openshift-online/service-status/pkg/util"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
-	"k8s.io/utils/set"
 )
 
 type ReleaseMarkdownOptions struct {
 	AROHCPDir string
 	OutputDir string
 
-	ImageInfoAccessor ImageInfoAccessor
+	ImageInfoAccessor release_inspection.ImageInfoAccessor
 
 	util.IOStreams
 }
@@ -91,8 +89,8 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	}
 	logger.Info("Found releases.", "releaseCount", len(allReleaseCommits))
 
-	allReleasesInfo := &releasesInfo{}
-	prevReleaseInfo := &releaseInfo{}
+	allReleasesInfo := &release_inspection.ReleasesInfo{}
+	prevReleaseInfo := &release_inspection.ReleaseInfo{}
 	for i := len(allReleaseCommits) - 1; i >= 0; i-- {
 		commit := allReleaseCommits[i]
 		releaseName := fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5])
@@ -109,8 +107,8 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to reset aro hcp worktree: %w", err)
 		}
 
-		releaseDiffReporter := newReleaseDiffReport(o.ImageInfoAccessor, releaseName, o.AROHCPDir, environments, prevReleaseInfo)
-		newReleaseInfo, err := releaseDiffReporter.releaseInfoForAllEnvironments(localCtx)
+		releaseDiffReporter := release_inspection.NewReleaseDiffReport(o.ImageInfoAccessor, releaseName, o.AROHCPDir, environments, prevReleaseInfo)
+		newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 		if err != nil {
 			return fmt.Errorf("failed to get release markdowns: %w", err)
 		}
@@ -118,18 +116,19 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 		if err := os.MkdirAll(path.Join(o.OutputDir, releaseName), 0755); err != nil {
 			return fmt.Errorf("failed to create output directory: %w", err)
 		}
-		for _, currReleaseEnvironment := range newReleaseInfo.environmentToEnvironmentInfo {
-			prevReleaseEnvironmentInfo := prevReleaseInfo.getInfoForEnvironment(currReleaseEnvironment.environmentFilename)
+		for _, currReleaseEnvironmentFilemame := range newReleaseInfo.GetEnvironmentFilenames() {
+			currReleaseEnvironment := newReleaseInfo.GetInfoForEnvironment(currReleaseEnvironmentFilemame)
+			prevReleaseEnvironmentInfo := prevReleaseInfo.GetInfoForEnvironment(currReleaseEnvironment.EnvironmentFilename)
 			markdown := releaseEnvironmentMarkdown(currReleaseEnvironment, prevReleaseEnvironmentInfo)
 
-			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.environmentFilename+".md")
+			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.EnvironmentFilename+".md")
 			if err := os.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", fullPath, err)
 			}
 		}
 
 		prevReleaseInfo = newReleaseInfo
-		allReleasesInfo.addReleaseInfo(newReleaseInfo)
+		allReleasesInfo.AddReleaseInfo(newReleaseInfo)
 
 		environmentComparisonMarkdown := releaseEnvironmentSummaryMarkdown(newReleaseInfo)
 		environmentComparisonPath := filepath.Join(o.OutputDir, releaseName, "environment-comparison.md")
@@ -145,84 +144,6 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-type releasesInfo struct {
-	releaseToInfo map[string]*releaseInfo
-}
-
-func (r *releasesInfo) getReleaseNames() []string {
-	if r == nil {
-		return nil
-	}
-
-	releasesOldestFirst := set.KeySet(r.releaseToInfo).SortedList()
-	sort.Sort(sort.Reverse(sort.StringSlice(releasesOldestFirst)))
-	return releasesOldestFirst
-}
-
-func (r *releasesInfo) getEnvironmentFilenames() []string {
-	if r == nil {
-		return nil
-	}
-	environmentNames := set.Set[string]{}
-	for _, currReleaseInfo := range r.releaseToInfo {
-		environmentNames.Insert(set.KeySet(currReleaseInfo.environmentToEnvironmentInfo).UnsortedList()...)
-	}
-	return environmentNames.SortedList()
-}
-
-func (r *releasesInfo) addReleaseInfo(newReleaseInfo *releaseInfo) {
-	if r.releaseToInfo == nil {
-		r.releaseToInfo = make(map[string]*releaseInfo)
-	}
-	r.releaseToInfo[newReleaseInfo.releaseName] = newReleaseInfo
-}
-
-func (r *releasesInfo) getReleaseInfo(release string) *releaseInfo {
-	if r == nil {
-		return nil
-	}
-	return r.releaseToInfo[release]
-}
-
-type releaseInfo struct {
-	releaseName                  string
-	environmentToEnvironmentInfo map[string]*releaseEnvironmentInfo
-}
-
-func (r *releaseInfo) getEnvironmentFilenames() []string {
-	if r == nil {
-		return nil
-	}
-	environmentNames := set.KeySet(r.environmentToEnvironmentInfo)
-	return environmentNames.SortedList()
-}
-
-func (r *releaseInfo) addEnvironment(environmentInfo *releaseEnvironmentInfo) {
-	if r.environmentToEnvironmentInfo == nil {
-		r.environmentToEnvironmentInfo = make(map[string]*releaseEnvironmentInfo)
-	}
-	r.environmentToEnvironmentInfo[environmentInfo.environmentFilename] = environmentInfo
-}
-
-func (r *releaseInfo) getInfoForEnvironment(environment string) *releaseEnvironmentInfo {
-	if r == nil {
-		return nil
-	}
-	return r.environmentToEnvironmentInfo[environment]
-}
-
-type DeployedSourceCommits struct {
-	PRURL     *url.URL
-	SourceSHA string
-}
-
-func must[T any](ret T, err error) T {
-	if err != nil {
-		panic(err)
-	}
-	return ret
 }
 
 func stringOrErr(ret string, err error) string {

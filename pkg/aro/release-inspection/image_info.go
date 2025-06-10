@@ -1,4 +1,4 @@
-package release_markdown
+package release_inspection
 
 import (
 	"bytes"
@@ -25,14 +25,14 @@ type ThreadSafeImageInfoAccessor struct {
 	imagePullSpecToResult map[string]imageInfoResult
 }
 
-func newThreadSafeImageInfoAccessor() *ThreadSafeImageInfoAccessor {
+func NewThreadSafeImageInfoAccessor() *ThreadSafeImageInfoAccessor {
 	return &ThreadSafeImageInfoAccessor{
 		imagePullSpecToResult: make(map[string]imageInfoResult),
 	}
 }
 
 func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containerImage *arohcpapi.ContainerImage) (ImageInfo, error) {
-	imagePullSpec, err := pullSpecFromContainerImage(containerImage)
+	imagePullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)
 	}
@@ -64,7 +64,7 @@ type ImageInfo struct {
 	SourceSHA         string
 }
 
-func pullSpecFromContainerImage(containerImage *arohcpapi.ContainerImage) (string, error) {
+func PullSpecFromContainerImage(containerImage *arohcpapi.ContainerImage) (string, error) {
 	if containerImage == nil {
 		return "", fmt.Errorf("container image is missing")
 	}
@@ -181,7 +181,7 @@ func getImageInfo(imageInspect map[string]interface{}) ImageInfo {
 }
 
 func getImageInfoForImagePullSpec(ctx context.Context, containerImage *arohcpapi.ContainerImage) (ImageInfo, error) {
-	pullSpec, err := pullSpecFromContainerImage(containerImage)
+	pullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)
 	}

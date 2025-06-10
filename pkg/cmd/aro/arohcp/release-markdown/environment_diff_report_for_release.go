@@ -5,26 +5,27 @@ import (
 	"strings"
 	"time"
 
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/set"
 )
 
-func environmentsBySameness(currReleaseInfo *releaseInfo) []set.Set[string] {
+func environmentsBySameness(currReleaseInfo *release_inspection.ReleaseInfo) []set.Set[string] {
 	congruentEnvironmentSets := []set.Set[string]{}
 
 	usedEnvironments := set.New[string]()
-	for _, environmentFilename := range currReleaseInfo.getEnvironmentFilenames() {
-		currEnvironmentInfo := currReleaseInfo.getInfoForEnvironment(environmentFilename)
-		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.environmentFilename, ".json")
+	for _, environmentFilename := range currReleaseInfo.GetEnvironmentFilenames() {
+		currEnvironmentInfo := currReleaseInfo.GetInfoForEnvironment(environmentFilename)
+		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.EnvironmentFilename, ".json")
 		if usedEnvironments.Has(currEnvironmentName) {
 			continue
 		}
 
-		otherEnvironmentInfos := []*releaseEnvironmentInfo{}
-		for _, otherEnvironmentName := range currReleaseInfo.getEnvironmentFilenames() {
+		otherEnvironmentInfos := []*release_inspection.ReleaseEnvironmentInfo{}
+		for _, otherEnvironmentName := range currReleaseInfo.GetEnvironmentFilenames() {
 			if otherEnvironmentName == environmentFilename {
 				continue
 			}
-			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.environmentToEnvironmentInfo[otherEnvironmentName])
+			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.GetInfoForEnvironment(otherEnvironmentName))
 		}
 
 		congruentEnvironments := set.Set[string]{}
@@ -38,35 +39,9 @@ func environmentsBySameness(currReleaseInfo *releaseInfo) []set.Set[string] {
 	return congruentEnvironmentSets
 }
 
-func allReleasesEnvironmentSummaryMarkdown(allReleasesInfo *releasesInfo) string {
+func releaseEnvironmentSummaryMarkdown(currReleaseInfo *release_inspection.ReleaseInfo) string {
 	releaseSummaryMarkdown := &strings.Builder{}
-
-	for _, currReleaseName := range allReleasesInfo.getReleaseNames() {
-		fmt.Fprintf(releaseSummaryMarkdown, "# %s Release\n\n", currReleaseName)
-
-		currReleaseInfo := allReleasesInfo.getReleaseInfo(currReleaseName)
-		for _, environmentFilename := range currReleaseInfo.getEnvironmentFilenames() {
-			currEnvironmentInfo := currReleaseInfo.getInfoForEnvironment(environmentFilename)
-			otherEnvironmentInfos := []*releaseEnvironmentInfo{}
-			for _, otherEnvironmentName := range currReleaseInfo.getEnvironmentFilenames() {
-				if otherEnvironmentName == environmentFilename {
-					continue
-				}
-				otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.environmentToEnvironmentInfo[otherEnvironmentName])
-			}
-
-			environmentMarkdown := markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo, otherEnvironmentInfos, nil)
-			fmt.Fprintf(releaseSummaryMarkdown, environmentMarkdown)
-		}
-
-	}
-
-	return releaseSummaryMarkdown.String()
-}
-
-func releaseEnvironmentSummaryMarkdown(currReleaseInfo *releaseInfo) string {
-	releaseSummaryMarkdown := &strings.Builder{}
-	fmt.Fprintf(releaseSummaryMarkdown, "# %s Release\n\n", currReleaseInfo.releaseName)
+	fmt.Fprintf(releaseSummaryMarkdown, "# %s Release\n\n", currReleaseInfo.ReleaseName)
 
 	wrote := false
 	congruentEnvironments := environmentsBySameness(currReleaseInfo)
@@ -86,19 +61,19 @@ func releaseEnvironmentSummaryMarkdown(currReleaseInfo *releaseInfo) string {
 	}
 
 	handledEnvironments := set.Set[string]{}
-	for _, environmentFilename := range currReleaseInfo.getEnvironmentFilenames() {
-		currEnvironmentInfo := currReleaseInfo.getInfoForEnvironment(environmentFilename)
-		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.environmentFilename, ".json")
+	for _, environmentFilename := range currReleaseInfo.GetEnvironmentFilenames() {
+		currEnvironmentInfo := currReleaseInfo.GetInfoForEnvironment(environmentFilename)
+		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.EnvironmentFilename, ".json")
 		if handledEnvironments.Has(currEnvironmentName) {
 			continue
 		}
 
-		otherEnvironmentInfos := []*releaseEnvironmentInfo{}
-		for _, otherEnvironmentName := range currReleaseInfo.getEnvironmentFilenames() {
+		otherEnvironmentInfos := []*release_inspection.ReleaseEnvironmentInfo{}
+		for _, otherEnvironmentName := range currReleaseInfo.GetEnvironmentFilenames() {
 			if otherEnvironmentName == environmentFilename {
 				continue
 			}
-			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.environmentToEnvironmentInfo[otherEnvironmentName])
+			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.GetInfoForEnvironment(otherEnvironmentName))
 		}
 
 		environmentMarkdown := markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo, otherEnvironmentInfos, environmentToCongruentEnvironments)
@@ -110,21 +85,21 @@ func releaseEnvironmentSummaryMarkdown(currReleaseInfo *releaseInfo) string {
 	return releaseSummaryMarkdown.String()
 }
 
-func environmentsWithIdenticalImages(currEnvironmentInfo *releaseEnvironmentInfo, otherEnvironmentInfos []*releaseEnvironmentInfo) set.Set[string] {
+func environmentsWithIdenticalImages(currEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo, otherEnvironmentInfos []*release_inspection.ReleaseEnvironmentInfo) set.Set[string] {
 	sameEnvironments := set.Set[string]{}
 
 	for _, otherEnvironmentInfo := range otherEnvironmentInfos {
 		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.pertinentInfo.deployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.pertinentInfo.deployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
 		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.pertinentInfo.deployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.pertinentInfo.deployedImages[deployedImageName]
+			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
+			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
 			if currDeployedImageInfo == nil {
 				currMissingImages.Insert(deployedImageName)
 				continue
@@ -148,7 +123,7 @@ func environmentsWithIdenticalImages(currEnvironmentInfo *releaseEnvironmentInfo
 		}
 		differentImages := set.KeySet(differentImageDetails)
 
-		otherEnvironmentName := strings.TrimSuffix(otherEnvironmentInfo.environmentFilename, ".json")
+		otherEnvironmentName := strings.TrimSuffix(otherEnvironmentInfo.EnvironmentFilename, ".json")
 		if len(differentImages) == 0 && len(currMissingImages) == 0 && len(otherMissingImages) == 0 {
 			sameEnvironments.Insert(otherEnvironmentName)
 			continue
@@ -158,9 +133,9 @@ func environmentsWithIdenticalImages(currEnvironmentInfo *releaseEnvironmentInfo
 	return sameEnvironments
 }
 
-func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *releaseEnvironmentInfo, otherEnvironmentInfos []*releaseEnvironmentInfo, environmentToCongruentEnvironments map[string]set.Set[string]) string {
+func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo, otherEnvironmentInfos []*release_inspection.ReleaseEnvironmentInfo, environmentToCongruentEnvironments map[string]set.Set[string]) string {
 	environmentSummaryMarkdown := &strings.Builder{}
-	currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.environmentFilename, ".json")
+	currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.EnvironmentFilename, ".json")
 	congruentEnvironmentsForCurr := environmentToCongruentEnvironments[currEnvironmentName]
 	if len(congruentEnvironmentsForCurr) == 1 {
 		fmt.Fprintf(environmentSummaryMarkdown, "## %s Environment\n", strings.Join(congruentEnvironmentsForCurr.SortedList(), ", "))
@@ -170,7 +145,7 @@ func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *releaseEnvironmen
 
 	checkedEnvironments := set.Set[string]{}
 	for _, otherEnvironmentInfo := range otherEnvironmentInfos {
-		otherEnvironmentName := strings.TrimSuffix(otherEnvironmentInfo.environmentFilename, ".json")
+		otherEnvironmentName := strings.TrimSuffix(otherEnvironmentInfo.EnvironmentFilename, ".json")
 		if congruentEnvironmentsForCurr.Has(otherEnvironmentName) {
 			continue
 		}
@@ -179,16 +154,16 @@ func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *releaseEnvironmen
 		}
 
 		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.pertinentInfo.deployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.pertinentInfo.deployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
 		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.pertinentInfo.deployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.pertinentInfo.deployedImages[deployedImageName]
+			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
+			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
 			if currDeployedImageInfo == nil {
 				currMissingImages.Insert(deployedImageName)
 				continue
