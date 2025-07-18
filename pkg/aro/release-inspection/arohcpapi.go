@@ -85,12 +85,6 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		"https://example.com",
 		&config.Frontend.Image,
 		prevDeployedImages)
-	currConfigInfo.DeployedImages["ComponentSync"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"ComponentSync",
-		"https://example.com",
-		&config.ImageSync.ComponentSync.Image,
-		prevDeployedImages)
 	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"OcMirror",

@@ -37,6 +37,16 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 		ReleaseName: r.releaseName,
 	}
 
+	configOverlayFilename := filepath.Join(r.repoDir, "config", "config.msft.clouds-overlay.json")
+	configOverlayJSONBytes, err := os.ReadFile(configOverlayFilename)
+	if errors.Is(err, os.ErrNotExist) {
+		return ret, nil
+	}
+	configOverlay := &arohcpapi.ConfigSchemaJSON{}
+	if err := json.Unmarshal(configOverlayJSONBytes, configOverlay); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
 	for _, environmentFilename := range r.environments {
 		localLogger := klog.FromContext(ctx)
 		localLogger = klog.LoggerWithValues(localLogger, "configFile", environmentFilename)
@@ -52,7 +62,7 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 		}
 
 		prevReleaseEnvironmentInfo := r.prevReleaseInfo.GetInfoForEnvironment(environmentFilename)
-		currReleaseEnvironmentInfo, err := r.releaseMarkdownForConfigJSON(localCtx, environmentFilename, jsonBytes, prevReleaseEnvironmentInfo)
+		currReleaseEnvironmentInfo, err := r.releaseMarkdownForConfigJSON(localCtx, environmentFilename, configOverlay.Pu, prevReleaseEnvironmentInfo)
 		if err != nil {
 			// the schema in ARO-HCP is changing incompatibly, so we are not guaranteed to be able to parse older releases
 			localLogger.Error(err, "failed to release markdown for config JSON.  Continuing...")
