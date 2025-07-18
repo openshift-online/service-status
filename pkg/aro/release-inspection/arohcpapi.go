@@ -9,6 +9,7 @@ import (
 	"time"
 
 	arohcpapi "github.com/openshift-online/service-status/pkg/apis/aro-hcp"
+	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 )
 
@@ -117,12 +118,18 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			config.Mgmt.Prometheus.PrometheusSpec.Image,
 			prevDeployedImages)
 	}
+	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
+		imageInfoAccessor,
+		"ACR Pull",
+		"https://example.com",
+		&config.ACRPull.Image,
+		prevDeployedImages)
 	//currConfigInfo.pertinentInfo.deployedImages["Mise"] = createDeployedImageInfo(ctx,
 	//	"Mise",
 	//	"https://example.com",
 	//	&config.Mise, // this isn't properly schema'd awesome
 	//	prevDeployedImages)
-	if config.Svc.Prometheus.PrometheusSpec != nil {
+	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
 		currConfigInfo.DeployedImages["Service Prometheus Spec"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Service Prometheus Spec",
@@ -130,12 +137,6 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			config.Svc.Prometheus.PrometheusSpec.Image,
 			prevDeployedImages)
 	}
-	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"ACR Pull",
-		"https://example.com",
-		&config.ACRPull.Image,
-		prevDeployedImages)
 
 	if prevConfigInfo == nil {
 		currConfigInfo.ChangedComponents = set.KeySet(currConfigInfo.DeployedImages)
@@ -179,13 +180,23 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 
 func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage, prevDeployedImages map[string]*DeployedImageInfo) *DeployedImageInfo {
 	repoLink := must(url.Parse(repoURL))
+
 	deployedImageInfo := &DeployedImageInfo{
 		Name:                           name,
-		ImageInfo:                      containerImage,
 		RepoLink:                       repoLink,
 		PreviousSourceSHA:              "",
 		CountOfCommitsSincePreviousSHA: 0,
 		CommitsSincePreviousSHA:        nil,
+	}
+	if containerImage != nil {
+		registry, repository, err := imagePullLocationForName(name)
+		localContainerImage := *containerImage
+		localContainerImage.Registry = &registry
+		localContainerImage.Repository = repository
+		if err != nil {
+			localContainerImage.Registry = ptr.To(fmt.Sprintf("missing image pull location for %q: %v", name, err))
+		}
+		deployedImageInfo.ImageInfo = &localContainerImage
 	}
 	prevClusterServiceInfo := prevDeployedImages[deployedImageInfo.Name]
 	completeSourceSHAs(ctx, imageInfoAccessor, deployedImageInfo, prevClusterServiceInfo)
