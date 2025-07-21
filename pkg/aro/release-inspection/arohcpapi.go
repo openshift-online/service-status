@@ -15,8 +15,8 @@ import (
 
 type ReleaseEnvironmentInfo struct {
 	ReleaseName         string
+	ReleaseSHA          string
 	EnvironmentFilename string
-	ChangedComponents   set.Set[string]
 	configJSON          *arohcpapi.ConfigSchemaJSON
 	DeployedImages      map[string]*DeployedImageInfo
 }
@@ -24,15 +24,12 @@ type ReleaseEnvironmentInfo struct {
 // configPertinentInfo tracks the information that we want to show a diff for and summarize
 
 type DeployedImageInfo struct {
-	Name                           string
-	ImageInfo                      *arohcpapi.ContainerImage
-	ImageCreationTime              *time.Time
-	RepoLink                       *url.URL
-	SourceSHA                      string
-	PermLinkForSourceSHA           *url.URL
-	PreviousSourceSHA              string
-	CountOfCommitsSincePreviousSHA int32
-	CommitsSincePreviousSHA        []DeployedSourceCommits
+	Name                 string
+	ImageInfo            *arohcpapi.ContainerImage
+	ImageCreationTime    *time.Time
+	RepoLink             *url.URL
+	SourceSHA            string
+	PermLinkForSourceSHA *url.URL
 }
 
 type DeployedSourceCommits struct {
@@ -40,18 +37,13 @@ type DeployedSourceCommits struct {
 	SourceSHA string
 }
 
-func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, environmentFilename string, config *arohcpapi.ConfigSchemaJSON, prevConfigInfo *ReleaseEnvironmentInfo) (*ReleaseEnvironmentInfo, error) {
+func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA, environmentFilename string, config *arohcpapi.ConfigSchemaJSON) (*ReleaseEnvironmentInfo, error) {
 	currConfigInfo := &ReleaseEnvironmentInfo{
 		ReleaseName:         releaseName,
+		ReleaseSHA:          releaseSHA,
 		EnvironmentFilename: environmentFilename,
 		configJSON:          config,
-		ChangedComponents:   make(set.Set[string]),
 		DeployedImages:      map[string]*DeployedImageInfo{},
-	}
-
-	prevDeployedImages := map[string]*DeployedImageInfo{}
-	if prevConfigInfo != nil {
-		prevDeployedImages = prevConfigInfo.DeployedImages
 	}
 
 	currConfigInfo.DeployedImages["Cluster Service"] = createDeployedImageInfo(ctx,
@@ -59,39 +51,39 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		"Cluster Service",
 		"https://gitlab.cee.redhat.com/service/uhc-clusters-service",
 		&config.ClustersService.Image,
-		prevDeployedImages)
+	)
 	currConfigInfo.DeployedImages["Hypershift"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Hypershift",
 		"https://github.com/openshift/hypershift",
 		config.Hypershift.Image,
-		prevDeployedImages)
+	)
 	if config.Backend != nil {
 		currConfigInfo.DeployedImages["Backend"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Backend",
 			"https://example.com",
 			&config.Backend.Image,
-			prevDeployedImages)
+		)
 	}
 	currConfigInfo.DeployedImages["Backplane"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Backplane",
 		"https://gitlab.cee.redhat.com/service/backplane-api",
 		&config.BackplaneAPI.Image,
-		prevDeployedImages)
+	)
 	currConfigInfo.DeployedImages["Frontend"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Frontend",
 		"https://example.com",
 		&config.Frontend.Image,
-		prevDeployedImages)
+	)
 	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"OcMirror",
 		"https://example.com",
 		&config.ImageSync.OcMirror.Image,
-		prevDeployedImages)
+	)
 	// TODO
 	//currConfigInfo.pertinentInfo.deployedImages["Maestro Agent Sidecar"] = createDeployedImageInfo(ctx,
 	//	"Maestro Agent Sidecar",
@@ -103,7 +95,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		"Maestro",
 		"https://github.com/openshift-online/maestro/",
 		&config.Maestro.Image,
-		prevDeployedImages)
+	)
 	// TODO
 	//currConfigInfo.pertinentInfo.deployedImages["Prometheus"] = createDeployedImageInfo(ctx,
 	//	"Prometheus",
@@ -116,14 +108,14 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			"Management Prometheus Spec",
 			"https://example.com",
 			config.Mgmt.Prometheus.PrometheusSpec.Image,
-			prevDeployedImages)
+		)
 	}
 	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"ACR Pull",
 		"https://example.com",
 		&config.ACRPull.Image,
-		prevDeployedImages)
+	)
 	//currConfigInfo.pertinentInfo.deployedImages["Mise"] = createDeployedImageInfo(ctx,
 	//	"Mise",
 	//	"https://example.com",
@@ -135,24 +127,13 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			"Service Prometheus Spec",
 			"https://example.com",
 			config.Svc.Prometheus.PrometheusSpec.Image,
-			prevDeployedImages)
-	}
-
-	if prevConfigInfo == nil {
-		currConfigInfo.ChangedComponents = set.KeySet(currConfigInfo.DeployedImages)
-	} else {
-		for _, currDeployedImageInfo := range currConfigInfo.DeployedImages {
-			prevDeployedImageInfo := prevConfigInfo.DeployedImages[currDeployedImageInfo.Name]
-			if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
-				currConfigInfo.ChangedComponents.Insert(currDeployedImageInfo.Name)
-			}
-		}
+		)
 	}
 
 	return currConfigInfo, nil
 }
 
-func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo, prevInfo *DeployedImageInfo) {
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *DeployedImageInfo) {
 	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, currInfo.ImageInfo); err != nil {
 		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
 	} else {
@@ -166,27 +147,14 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/-/tree/" + currInfo.SourceSHA + "/"))
 		}
 	}
-
-	if prevInfo == nil {
-		return
-	}
-
-	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, prevInfo.ImageInfo); err != nil {
-		currInfo.PreviousSourceSHA = fmt.Sprintf("ERROR: %v", err)
-	} else {
-		currInfo.PreviousSourceSHA = imageInfo.SourceSHA
-	}
 }
 
-func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage, prevDeployedImages map[string]*DeployedImageInfo) *DeployedImageInfo {
+func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *DeployedImageInfo {
 	repoLink := must(url.Parse(repoURL))
 
 	deployedImageInfo := &DeployedImageInfo{
-		Name:                           name,
-		RepoLink:                       repoLink,
-		PreviousSourceSHA:              "",
-		CountOfCommitsSincePreviousSHA: 0,
-		CommitsSincePreviousSHA:        nil,
+		Name:     name,
+		RepoLink: repoLink,
 	}
 	if containerImage != nil {
 		registry, repository, err := imagePullLocationForName(name)
@@ -198,8 +166,27 @@ func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAcc
 		}
 		deployedImageInfo.ImageInfo = &localContainerImage
 	}
-	prevClusterServiceInfo := prevDeployedImages[deployedImageInfo.Name]
-	completeSourceSHAs(ctx, imageInfoAccessor, deployedImageInfo, prevClusterServiceInfo)
+	completeSourceSHAs(ctx, imageInfoAccessor, deployedImageInfo)
 
 	return deployedImageInfo
+}
+
+func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) set.Set[string] {
+	changedComponents := set.Set[string]{}
+
+	if prevReleaseEnvironmentInfo == nil {
+		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
+			changedComponents.Insert(currDeployedImageInfo.Name)
+		}
+		return changedComponents
+	}
+
+	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
+		prevDeployedImageInfo := prevReleaseEnvironmentInfo.DeployedImages[currDeployedImageInfo.Name]
+		if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
+			changedComponents.Insert(currDeployedImageInfo.Name)
+		}
+	}
+
+	return changedComponents
 }

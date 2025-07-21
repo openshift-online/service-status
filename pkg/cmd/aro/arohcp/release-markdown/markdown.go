@@ -25,7 +25,6 @@ func markdownForPertinentInfo(info *release_inspection.DeployedImageInfo) string
 	} else {
 		fmt.Fprintf(markdown, "* Commit: [%s](%s)\n", info.SourceSHA, info.PermLinkForSourceSHA)
 	}
-	fmt.Fprintf(markdown, "* Changes: (%d changes)\n", info.CountOfCommitsSincePreviousSHA)
 	fmt.Fprintf(markdown, "\n")
 
 	return markdown.String()
@@ -36,7 +35,8 @@ func releaseEnvironmentMarkdown(currReleaseEnvironmentInfo, prevReleaseEnvironme
 	fmt.Fprintf(markdown, "# Release %v\n\n", currReleaseEnvironmentInfo.ReleaseName)
 
 	fmt.Fprintf(markdown, "## Diff\n\n")
-	if len(currReleaseEnvironmentInfo.ChangedComponents) == 0 {
+	changedComponents := release_inspection.ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
+	if len(changedComponents) == 0 {
 		fmt.Fprintf(markdown, "*No Changes*\n\n")
 	} else {
 		for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.DeployedImages).SortedList() {
@@ -67,19 +67,25 @@ func allReleaseSummaryMarkdown(allReleasesInfo *release_inspection.ReleasesInfo)
 	for _, environmentFilename := range allReleasesInfo.GetEnvironmentFilenames() {
 		fmt.Fprintf(releaseSummaryMarkdown, "# %s Releases\n\n", strings.TrimSuffix(environmentFilename, ".json"))
 
-		for _, currReleaseName := range allReleasesInfo.GetReleaseNames() {
+		for i, currReleaseName := range allReleasesInfo.GetReleaseNames() {
 			currReleaseInfo := allReleasesInfo.GetReleaseInfo(currReleaseName)
 			currReleaseEnvironmentInfo := currReleaseInfo.GetInfoForEnvironment(environmentFilename)
 			if currReleaseEnvironmentInfo == nil {
 				continue
 			}
+			var prevReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo
+			if i > 0 {
+				prevReleaseInfo := allReleasesInfo.GetReleaseInfo(allReleasesInfo.GetReleaseNames()[i-1])
+				prevReleaseEnvironmentInfo = prevReleaseInfo.GetInfoForEnvironment(environmentFilename)
+			}
 
 			// TODO table
+			changedComponents := release_inspection.ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
 			fmt.Fprintf(releaseSummaryMarkdown, "* [%s](%s) %d changes (%v)\n",
 				currReleaseEnvironmentInfo.ReleaseName,
 				"TODO",
-				len(currReleaseEnvironmentInfo.ChangedComponents),
-				strings.Join(currReleaseEnvironmentInfo.ChangedComponents.SortedList(), ", "),
+				len(changedComponents),
+				strings.Join(changedComponents.SortedList(), ", "),
 			)
 		}
 		fmt.Fprintf(releaseSummaryMarkdown, "\n")

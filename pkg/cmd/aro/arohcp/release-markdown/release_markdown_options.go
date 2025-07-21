@@ -113,7 +113,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 			continue
 		}
 
-		releaseDiffReporter := release_inspection.NewReleaseDiffReport(o.ImageInfoAccessor, releaseName, o.AROHCPDir, environments, prevReleaseInfo)
+		releaseDiffReporter := release_inspection.NewReleaseDiffReport(o.ImageInfoAccessor, releaseName, commit.Hash.String(), o.AROHCPDir, environments)
 		newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 		if err != nil {
 			return fmt.Errorf("failed to get release markdowns: %w", err)

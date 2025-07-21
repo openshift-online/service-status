@@ -19,18 +19,18 @@ type ReleaseDiffReport struct {
 
 	imageInfoAccessor ImageInfoAccessor
 	releaseName       string
+	releaseSHA        string
 	environments      []string
 	repoDir           string
-	prevReleaseInfo   *ReleaseInfo
 }
 
-func NewReleaseDiffReport(imageInfoAccessor ImageInfoAccessor, releaseName string, repoDir string, environments []string, prevReleaseInfo *ReleaseInfo) *ReleaseDiffReport {
+func NewReleaseDiffReport(imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA string, repoDir string, environments []string) *ReleaseDiffReport {
 	return &ReleaseDiffReport{
 		imageInfoAccessor: imageInfoAccessor,
 		releaseName:       releaseName,
+		releaseSHA:        releaseSHA,
 		repoDir:           repoDir,
 		environments:      environments,
-		prevReleaseInfo:   prevReleaseInfo,
 	}
 }
 
@@ -66,25 +66,15 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal JSON: %w", err)
 			}
-			//fmt.Println(string(intOverlayJSON))
 			if err := json.Unmarshal(configJSON, &config); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 			}
 
 		default:
-			panic("TODO we may later add parsing of rendered files")
+			panic(fmt.Sprintf("TODO we may later add parsing of rendered files: %v", environmentFilename))
 		}
-		//fullPath := filepath.Join(r.repoDir, "config", environmentFilename)
-		//jsonBytes, err := os.ReadFile(fullPath)
-		//if errors.Is(err, os.ErrNotExist) {
-		//	continue
-		//}
-		//if err != nil {
-		//	return nil, fmt.Errorf("failed to read file %s: %w", fullPath, err)
-		//}
 
-		prevReleaseEnvironmentInfo := r.prevReleaseInfo.GetInfoForEnvironment(environmentFilename)
-		currReleaseEnvironmentInfo, err := r.releaseMarkdownForConfigJSON(localCtx, environmentFilename, configJSON, prevReleaseEnvironmentInfo)
+		currReleaseEnvironmentInfo, err := r.releaseMarkdownForConfigJSON(localCtx, environmentFilename, configJSON)
 		if err != nil {
 			// the schema in ARO-HCP is changing incompatibly, so we are not guaranteed to be able to parse older releases
 			localLogger.Error(err, "failed to release markdown for config JSON.  Continuing...")
@@ -97,25 +87,25 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 	return ret, nil
 }
 
-func (r *ReleaseDiffReport) releaseMarkdownForConfigJSON(ctx context.Context, environmentName string, currReleaseEnvironmentJSON []byte, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) (*ReleaseEnvironmentInfo, error) {
+func (r *ReleaseDiffReport) releaseMarkdownForConfigJSON(ctx context.Context, environmentName string, currReleaseEnvironmentJSON []byte) (*ReleaseEnvironmentInfo, error) {
 	config := &arohcpapi.ConfigSchemaJSON{}
 	err := json.Unmarshal(currReleaseEnvironmentJSON, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	ret, err := r.releaseMarkdownForConfig(ctx, environmentName, config, prevReleaseEnvironmentInfo)
+	ret, err := r.releaseMarkdownForConfig(ctx, environmentName, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create markdown for %s: %w", r.releaseName, err)
 	}
 	return ret, nil
 }
 
-func (r *ReleaseDiffReport) releaseMarkdownForConfig(ctx context.Context, environmentName string, config *arohcpapi.ConfigSchemaJSON, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) (*ReleaseEnvironmentInfo, error) {
+func (r *ReleaseDiffReport) releaseMarkdownForConfig(ctx context.Context, environmentName string, config *arohcpapi.ConfigSchemaJSON) (*ReleaseEnvironmentInfo, error) {
 	logger := klog.FromContext(ctx)
 	logger.Info("Scraping info")
 
-	currConfigInfo, err := scrapeInfoForAROHCPConfig(ctx, r.imageInfoAccessor, r.releaseName, environmentName, config, prevReleaseEnvironmentInfo)
+	currConfigInfo, err := scrapeInfoForAROHCPConfig(ctx, r.imageInfoAccessor, r.releaseName, r.releaseSHA, environmentName, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create markdown for %s: %w", r.releaseName, err)
 	}

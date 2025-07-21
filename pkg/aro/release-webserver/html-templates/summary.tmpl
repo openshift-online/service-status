@@ -1,0 +1,43 @@
+{{ define "http/aro-hcp/summary.html" }}
+
+<html>
+<head>
+    <title>ARO-HCP Release Summary</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+</style>
+</head>
+
+<body>
+
+{{ $environmentToReleaseToHTML := .environmentToReleaseToHTML }}
+{{ $environments := .environments }}
+{{ $releases := .releases }}
+
+{{range $environment := $environments.Items}}
+    <h1>
+    <p>{{$environment.Name}} Releases</p>
+    </h1>
+    <table>
+        <tr>
+            <th>Release</th>
+            <th>SHA</th>
+            <th>Changes</th>
+        </tr>
+    {{range $release := $releases.Items}}
+        {{ index $environmentToReleaseToHTML $environment.Name $release.Name }}
+    {{end}}
+    </table>
+{{end}}
+
+</body>
+</html>
+
+{{ end }}
