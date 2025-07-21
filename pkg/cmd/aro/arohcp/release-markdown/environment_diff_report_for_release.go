@@ -109,6 +109,15 @@ func environmentsWithIdenticalImages(currEnvironmentInfo *release_inspection.Rel
 				continue
 			}
 
+			if currDeployedImageInfo.ImageInfo == nil {
+				differentImageDetails[deployedImageName] = "currDeployedImageInfo is missing, assuming different"
+				continue
+			}
+			if otherDeployedImageInfo.ImageInfo == nil {
+				differentImageDetails[deployedImageName] = "otherDeployedImageInfo is missing, assuming different"
+				continue
+			}
+
 			currImageDigest := currDeployedImageInfo.ImageInfo.Digest
 			otherImageDigest := otherDeployedImageInfo.ImageInfo.Digest
 			if currImageDigest == otherImageDigest {
@@ -170,6 +179,15 @@ func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *release_inspectio
 			}
 			if otherDeployedImageInfo == nil {
 				otherMissingImages.Insert(deployedImageName)
+				continue
+			}
+
+			if currDeployedImageInfo.ImageInfo == nil {
+				differentImageDetails[deployedImageName] = "currDeployedImageInfo is missing, assuming different"
+				continue
+			}
+			if otherDeployedImageInfo.ImageInfo == nil {
+				differentImageDetails[deployedImageName] = "otherDeployedImageInfo is missing, assuming different"
 				continue
 			}
 

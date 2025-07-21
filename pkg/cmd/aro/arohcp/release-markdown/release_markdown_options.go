@@ -107,6 +107,12 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 			return fmt.Errorf("failed to reset aro hcp worktree: %w", err)
 		}
 
+		// if we don't have an overlay file, don't bother checking
+		configOverlayFilename := filepath.Join(o.AROHCPDir, "config", "config.msft.clouds-overlay.yaml")
+		if _, err := os.ReadFile(configOverlayFilename); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+
 		releaseDiffReporter := release_inspection.NewReleaseDiffReport(o.ImageInfoAccessor, releaseName, o.AROHCPDir, environments, prevReleaseInfo)
 		newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 		if err != nil {
@@ -154,9 +160,7 @@ func stringOrErr(ret string, err error) string {
 }
 
 var environments = []string{
-	"public-cloud-dev.json",
-	"public-cloud-msft-int.json",
-	"public-cloud-msft-stg.json",
-	"public-cloud-ntly.json",
-	"public-cloud-pers.json",
+	"int",
+	"stg",
+	"prod",
 }

@@ -7,6 +7,7 @@ require (
 	github.com/go-git/go-git/v5 v5.16.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
+	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/utils v0.0.0-20250502105355-0f33e8f1c979
 )
