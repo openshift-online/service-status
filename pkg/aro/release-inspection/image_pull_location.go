@@ -7,7 +7,7 @@ func imagePullLocationForName(name string) (string, string, error) {
 	switch name {
 	case "Cluster Service":
 		return "quay.io", "app-sre/uhc-clusters-service", nil
-	case "Hypershfit":
+	case "Hypershift":
 		return "quay.io", "acm-d/rhtap-hypershift-operator", nil
 	case "Backend":
 		return "arohcpsvcdev.azurecr.io", "arohcpbackend", nil
