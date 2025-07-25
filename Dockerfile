@@ -3,6 +3,7 @@ WORKDIR /go/src/service-status
 RUN dnf install -y \
         git \
         go \
+        podman \
         make
 COPY . .
 ENV PATH="/go/bin:${PATH}"
