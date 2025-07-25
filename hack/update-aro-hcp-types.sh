@@ -1,4 +1,7 @@
 #!/bin/bash
+set -o errexit
+set -o nounset
+set -o pipefail
 
 go get github.com/atombender/go-jsonschema/...
 go install github.com/atombender/go-jsonschema@latest
