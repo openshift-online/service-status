@@ -4,8 +4,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-mkdir -p local-aro
-pushd local-aro
+TARGET_DIR="${1:-$(pwd)}"
+
+mkdir -p "${TARGET_DIR}/local-aro"
+pushd "${TARGET_DIR}/local-aro"
 
 while true; do
     # Create new directory for fresh clone
