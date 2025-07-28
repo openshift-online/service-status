@@ -1,0 +1,41 @@
+{{ define "http/aro-hcp/environment-release.html" }}
+
+<html>
+<head>
+    <title>{{.environmentName}} {{.release.Name}}</title>
+<style>
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+h3 {
+    padding-left: 2em; /* Indents the text inside H3 by 2 em units */
+}
+details {
+    padding-left: 4em; /* Indents the text inside H3 by 2 em units */
+}
+</style>
+</head>
+
+<body>
+
+{{ $imageNameToDetails := .imageNameToDetails }}
+
+<h1>Environment: {{.environmentName}}, Release: {{.release.Name}}</h1>
+
+<h2>Diff</h2>
+
+<h2>Content</h2>
+
+{{range $imageName := .imageNames}}
+    {{ index $imageNameToDetails $imageName }}
+{{end}}
+
+</body>
+</html>
+
+{{ end }}

@@ -32,7 +32,7 @@ func ListReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 					APIVersion: "service-status.hcm.openshift.io/v1",
 				},
 				Name: release.Name,
-				SHA:  release.Commit.Hash.String(),
+				SHA:  release.Commit.String(),
 			})
 		}
 
@@ -59,9 +59,10 @@ func GetRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 						APIVersion: "service-status.hcm.openshift.io/v1",
 					},
 					Name: release.Name,
-					SHA:  release.Commit.Hash.String(),
+					SHA:  release.Commit.String(),
 				}
 				c.IndentedJSON(http.StatusOK, ret)
+				return
 			}
 		}
 

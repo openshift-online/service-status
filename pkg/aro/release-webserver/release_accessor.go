@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -27,20 +27,22 @@ type ReleaseAccessor interface {
 
 type Release struct {
 	Name   string
-	Commit object.Commit
+	Commit plumbing.Hash
 }
 
 type releaseAccessor struct {
 	aroHCPDir         string
+	numberOfDays      int
 	imageInfoAccessor release_inspection.ImageInfoAccessor
 
 	gitLock           sync.Mutex
 	releaseNameToInfo map[string]*release_inspection.ReleaseInfo
 }
 
-func NewReleaseAccessor(aroHCPDir string, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
+func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
 	return &releaseAccessor{
 		aroHCPDir:         aroHCPDir,
+		numberOfDays:      numberOfDays,
 		imageInfoAccessor: imageInfoAccessor,
 		releaseNameToInfo: map[string]*release_inspection.ReleaseInfo{},
 	}
@@ -85,7 +87,7 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 			}
 			return false
 		},
-		Since: ptr.To(time.Now().Add(-14 * 24 * time.Hour)),
+		Since: ptr.To(time.Now().Add(-time.Duration(r.numberOfDays) * 24 * time.Hour)),
 	}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get aro hcp config log: %w", err)
@@ -110,7 +112,7 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 		newestDate = commit.Committer.When
 		releases = append(releases, Release{
 			Name:   fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5]),
-			Commit: *commit,
+			Commit: commit.Hash,
 		})
 	}
 	logger.Info("Found releases.", "releaseCount", len(releases))
@@ -162,7 +164,7 @@ func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, 
 	localCtx := klog.NewContext(ctx, localLogger)
 
 	err = aroHCPWorkTree.Reset(&git.ResetOptions{
-		Commit: release.Commit.Hash,
+		Commit: release.Commit,
 		Mode:   git.HardReset,
 	})
 	if err != nil {
@@ -175,7 +177,7 @@ func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, 
 		return nil, nil
 	}
 
-	releaseDiffReporter := release_inspection.NewReleaseDiffReport(r.imageInfoAccessor, release.Name, release.Commit.Hash.String(), r.aroHCPDir, enviroments)
+	releaseDiffReporter := release_inspection.NewReleaseDiffReport(r.imageInfoAccessor, release.Name, release.Commit.String(), r.aroHCPDir, enviroments)
 	newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release markdowns: %w", err)

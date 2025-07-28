@@ -18,7 +18,8 @@ type ReleaseMarkdownFlags struct {
 	BindAddress net.IP
 	BindPort    int
 
-	AROHCPDir string
+	AROHCPDir    string
+	NumberOfDays int
 
 	util.IOStreams
 }
@@ -57,7 +58,8 @@ func NewReleaseWebsiteCommand(streams util.IOStreams) *cobra.Command {
 
 func NewReleaseMarkdownFlags(streams util.IOStreams) *ReleaseMarkdownFlags {
 	return &ReleaseMarkdownFlags{
-		IOStreams: streams,
+		IOStreams:    streams,
+		NumberOfDays: 14,
 	}
 }
 
@@ -66,6 +68,8 @@ func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 
 	flags.IPVar(&f.BindAddress, "bind-address", f.BindAddress, "The IP address on which to listen for the --secure-port port.")
 	flags.IntVar(&f.BindPort, "bind-port", f.BindPort, "The port on which to serve HTTP with authentication and authorization.")
+
+	flags.IntVar(&f.NumberOfDays, "num-days", f.NumberOfDays, "The number of days to look back for releases.")
 
 }
 
@@ -87,6 +91,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 		BindAddress:       f.BindAddress,
 		BindPort:          f.BindPort,
 		AROHCPDir:         f.AROHCPDir,
+		NumberOfDays:      f.NumberOfDays,
 		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(),
 
 		IOStreams: f.IOStreams,
