@@ -24,13 +24,17 @@ details {
 <body>
 
 {{ $imageNameToDetails := .imageNameToDetails }}
+{{ $changedImageNameToDetails := .changedImageNameToDetails }}
 
 <h1>Environment: {{.environmentName}}, Release: {{.release.Name}}</h1>
 
 <h2>Diff</h2>
+{{range $changedImageName := .changedImageNames}}
+    {{ index $changedImageNameToDetails $changedImageName }}
+{{end}}
+
 
 <h2>Content</h2>
-
 {{range $imageName := .imageNames}}
     {{ index $imageNameToDetails $imageName }}
 {{end}}
