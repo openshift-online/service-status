@@ -32,15 +32,17 @@ type Release struct {
 
 type releaseAccessor struct {
 	aroHCPDir         string
+	numberOfDays      int
 	imageInfoAccessor release_inspection.ImageInfoAccessor
 
 	gitLock           sync.Mutex
 	releaseNameToInfo map[string]*release_inspection.ReleaseInfo
 }
 
-func NewReleaseAccessor(aroHCPDir string, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
+func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
 	return &releaseAccessor{
 		aroHCPDir:         aroHCPDir,
+		numberOfDays:      numberOfDays,
 		imageInfoAccessor: imageInfoAccessor,
 		releaseNameToInfo: map[string]*release_inspection.ReleaseInfo{},
 	}
@@ -85,7 +87,7 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 			}
 			return false
 		},
-		Since: ptr.To(time.Now().Add(-14 * 24 * time.Hour)),
+		Since: ptr.To(time.Now().Add(-time.Duration(r.numberOfDays) * 24 * time.Hour)),
 	}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get aro hcp config log: %w", err)

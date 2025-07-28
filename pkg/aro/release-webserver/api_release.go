@@ -62,6 +62,7 @@ func GetRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 					SHA:  release.Commit.String(),
 				}
 				c.IndentedJSON(http.StatusOK, ret)
+				return
 			}
 		}
 

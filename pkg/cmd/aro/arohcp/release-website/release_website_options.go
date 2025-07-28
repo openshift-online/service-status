@@ -18,7 +18,8 @@ type ReleaseMarkdownOptions struct {
 	BindAddress net.IP
 	BindPort    int
 
-	AROHCPDir string
+	AROHCPDir    string
+	NumberOfDays int
 
 	ImageInfoAccessor release_inspection.ImageInfoAccessor
 
@@ -29,7 +30,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	logger := klog.FromContext(ctx)
 
 	releaseAccessor := release_webserver.NewCachingReleaseAccessor(
-		release_webserver.NewReleaseAccessor(o.AROHCPDir, o.ImageInfoAccessor),
+		release_webserver.NewReleaseAccessor(o.AROHCPDir, o.NumberOfDays, o.ImageInfoAccessor),
 		clock.RealClock{})
 	releaseClient := client.NewBasicReleaseClient("http://" + net.JoinHostPort("localhost", fmt.Sprintf("%d", o.BindPort)))
 
@@ -46,6 +47,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	// HTML endpoints
 	httpRouter.LoadHTMLGlob("pkg/aro/release-webserver/html-templates/*")
 	httpRouter.GET("/http/aro-hcp/summary.html", release_webserver.ServeReleaseSummary(releaseClient))
+	httpRouter.GET("/http/aro-hcp/environmentreleases/:name/summary.html", release_webserver.ServeEnvironmentReleaseSummary(releaseClient))
 
 	listener, err := net.Listen("tcp", net.JoinHostPort(o.BindAddress.String(), fmt.Sprintf("%d", o.BindPort)))
 	if err != nil {

@@ -60,6 +60,7 @@ func GetEnvironment(accessor ReleaseAccessor) func(c *gin.Context) {
 					Name: environment,
 				}
 				c.IndentedJSON(http.StatusOK, ret)
+				return
 			}
 		}
 

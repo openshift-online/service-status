@@ -53,14 +53,27 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 	}
 }
 
+func GetEnvironmentReleaseName(environment, release string) string {
+	return fmt.Sprintf("%s---%s", environment, release)
+}
+
+func SplitEnvironmentReleaseName(name string) (string, string, bool) {
+	parts := strings.Split(name, "---")
+	if len(parts) != 2 {
+		return "", "", false
+	}
+	return parts[0], parts[1], true
+}
+
 func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
 		name := c.Param("name")
-		environmentName, releaseName, found := strings.Cut(name, "---")
+		environmentName, releaseName, found := SplitEnvironmentReleaseName(name)
 		if !found {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", name)})
+			return
 		}
 
 		// TODO better
@@ -117,10 +130,14 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 				Registry:   "",
 				Repository: "",
 			},
-			ImageCreationTime:    imageInfo.ImageCreationTime,
-			RepoLink:             imageInfo.RepoLink,
-			SourceSHA:            imageInfo.SourceSHA,
-			PermLinkForSourceSHA: imageInfo.PermLinkForSourceSHA,
+			ImageCreationTime: imageInfo.ImageCreationTime,
+			SourceSHA:         imageInfo.SourceSHA,
+		}
+		if imageInfo.RepoLink != nil {
+			ret.Images[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
+		}
+		if imageInfo.PermLinkForSourceSHA != nil {
+			ret.Images[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
 		}
 		if imageInfo.ImageInfo != nil {
 			ret.Images[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest

@@ -3,6 +3,7 @@ package release_webserver
 import (
 	"fmt"
 	"html/template"
+	"net/url"
 	"reflect"
 
 	"github.com/gin-gonic/gin"
@@ -33,13 +34,15 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 	environmentToReleaseToHTML := map[string]map[string]template.HTML{}
 	for _, environment := range environments.Items {
 		for i, release := range releases.Items {
+			fmt.Printf("Processing release %s in environment %s\n", release.Name, environment.Name)
+
 			currReleaseEnvironmentInfo, _ := h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, release.Name)
 			if currReleaseEnvironmentInfo == nil {
 				continue
 			}
 			var prevReleaseEnvironmentInfo *status.EnvironmentRelease
-			if i > 0 {
-				prevReleaseEnvironmentInfo, _ = h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, releases.Items[i-1].Name)
+			if i+1 < len(releases.Items) {
+				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, releases.Items[i+1].Name)
 			}
 
 			releaseMap, ok := environmentToReleaseToHTML[environment.Name]
@@ -60,6 +63,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				changesList += "</ul>\n"
 			} else {
 				changesList += "No changes"
+				continue // don't display releases with no changes.
 			}
 
 			releaseMap[release.Name] = template.HTML(
@@ -76,7 +80,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
             </td>
         </tr>
 `,
-					fmt.Sprintf("http/aro-hcp/environment-release/%s.html", release.SHA),
+					fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(GetEnvironmentReleaseName(environment.Name, release.Name))),
 					release.Name,
 					release.SHA,
 					changesList,

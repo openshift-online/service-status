@@ -1,7 +1,6 @@
 package status
 
 import (
-	"net/url"
 	"time"
 )
 
@@ -46,12 +45,12 @@ type EnvironmentReleaseList struct {
 }
 
 type DeployedImageInfo struct {
-	Name                 string `json:"name"`
-	ImageInfo            ContainerImage
-	ImageCreationTime    *time.Time `json:"imageCreationTime,omitempty"`
-	RepoLink             *url.URL   `json:"repoLink"`
-	SourceSHA            string     `json:"sourceSHA"`
-	PermLinkForSourceSHA *url.URL   `json:"permLinkForSourceSHA,omitempty"`
+	Name                     string `json:"name"`
+	ImageInfo                ContainerImage
+	ImageCreationTime        *time.Time `json:"imageCreationTime,omitempty"`
+	RepoURL                  *string    `json:"RepoURL"`
+	SourceSHA                string     `json:"sourceSHA"`
+	PermanentURLForSourceSHA *string    `json:"permanentURLForSourceSHA,omitempty"`
 }
 
 type ContainerImage struct {
