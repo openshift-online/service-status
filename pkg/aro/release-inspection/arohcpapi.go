@@ -62,7 +62,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		currConfigInfo.DeployedImages["Backend"] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			"Backend",
-			"https://example.com",
+			"https://github.com/Azure/ARO-HCP",
 			&config.Backend.Image,
 		)
 	}
@@ -75,7 +75,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	currConfigInfo.DeployedImages["Frontend"] = createDeployedImageInfo(ctx,
 		imageInfoAccessor,
 		"Frontend",
-		"https://example.com",
+		"https://github.com/Azure/ARO-HCP",
 		&config.Frontend.Image,
 	)
 	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
