@@ -18,8 +18,9 @@ type ReleaseMarkdownFlags struct {
 	BindAddress net.IP
 	BindPort    int
 
-	AROHCPDir    string
-	NumberOfDays int
+	AROHCPDir     string
+	PullSecretDir string
+	NumberOfDays  int
 
 	util.IOStreams
 }
@@ -65,6 +66,7 @@ func NewReleaseMarkdownFlags(streams util.IOStreams) *ReleaseMarkdownFlags {
 
 func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&f.AROHCPDir, "aro-hcp-dir", f.AROHCPDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
+	flags.StringVar(&f.PullSecretDir, "pull-secret-dir", f.PullSecretDir, "The directory where dockerconfig.json's are located.")
 
 	flags.IPVar(&f.BindAddress, "bind-address", f.BindAddress, "The IP address on which to listen for the --secure-port port.")
 	flags.IntVar(&f.BindPort, "bind-port", f.BindPort, "The port on which to serve HTTP with authentication and authorization.")
@@ -92,7 +94,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 		BindPort:          f.BindPort,
 		AROHCPDir:         f.AROHCPDir,
 		NumberOfDays:      f.NumberOfDays,
-		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(),
+		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
 
 		IOStreams: f.IOStreams,
 	}, nil

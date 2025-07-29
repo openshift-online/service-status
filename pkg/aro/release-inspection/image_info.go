@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -20,13 +21,16 @@ type ImageInfoAccessor interface {
 }
 
 type ThreadSafeImageInfoAccessor struct {
+	pullSecretDir string
+
 	lock sync.Mutex
 
 	imagePullSpecToResult map[string]imageInfoResult
 }
 
-func NewThreadSafeImageInfoAccessor() *ThreadSafeImageInfoAccessor {
+func NewThreadSafeImageInfoAccessor(pullSecretDir string) *ThreadSafeImageInfoAccessor {
 	return &ThreadSafeImageInfoAccessor{
+		pullSecretDir:         pullSecretDir,
 		imagePullSpecToResult: make(map[string]imageInfoResult),
 	}
 }
@@ -44,7 +48,12 @@ func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containe
 		return cachedResult.imageInfo, cachedResult.err
 	}
 
-	imageInfo, err := getImageInfoForImagePullSpec(ctx, containerImage)
+	credentialFilePath := ""
+	if credentialFilename := credentialFile(imagePullSpec); len(credentialFilename) > 0 && len(t.pullSecretDir) > 0 {
+		credentialFilePath = filepath.Join(t.pullSecretDir, credentialFilename)
+	}
+
+	imageInfo, err := getImageInfoForImagePullSpec(ctx, containerImage, credentialFilePath)
 	liveResult := imageInfoResult{
 		imageInfo: imageInfo,
 		err:       err,
@@ -81,13 +90,16 @@ func PullSpecFromContainerImage(containerImage *arohcpapi.ContainerImage) (strin
 	return fmt.Sprintf("%s/%s@%s", registry, containerImage.Repository, containerImage.Digest), nil
 }
 
-func pullImage(ctx context.Context, imagePullSpec string) error {
+func pullImage(ctx context.Context, imagePullSpec string, credentialFilePath string) error {
 	logger := klog.FromContext(ctx)
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
 	args := []string{"pull", imagePullSpec}
+	if len(credentialFilePath) > 0 {
+		args = append(args, "--authfile", credentialFilePath)
+	}
 
 	processCtx, cancel := context.WithTimeout(ctx, 300*time.Second)
 	defer cancel()
@@ -102,7 +114,7 @@ func pullImage(ctx context.Context, imagePullSpec string) error {
 
 	if err := cmd.Wait(); err != nil {
 		duration := time.Now().Sub(startTime)
-		logger.Info("Failed to pull image", "imagePullSpec", imagePullSpec, "duration", duration)
+		logger.Info("Failed to pull image", "imagePullSpec", imagePullSpec, "duration", duration, "args", args, "err", err)
 
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
@@ -180,14 +192,14 @@ func getImageInfo(imageInspect map[string]interface{}) ImageInfo {
 	return imageInfo
 }
 
-func getImageInfoForImagePullSpec(ctx context.Context, containerImage *arohcpapi.ContainerImage) (ImageInfo, error) {
+func getImageInfoForImagePullSpec(ctx context.Context, containerImage *arohcpapi.ContainerImage, credentialFilePath string) (ImageInfo, error) {
 	pullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)
 	}
 
 	// inspect works on local data. We must pull first, then inspect
-	if err := pullImage(ctx, pullSpec); err != nil {
+	if err := pullImage(ctx, pullSpec, credentialFilePath); err != nil {
 		return ImageInfo{}, err
 	}
 	rawImageInfo, err := inspectImage(ctx, pullSpec)

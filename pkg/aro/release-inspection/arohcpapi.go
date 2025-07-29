@@ -144,7 +144,7 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 		case strings.Contains(currInfo.RepoLink.String(), "github.com"):
 			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/tree/" + currInfo.SourceSHA + "/"))
 		case strings.Contains(currInfo.RepoLink.String(), "gitlab.cee.redhat.com"):
-			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/-/tree/" + currInfo.SourceSHA + "/"))
+			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/-/tree/" + currInfo.SourceSHA))
 		}
 	}
 }
