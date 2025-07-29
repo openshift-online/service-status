@@ -18,9 +18,10 @@ type ReleaseMarkdownFlags struct {
 	BindAddress net.IP
 	BindPort    int
 
-	AROHCPDir     string
-	PullSecretDir string
-	NumberOfDays  int
+	FileBasedAPIDir string
+	AROHCPDir       string
+	PullSecretDir   string
+	NumberOfDays    int
 
 	util.IOStreams
 }
@@ -65,6 +66,7 @@ func NewReleaseMarkdownFlags(streams util.IOStreams) *ReleaseMarkdownFlags {
 }
 
 func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&f.FileBasedAPIDir, "filebased-api-dir", f.FileBasedAPIDir, "The directory to read canned responses.")
 	flags.StringVar(&f.AROHCPDir, "aro-hcp-dir", f.AROHCPDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
 	flags.StringVar(&f.PullSecretDir, "pull-secret-dir", f.PullSecretDir, "The directory where dockerconfig.json's are located.")
 
@@ -76,9 +78,13 @@ func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 }
 
 func (f *ReleaseMarkdownFlags) Validate() error {
-	if len(f.AROHCPDir) == 0 {
-		return fmt.Errorf("--aro-hcp-dir must be specified")
+	switch {
+	case len(f.AROHCPDir) > 0 && len(f.FileBasedAPIDir) > 0:
+		return fmt.Errorf("only one of --filebased-api-dir and --aro-hcp-dir can be specified")
+	case len(f.AROHCPDir) == 0 && len(f.FileBasedAPIDir) == 0:
+		return fmt.Errorf("one of --filebased-api-dir and --aro-hcp-dir must be specified")
 	}
+
 	if len(f.BindAddress) == 0 || f.BindAddress.IsUnspecified() {
 		return fmt.Errorf("--bind-address must be specified")
 	}
@@ -92,6 +98,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 	return &ReleaseMarkdownOptions{
 		BindAddress:       f.BindAddress,
 		BindPort:          f.BindPort,
+		FileBasedAPIDir:   f.FileBasedAPIDir,
 		AROHCPDir:         f.AROHCPDir,
 		NumberOfDays:      f.NumberOfDays,
 		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),

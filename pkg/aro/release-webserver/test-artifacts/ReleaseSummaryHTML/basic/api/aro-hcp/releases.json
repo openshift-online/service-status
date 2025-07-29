@@ -1,96 +1,48 @@
 {
-  "kind": "ReleaseList",
-  "apiVersion": "service-status.hcm.openshift.io/v1",
-  "items": [
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-21T18:47:31+02:00-3ae70",
-      "sha": "3ae707e7a045ab9f2957752fe074fd2e393df92d"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-18T16:46:45-06:00-cafba",
-      "sha": "cafba8039db330aabdf1e259ba5916d6da4aaf51"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-18T07:36:53-06:00-dda4c",
-      "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-17T22:39:28+02:00-795c5",
-      "sha": "795c59019608e191dd8ffd552a850ae9ca75a803"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-17T11:38:39+02:00-43197",
-      "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-16T14:15:21-05:00-baf8c",
-      "sha": "baf8c213aced7a01c8365ed959bcd82a01bf9690"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-16T08:55:53Z-96de2",
-      "sha": "96de2f490c9464dd632f748c06aa8e2aed0d68d8"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-16T02:22:03+02:00-96f01",
-      "sha": "96f01aafe7c3b8508768068f5f0e058f730ec3b2"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-15T11:06:47+02:00-13719",
-      "sha": "13719e89a1979a09f9e9506b2c85645e41921f19"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-14T15:50:00-06:00-dfac2",
-      "sha": "dfac2505b4525dae996c8c196694d332042f3ebd"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-14T08:03:09Z-2079d",
-      "sha": "2079dca17c6731ff9a5a1c70be196fb871757fcc"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-11T09:50:05-05:00-5cba2",
-      "sha": "5cba2b5b33ad4ff39f0af34294084db48fb6eb0e"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-10T08:37:02-04:00-a098f",
-      "sha": "a098ff546451dc06f99aed291e56b62fef5e5ccd"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-09T12:10:06-05:00-7a4c1",
-      "sha": "7a4c14a031efb1fea83a98bb6c51007e8b89c74e"
-    },
-    {
-      "kind": "Release",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "2025-07-08T22:43:38+02:00-bef3f",
-      "sha": "bef3fa06080ceb5e77ee187b621ba6ed72fc3294"
-    }
-  ]
+    "kind": "ReleaseList",
+    "apiVersion": "service-status.hcm.openshift.io/v1",
+    "items": [
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-25T12:52:08+02:00-da32b",
+            "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-24T17:42:46+02:00-71f19",
+            "sha": "71f19f629c20217067a47259fc3205f92a8bba6d"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-24T11:51:48+02:00-533d5",
+            "sha": "533d5604a3df6bb2f2d6dcfb25238a8bfd3b04e0"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-23T09:36:05+02:00-e152e",
+            "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-18T07:36:53-06:00-dda4c",
+            "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-17T11:29:50-04:00-5f7af",
+            "sha": "5f7af00ab5acaed9d1baea5c160e000926258391"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-17T11:38:39+02:00-43197",
+            "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f"
+        }
+    ]
 }

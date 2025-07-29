@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/aro/client"
@@ -18,8 +19,9 @@ type ReleaseMarkdownOptions struct {
 	BindAddress net.IP
 	BindPort    int
 
-	AROHCPDir    string
-	NumberOfDays int
+	FileBasedAPIDir string
+	AROHCPDir       string
+	NumberOfDays    int
 
 	ImageInfoAccessor release_inspection.ImageInfoAccessor
 
@@ -32,7 +34,17 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	releaseAccessor := release_webserver.NewCachingReleaseAccessor(
 		release_webserver.NewReleaseAccessor(o.AROHCPDir, o.NumberOfDays, o.ImageInfoAccessor),
 		clock.RealClock{})
-	releaseClient := client.NewBasicReleaseClient("http://" + net.JoinHostPort("localhost", fmt.Sprintf("%d", o.BindPort)))
+
+	var releaseClient client.ReleaseClient
+	switch {
+	case len(o.FileBasedAPIDir) > 0 && len(o.AROHCPDir) > 0:
+		return fmt.Errorf("cannot specify both --file-based-api-dir and --aro-hcp-dir")
+	case len(o.FileBasedAPIDir) > 0:
+		apiFS := os.DirFS(o.FileBasedAPIDir)
+		releaseClient = client.NewFileSystemReleaseClient(apiFS)
+	case len(o.AROHCPDir) > 0:
+		releaseClient = client.NewBasicReleaseClient("http://" + net.JoinHostPort("localhost", fmt.Sprintf("%d", o.BindPort)))
+	}
 
 	httpRouter := gin.Default()
 
