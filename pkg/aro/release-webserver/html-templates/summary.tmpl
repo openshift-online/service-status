@@ -2,30 +2,37 @@
 
 <html>
 <head>
-    <title>ARO-HCP Release Summary</title>
-<style>
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
-    padding-top: 30px;
-    padding-bottom: 30px;
-    padding-left: 30px;
-    padding-right: 30px;
-}
-</style>
+    <title>ARO HCP Release Status</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.1/css/bootstrap.min.css" integrity="sha512-T584yQ/tdRR5QwOpfvDfVQUidzfgc2339Lc8uBDtcp/wYu80d7jwBgAxbyMh0a9YM9F8N3tdErpFI8iaGx6x5g==" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.5.0/font/bootstrap-icons.min.css">
+    <style>
+        @media (max-width: 992px) {
+            .container {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
+<div class="container">
+    <h1>ARO HCP Release Status</h1>
+
+
+    <p class="small mb-3">
+        Jump to: <a href="#int">int</a> | <a href="#stg">stg</a> | <a href="#prod">prod</a>
+    </p>
 
 {{ $environmentToReleaseToHTML := .environmentToReleaseToHTML }}
 {{ $environments := .environments }}
 {{ $releases := .releases }}
 
 {{range $environment := $environments.Items}}
-    <h1>
-    <p>{{$environment.Name}} Releases</p>
-    </h1>
-    <table>
+    <h2 id="{{$environment.Name}}"><a href="#{{$environment.Name}}" class="text-dark">{{$environment.Name}}</a></h2>
+    <p>Useful description of environment goes here</p>
+
+    <table  id="{{$environment}}_table" class="table text-nowrap">
         <tr>
             <th>Release</th>
             <th>SHA</th>
@@ -37,6 +44,7 @@ table, th, td {
     </table>
 {{end}}
 
+</div>
 </body>
 </html>
 

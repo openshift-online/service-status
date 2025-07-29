@@ -1,21 +1,21 @@
 {
-  "kind": "EnvironmentList",
-  "apiVersion": "service-status.hcm.openshift.io/v1",
-  "items": [
-    {
-      "kind": "Environment",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "int"
-    },
-    {
-      "kind": "Environment",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "stg"
-    },
-    {
-      "kind": "Environment",
-      "apiVersion": "service-status.hcm.openshift.io/v1",
-      "name": "prod"
-    }
-  ]
+    "kind": "EnvironmentList",
+    "apiVersion": "service-status.hcm.openshift.io/v1",
+    "items": [
+        {
+            "kind": "Environment",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "int"
+        },
+        {
+            "kind": "Environment",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "stg"
+        },
+        {
+            "kind": "Environment",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "prod"
+        }
+    ]
 }

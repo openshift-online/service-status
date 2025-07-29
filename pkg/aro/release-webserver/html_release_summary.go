@@ -34,8 +34,6 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 	environmentToReleaseToHTML := map[string]map[string]template.HTML{}
 	for _, environment := range environments.Items {
 		for i, release := range releases.Items {
-			fmt.Printf("Processing release %s in environment %s\n", release.Name, environment.Name)
-
 			currReleaseEnvironmentInfo, _ := h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, release.Name)
 			if currReleaseEnvironmentInfo == nil {
 				continue
@@ -69,7 +67,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 			releaseMap[release.Name] = template.HTML(
 				fmt.Sprintf(`
         <tr>
-            <td>
+            <td class="text-monospace">
                 <a href=%q>%s</a>
             </td>
             <td>
