@@ -72,7 +72,7 @@ func (c *fileBasedReleaseClient) ListReleases(ctx context.Context) (*status.Rele
 }
 
 func (c *fileBasedReleaseClient) GetRelease(ctx context.Context, name string) (*status.Release, error) {
-	url := filepath.Join("api/aro-hcp/releases.json", name)
+	url := filepath.Join("api/aro-hcp/releases.json")
 	body, err := c.get(ctx, url)
 	if err != nil {
 		return nil, err

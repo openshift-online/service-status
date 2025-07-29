@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -88,13 +89,20 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	}
 	sort.Strings(imageNames)
 
+	prevEnvReleaseNameURLEscaped := ""
+	if prevReleaseEnvironmentInfo != nil {
+		prevEnvReleaseNameURLEscaped = url.PathEscape(prevReleaseEnvironmentInfo.Name)
+	}
 	c.HTML(200, "http/aro-hcp/environment-release.html", gin.H{
-		"environmentName":           environmentReleaseInfo.Environment,
-		"release":                   release,
-		"changedImageNames":         changedComponents.SortedList(),
-		"changedImageNameToDetails": changedNameToDetails,
-		"imageNames":                imageNames,
-		"imageNameToDetails":        imageNameToDetails,
+		"currEnvRelease":               environmentReleaseInfo,
+		"prevEnvRelease":               prevReleaseEnvironmentInfo,
+		"prevEnvReleaseNameURLEscaped": prevEnvReleaseNameURLEscaped,
+		"environmentName":              environmentReleaseInfo.Environment,
+		"release":                      release,
+		"changedImageNames":            changedComponents.SortedList(),
+		"changedImageNameToDetails":    changedNameToDetails,
+		"imageNames":                   imageNames,
+		"imageNameToDetails":           imageNameToDetails,
 	})
 }
 
@@ -126,11 +134,10 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 	}
 
 	detailsHTML := fmt.Sprintf(`
-		<h3>%s (%s)</h3>
+		<h4><a target="_blank" href=%q>%s (%s)</a></h4>
         <details>
-            <summary>click to expand details</summary>
+            <summary class="small mb-3">click to expand details</summary>
             <ul>
-                <li><a href=%q>%s</a></li>
                 <li>Pull Spec: %s</li>
                 <ul>
                     <li>Image built %s</li>
@@ -139,8 +146,7 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
             </ul>
         </details>
 `,
-		imageDetails.Name, imageAgeString,
-		ptr.Deref(imageDetails.RepoURL, "MISSING"), ptr.Deref(imageDetails.RepoURL, "MISSING"),
+		ptr.Deref(imageDetails.RepoURL, "MISSING"), imageDetails.Name, imageAgeString,
 		fmt.Sprintf("%s/%s@%s", imageDetails.ImageInfo.Registry, imageDetails.ImageInfo.Repository, imageDetails.ImageInfo.Digest),
 		imageTimeString,
 		imageSourceSHAString,
@@ -179,11 +185,10 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
 	}
 
 	detailsHTML := fmt.Sprintf(`
-		<h3>%s (%s, %s)</h3>
+		<h4><a target="_blank" href=%q>%s (%s, %s)</a></h4>
         <details>
-            <summary>click to expand details</summary>
+            <summary class="small mb-3">click to expand details</summary>
             <ul>
-                <li><a href=%q>%s</a></li>
                 <li>Pull Spec: %s</li>
                 <ul>
                     <li>%s</li>
@@ -195,8 +200,7 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
             </ul>
         </details>
 `,
-		currImageDetails.Name, imageAgeString, newerString,
-		ptr.Deref(currImageDetails.RepoURL, "MISSING"), ptr.Deref(currImageDetails.RepoURL, "MISSING"),
+		ptr.Deref(currImageDetails.RepoURL, "MISSING"), currImageDetails.Name, imageAgeString, newerString,
 		fmt.Sprintf("%s/%s@%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
 		newerString,
 		imageTimeString,
