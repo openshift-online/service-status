@@ -14,6 +14,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -97,11 +98,7 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 		return nil, fmt.Errorf("failed to get aro hcp config log: %w", err)
 	}
 
-	logger.Info("Finding all releases.")
-	newestDate := time.Now().Add(48 * time.Hour)
-	buildInterval := 8 * time.Hour
-	releases := []Release{}
-	prevInterestingFiles := map[string][]byte{}
+	commitsOldestToNewest := []*object.Commit{}
 	for {
 		commit, err := configLog.Next()
 		if errors.Is(err, io.EOF) {
@@ -110,8 +107,16 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read aro hcp config log: %w", err)
 		}
-		timeDelta := newestDate.Sub(commit.Committer.When)
-		if timeDelta < buildInterval {
+		commitsOldestToNewest = append([]*object.Commit{commit}, commitsOldestToNewest...)
+	}
+
+	logger.Info("Finding all releases.")
+	releases := []Release{}
+	prevInterestingFiles := map[string][]byte{}
+	for _, commit := range commitsOldestToNewest {
+		firstCommitMessageLine, _, _ := strings.Cut(commit.Message, "\n")
+		if commit.NumParents() != 2 && !strings.HasSuffix(firstCommitMessageLine, ")") {
+			// only use commits that are due to merged PRs
 			continue
 		}
 
@@ -134,15 +139,15 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 			newInterestingFiles[filename] = fileBytes
 		}
 		if reflect.DeepEqual(prevInterestingFiles, newInterestingFiles) {
+			// if no content changed, skip the commit.
 			continue
 		}
 		prevInterestingFiles = newInterestingFiles
 
-		newestDate = commit.Committer.When
-		releases = append(releases, Release{
+		releases = append([]Release{{
 			Name:   fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5]),
 			Commit: commit.Hash,
-		})
+		}}, releases...)
 	}
 	logger.Info("Found releases.", "releaseCount", len(releases))
 
