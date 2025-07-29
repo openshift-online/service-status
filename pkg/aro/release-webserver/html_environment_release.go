@@ -74,7 +74,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 					break
 				}
 			}
-			detailsDiffHTML := htmlDetailsForComponentDiff(currImageDetails, prevImageDetails)
+			detailsDiffHTML := htmlDetailsForComponentDiff(currImageDetails, prevImageDetails, prevReleaseEnvironmentInfo)
 			changedNameToDetails[currImageDetails.Name] = template.HTML(detailsDiffHTML)
 		}
 	}
@@ -149,7 +149,9 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 	return detailsHTML
 }
 
-func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.DeployedImageInfo) string {
+func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.DeployedImageInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) string {
+	prevReleaseString := fmt.Sprintf("<a href=/http/aro-hcp/environmentreleases/%s/summary.html>%s</a>", prevReleaseEnvironmentInfo.Name, prevReleaseEnvironmentInfo.Name)
+
 	imageAgeString := "Unknown age"
 	imageTimeString := "Unknown time"
 	if currImageDetails.ImageCreationTime != nil {
@@ -158,8 +160,10 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
 	}
 
 	newerString := "Unknown amount newer"
+	prevTimeString := "Unknown time"
 	if prevImageDetails != nil && currImageDetails.ImageCreationTime != nil && prevImageDetails.ImageCreationTime != nil {
 		newerString = humanize.RelTime(*currImageDetails.ImageCreationTime, *prevImageDetails.ImageCreationTime, "older", "newer than previous release")
+		prevTimeString = prevImageDetails.ImageCreationTime.Format(time.RFC3339)
 	}
 
 	imageSourceSHAString := currImageDetails.SourceSHA
@@ -184,8 +188,10 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
                 <ul>
                     <li>%s</li>
                     <li>Image built %s</li>
+                    <li>Previous image built %s</li>
                 </ul>
                 <li>Commit: %s</li>
+                <li>Previous Release: %s</li>
             </ul>
         </details>
 `,
@@ -194,7 +200,9 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
 		fmt.Sprintf("%s/%s@%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
 		newerString,
 		imageTimeString,
+		prevTimeString,
 		imageSourceSHAString,
+		prevReleaseString,
 	)
 
 	return detailsHTML

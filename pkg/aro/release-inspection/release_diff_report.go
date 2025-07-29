@@ -61,7 +61,7 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 		var config *arohcpapi.ConfigSchemaJSON // may be an overlay
 		switch {
 		case environmentFilename == "int" || environmentFilename == "stg" || environmentFilename == "prod":
-			intOverlayMap := allConfigOverlays.Clouds["public"].(map[string]interface{})["environments"].(map[string]interface{})["int"].(map[string]interface{})["defaults"]
+			intOverlayMap := allConfigOverlays.Clouds["public"].(map[string]interface{})["environments"].(map[string]interface{})[environmentFilename].(map[string]interface{})["defaults"]
 			configJSON, err = json.MarshalIndent(intOverlayMap, "", "    ")
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal JSON: %w", err)
@@ -79,7 +79,6 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 			// the schema in ARO-HCP is changing incompatibly, so we are not guaranteed to be able to parse older releases
 			localLogger.Error(err, "failed to release markdown for config JSON.  Continuing...")
 			continue
-			//return nil, fmt.Errorf("failed to create markdown for %s: %w", fullPath, err)
 		}
 		ret.addEnvironment(currReleaseEnvironmentInfo)
 	}

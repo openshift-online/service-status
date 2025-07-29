@@ -7,15 +7,18 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	"k8s.io/utils/set"
 )
 
 type ReleaseAccessor interface {
@@ -52,6 +55,8 @@ func (r releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error)
 	// TODO list the releases to locate all the available names.
 	return []string{"int", "stg", "prod"}, nil
 }
+
+var interestingFiles = set.New("config/config.msft.clouds-overlay.yaml")
 
 func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 	logger := klog.FromContext(ctx)
@@ -93,10 +98,7 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 		return nil, fmt.Errorf("failed to get aro hcp config log: %w", err)
 	}
 
-	logger.Info("Finding all releases.")
-	newestDate := time.Now().Add(48 * time.Hour)
-	buildInterval := 8 * time.Hour
-	releases := []Release{}
+	commitsOldestToNewest := []*object.Commit{}
 	for {
 		commit, err := configLog.Next()
 		if errors.Is(err, io.EOF) {
@@ -105,15 +107,47 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to read aro hcp config log: %w", err)
 		}
-		timeDelta := newestDate.Sub(commit.Committer.When)
-		if timeDelta < buildInterval {
+		commitsOldestToNewest = append([]*object.Commit{commit}, commitsOldestToNewest...)
+	}
+
+	logger.Info("Finding all releases.")
+	releases := []Release{}
+	prevInterestingFiles := map[string][]byte{}
+	for _, commit := range commitsOldestToNewest {
+		firstCommitMessageLine, _, _ := strings.Cut(commit.Message, "\n")
+		if commit.NumParents() != 2 && !strings.HasSuffix(firstCommitMessageLine, ")") {
+			// only use commits that are due to merged PRs
 			continue
 		}
-		newestDate = commit.Committer.When
-		releases = append(releases, Release{
+
+		err = aroHCPWorkTree.Reset(&git.ResetOptions{
+			Commit: commit.Hash,
+			Mode:   git.HardReset,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to reset aro hcp worktree: %w", err)
+		}
+		newInterestingFiles := map[string][]byte{}
+		for _, filename := range interestingFiles.SortedList() {
+			fileBytes, err := os.ReadFile(filepath.Join(r.aroHCPDir, filename))
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			if err != nil {
+				return nil, fmt.Errorf("failed to read file: %w", err)
+			}
+			newInterestingFiles[filename] = fileBytes
+		}
+		if reflect.DeepEqual(prevInterestingFiles, newInterestingFiles) {
+			// if no content changed, skip the commit.
+			continue
+		}
+		prevInterestingFiles = newInterestingFiles
+
+		releases = append([]Release{{
 			Name:   fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5]),
 			Commit: commit.Hash,
-		})
+		}}, releases...)
 	}
 	logger.Info("Found releases.", "releaseCount", len(releases))
 
