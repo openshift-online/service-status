@@ -107,8 +107,10 @@ func ServeEnvironmentReleaseSummary(releaseClient client.ReleaseClient) func(c *
 
 func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 	imageAgeString := "Unknown age"
+	imageTimeString := "Unknown time"
 	if imageDetails.ImageCreationTime != nil {
 		imageAgeString = humanize.RelTime(time.Now(), *imageDetails.ImageCreationTime, "INVALID", "old")
+		imageTimeString = imageDetails.ImageCreationTime.Format(time.RFC3339)
 	}
 
 	imageSourceSHAString := imageDetails.SourceSHA
@@ -139,8 +141,8 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 `,
 		imageDetails.Name, imageAgeString,
 		ptr.Deref(imageDetails.RepoURL, "MISSING"), ptr.Deref(imageDetails.RepoURL, "MISSING"),
-		fmt.Sprintf("%s/%s@sha256:%s", imageDetails.ImageInfo.Registry, imageDetails.ImageInfo.Repository, imageDetails.ImageInfo.Digest),
-		imageAgeString,
+		fmt.Sprintf("%s/%s@%s", imageDetails.ImageInfo.Registry, imageDetails.ImageInfo.Repository, imageDetails.ImageInfo.Digest),
+		imageTimeString,
 		imageSourceSHAString,
 	)
 
@@ -149,9 +151,12 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 
 func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.DeployedImageInfo) string {
 	imageAgeString := "Unknown age"
+	imageTimeString := "Unknown time"
 	if currImageDetails.ImageCreationTime != nil {
 		imageAgeString = humanize.RelTime(time.Now(), *currImageDetails.ImageCreationTime, "INVALID", "old")
+		imageTimeString = currImageDetails.ImageCreationTime.Format(time.RFC3339)
 	}
+
 	newerString := "Unknown amount newer"
 	if prevImageDetails != nil && currImageDetails.ImageCreationTime != nil && prevImageDetails.ImageCreationTime != nil {
 		newerString = humanize.RelTime(*currImageDetails.ImageCreationTime, *prevImageDetails.ImageCreationTime, "older", "newer than previous release")
@@ -186,9 +191,9 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Depl
 `,
 		currImageDetails.Name, imageAgeString, newerString,
 		ptr.Deref(currImageDetails.RepoURL, "MISSING"), ptr.Deref(currImageDetails.RepoURL, "MISSING"),
-		fmt.Sprintf("%s/%s@sha256:%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
+		fmt.Sprintf("%s/%s@%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
 		newerString,
-		imageAgeString,
+		imageTimeString,
 		imageSourceSHAString,
 	)
 

@@ -1,6 +1,9 @@
 package release_inspection
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // imagePullLocationForName returns the registry and repository for a given image name, or an error if the name isn't recognized.
 func imagePullLocationForName(name string) (string, string, error) {
@@ -27,5 +30,20 @@ func imagePullLocationForName(name string) (string, string, error) {
 		return "mcr.microsoft.com/oss/v2", "prometheus/prometheus", nil
 	default:
 		return "", "", fmt.Errorf("image pull location not found for image name %q", name)
+	}
+}
+
+// credentialFile returns the filename in the credential directory to use for the image pull.
+// empty means to use the system configured dockerconfig.
+func credentialFile(imagePullSpec string) string {
+	switch {
+	case strings.HasPrefix(imagePullSpec, "quay.io/app-sre/"):
+		return "quay-repository-app-sre-dockerconfig.json"
+	case strings.HasPrefix(imagePullSpec, "quay.io/acm-d/"):
+		return "quay-repository-acm-d-dockerconfig.json"
+	case strings.HasPrefix(imagePullSpec, "arohcpsvcdev.azurecr.io/"):
+		return "arohcpsvcdev-dockerconfig.json"
+	default:
+		return ""
 	}
 }

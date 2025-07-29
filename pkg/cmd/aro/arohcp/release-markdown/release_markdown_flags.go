@@ -14,8 +14,9 @@ import (
 // ReleaseMarkdownFlags gets bound to cobra commands and arguments.  It is used to validate input and then produce
 // the Options struct.  Options struct is intended to be embeddable and re-useable without cobra.
 type ReleaseMarkdownFlags struct {
-	AROHCPDir string
-	OutputDir string
+	AROHCPDir     string
+	PullSecretDir string
+	OutputDir     string
 
 	util.IOStreams
 }
@@ -60,6 +61,7 @@ func NewReleaseMarkdownFlags(streams util.IOStreams) *ReleaseMarkdownFlags {
 
 func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&f.AROHCPDir, "aro-hcp-dir", f.AROHCPDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
+	flags.StringVar(&f.PullSecretDir, "pull-secret-dir", f.PullSecretDir, "The directory where dockerconfig.json's are located.")
 	flags.StringVar(&f.OutputDir, "output-dir", f.OutputDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
 }
 
@@ -77,7 +79,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 	return &ReleaseMarkdownOptions{
 		AROHCPDir:         f.AROHCPDir,
 		OutputDir:         f.OutputDir,
-		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(),
+		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
 
 		IOStreams: f.IOStreams,
 	}, nil
