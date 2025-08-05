@@ -46,88 +46,31 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		DeployedImages:      map[string]*DeployedImageInfo{},
 	}
 
-	currConfigInfo.DeployedImages["Cluster Service"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Cluster Service",
-		"https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-		&config.ClustersService.Image,
-	)
-	currConfigInfo.DeployedImages["Hypershift"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Hypershift",
-		"https://github.com/openshift/hypershift",
-		config.Hypershift.Image,
-	)
+	addDeployedImageForComponent := func(componentName string, containerImage *arohcpapi.ContainerImage) {
+		currConfigInfo.DeployedImages[componentName] = createDeployedImageInfo(ctx,
+			imageInfoAccessor,
+			componentName,
+			HardcodedComponents[componentName].RepositoryURL,
+			containerImage,
+		)
+	}
+
+	addDeployedImageForComponent("ACR Pull", &config.ACRPull.Image)
 	if config.Backend != nil {
-		currConfigInfo.DeployedImages["Backend"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Backend",
-			"https://github.com/Azure/ARO-HCP",
-			&config.Backend.Image,
-		)
+		addDeployedImageForComponent("Backend", &config.Backend.Image)
 	}
-	currConfigInfo.DeployedImages["Backplane"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Backplane",
-		"https://gitlab.cee.redhat.com/service/backplane-api",
-		&config.BackplaneAPI.Image,
-	)
-	currConfigInfo.DeployedImages["Frontend"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Frontend",
-		"https://github.com/Azure/ARO-HCP",
-		&config.Frontend.Image,
-	)
-	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"OcMirror",
-		"https://example.com",
-		&config.ImageSync.OcMirror.Image,
-	)
-	// TODO
-	//currConfigInfo.pertinentInfo.deployedImages["Maestro Agent Sidecar"] = createDeployedImageInfo(ctx,
-	//	"Maestro Agent Sidecar",
-	//	"https://example.com",
-	//	&config.Maestro.Agent.Sidecar, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
-	currConfigInfo.DeployedImages["Maestro"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Maestro",
-		"https://github.com/openshift-online/maestro/",
-		&config.Maestro.Image,
-	)
-	// TODO
-	//currConfigInfo.pertinentInfo.deployedImages["Prometheus"] = createDeployedImageInfo(ctx,
-	//	"Prometheus",
-	//	"https://example.com",
-	//	&config.Mgmt.Prometheus.PrometheusOperator, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
+	addDeployedImageForComponent("Backplane", &config.BackplaneAPI.Image)
+	addDeployedImageForComponent("Cluster Service", &config.ClustersService.Image)
+	addDeployedImageForComponent("Frontend", &config.Frontend.Image)
+	addDeployedImageForComponent("Hypershift", config.Hypershift.Image)
+	addDeployedImageForComponent("Maestro", &config.Maestro.Image)
+	addDeployedImageForComponent("OcMirror", &config.ImageSync.OcMirror.Image)
+
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.DeployedImages["Management Prometheus Spec"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Management Prometheus Spec",
-			"https://example.com",
-			config.Mgmt.Prometheus.PrometheusSpec.Image,
-		)
+		addDeployedImageForComponent("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
-	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"ACR Pull",
-		"https://example.com",
-		&config.ACRPull.Image,
-	)
-	//currConfigInfo.pertinentInfo.deployedImages["Mise"] = createDeployedImageInfo(ctx,
-	//	"Mise",
-	//	"https://example.com",
-	//	&config.Mise, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.DeployedImages["Service Prometheus Spec"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Service Prometheus Spec",
-			"https://example.com",
-			config.Svc.Prometheus.PrometheusSpec.Image,
-		)
+		addDeployedImageForComponent("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil

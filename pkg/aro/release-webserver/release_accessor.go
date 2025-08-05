@@ -34,20 +34,22 @@ type Release struct {
 }
 
 type releaseAccessor struct {
-	aroHCPDir         string
-	numberOfDays      int
-	imageInfoAccessor release_inspection.ImageInfoAccessor
+	aroHCPDir            string
+	numberOfDays         int
+	imageInfoAccessor    release_inspection.ImageInfoAccessor
+	componentGitAccessor release_inspection.ComponentsGitInfo
 
 	gitLock           sync.Mutex
 	releaseNameToInfo map[string]*release_inspection.ReleaseInfo
 }
 
-func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
+func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor, componentGitAccessor release_inspection.ComponentsGitInfo) ReleaseAccessor {
 	return &releaseAccessor{
-		aroHCPDir:         aroHCPDir,
-		numberOfDays:      numberOfDays,
-		imageInfoAccessor: imageInfoAccessor,
-		releaseNameToInfo: map[string]*release_inspection.ReleaseInfo{},
+		aroHCPDir:            aroHCPDir,
+		numberOfDays:         numberOfDays,
+		imageInfoAccessor:    imageInfoAccessor,
+		componentGitAccessor: componentGitAccessor,
+		releaseNameToInfo:    map[string]*release_inspection.ReleaseInfo{},
 	}
 }
 

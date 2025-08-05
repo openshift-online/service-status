@@ -19,9 +19,10 @@ type ReleaseMarkdownOptions struct {
 	BindAddress net.IP
 	BindPort    int
 
-	FileBasedAPIDir string
-	AROHCPDir       string
-	NumberOfDays    int
+	FileBasedAPIDir           string
+	AROHCPDir                 string
+	ComponentGitRepoParentDir string
+	NumberOfDays              int
 
 	ImageInfoAccessor release_inspection.ImageInfoAccessor
 
@@ -32,7 +33,12 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	logger := klog.FromContext(ctx)
 
 	releaseAccessor := release_webserver.NewCachingReleaseAccessor(
-		release_webserver.NewReleaseAccessor(o.AROHCPDir, o.NumberOfDays, o.ImageInfoAccessor),
+		release_webserver.NewReleaseAccessor(
+			o.AROHCPDir,
+			o.NumberOfDays,
+			o.ImageInfoAccessor,
+			release_inspection.NewComponentsGitInfo(o.ComponentGitRepoParentDir),
+		),
 		clock.RealClock{})
 
 	var releaseClient client.ReleaseClient
