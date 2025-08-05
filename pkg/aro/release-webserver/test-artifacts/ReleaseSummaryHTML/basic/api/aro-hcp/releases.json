@@ -5,6 +5,30 @@
         {
             "kind": "Release",
             "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-08-04T14:40:09-04:00-53c44",
+            "sha": "53c4458374b15dba844a0bab58232fc2ab609ed7"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-31T15:13:04+02:00-dbe7a",
+            "sha": "dbe7a8eddd45709c743960548a3f257e2102d867"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-31T11:17:09+02:00-8f6e1",
+            "sha": "8f6e14ba8f824d011c8ba10dc85938eed8d22600"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "2025-07-29T16:40:36-05:00-bf91c",
+            "sha": "bf91c11be9b28987efd0434748d1307bddd6f717"
+        },
+        {
+            "kind": "Release",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
             "name": "2025-07-25T12:52:08+02:00-da32b",
             "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f"
         },
@@ -25,24 +49,6 @@
             "apiVersion": "service-status.hcm.openshift.io/v1",
             "name": "2025-07-23T09:36:05+02:00-e152e",
             "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e"
-        },
-        {
-            "kind": "Release",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "2025-07-18T07:36:53-06:00-dda4c",
-            "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644"
-        },
-        {
-            "kind": "Release",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "2025-07-17T11:29:50-04:00-5f7af",
-            "sha": "5f7af00ab5acaed9d1baea5c160e000926258391"
-        },
-        {
-            "kind": "Release",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "2025-07-17T11:38:39+02:00-43197",
-            "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f"
         }
     ]
 }
