@@ -90,6 +90,7 @@ func (c *componentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, old
 		}
 		err = componentRepo.Fetch(&git.FetchOptions{
 			RemoteName: "origin",
+			Progress:   os.Stdout, // TODO wire up to a logger
 			RefSpecs: []config.RefSpec{
 				config.RefSpec(fmt.Sprintf("refs/heads/%s:refs/remotes/origin/%s", c.masterBranch, c.masterBranch)),
 			},
@@ -113,7 +114,8 @@ func (c *componentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, old
 		logger.Info("Cloning repo", "branchName", c.masterBranch)
 		// clone the repo and then close it.
 		_, err := git.PlainCloneContext(ctx, c.repoDir, false, &git.CloneOptions{
-			URL: c.repoURL,
+			Progress: os.Stdout, // TODO wire up to a logger
+			URL:      c.repoURL,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone repository: %w", err)
