@@ -60,31 +60,29 @@ type ContainerImage struct {
 }
 
 type EnvironmentReleaseDiff struct {
-	TypeMeta                  `json:",inline"`
-	Name                      string `json:"name"`
-	OldEnvironmentReleaseName string `json:"oldEnvironmentReleaseName"`
+	TypeMeta                    `json:",inline"`
+	Name                        string `json:"name"`
+	OtherEnvironmentReleaseName string `json:"otherEnvironmentReleaseName"`
 
-	DifferentComponents map[string]*ComponentInfo `json:"differentComponents"`
+	DifferentComponents map[string]*ComponentDiff `json:"differentComponents"`
 }
 
 type ComponentDiff struct {
-	Name      string `json:"name"`
-	ImageInfo ContainerImage
+	Name string `json:"name"`
 
-	NumberOfChanges          int
-	ImageCreationTime        *time.Time `json:"imageCreationTime,omitempty"`
-	RepoURL                  *string    `json:"RepoURL"`
-	SourceSHA                string     `json:"sourceSHA"`
-	PermanentURLForSourceSHA *string    `json:"permanentURLForSourceSHA,omitempty"`
+	NumberOfChanges int               `json:"numberOfChanges"`
+	Changes         []ComponentChange `json:"changes"`
 }
 
 type ComponentChange struct {
-	ChangeType string   `json:"changeType"`
-	PRMerge    *PRMerge `json:"prMerge,omitempty"`
+	ChangeType  string   `json:"changeType"`
+	PRMerge     *PRMerge `json:"prMerge,omitempty"`
+	Unavailable *string  `json:"unavailable,omitempty"`
 }
 
 type PRMerge struct {
 	PRNumber      int32    `json:"PRNumber"`
+	SHA           string   `json:"SHA"`
 	ChangeSummary string   `json:"topLineCommitMessage"`
-	JIRARefs      []string `json:"jiraRefs"`
+	JIRARefs      []string `json:"jiraRefs,omitempty"`
 }

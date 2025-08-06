@@ -90,16 +90,16 @@ func environmentsWithIdenticalImages(currEnvironmentInfo *release_inspection.Rel
 
 	for _, otherEnvironmentInfo := range otherEnvironmentInfos {
 		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.Components).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.Components).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
 		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
+			currDeployedImageInfo := currEnvironmentInfo.Components[deployedImageName]
+			otherDeployedImageInfo := otherEnvironmentInfo.Components[deployedImageName]
 			if currDeployedImageInfo == nil {
 				currMissingImages.Insert(deployedImageName)
 				continue
@@ -163,16 +163,16 @@ func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *release_inspectio
 		}
 
 		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.Components).UnsortedList()...)
+		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.Components).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
 		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
+			currDeployedImageInfo := currEnvironmentInfo.Components[deployedImageName]
+			otherDeployedImageInfo := otherEnvironmentInfo.Components[deployedImageName]
 			if currDeployedImageInfo == nil {
 				currMissingImages.Insert(deployedImageName)
 				continue

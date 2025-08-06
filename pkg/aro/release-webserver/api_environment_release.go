@@ -1,6 +1,7 @@
 package release_webserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -69,42 +70,51 @@ func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		name := c.Param("name")
-		environmentName, releaseName, found := SplitEnvironmentReleaseName(name)
-		if !found {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", name)})
+		environmentReleaseName := c.Param("name")
+		ret, err := getEnvironmentRelease(ctx, accessor, environmentReleaseName)
+		if err != nil && strings.Contains(err.Error(), "not found") {
+			c.String(http.StatusNotFound, "not found")
 			return
 		}
-
-		// TODO better
-		releases, err := accessor.ListReleases(ctx)
 		if err != nil {
-			c.String(500, "failed to list environments: %v", err)
+			c.String(http.StatusInternalServerError, "failed to get release info: %v", err)
 			return
 		}
-
-		var release *Release
-		for _, currRelease := range releases {
-			if currRelease.Name == releaseName {
-				release = &currRelease
-				break
-			}
-		}
-		if release == nil {
-			c.String(500, "failed to find release %q: %v", releaseName, err)
-			return
-		}
-
-		currReleaseEnvironmentInfo, _ := accessor.GetReleaseEnvironmentInfo(ctx, *release, environmentName)
-		if currReleaseEnvironmentInfo == nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("%q not found", name)})
-			return
-		}
-
-		ret := accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo)
 
 		c.IndentedJSON(http.StatusOK, ret)
 	}
+}
+
+func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
+	environmentName, releaseName, found := SplitEnvironmentReleaseName(environmentReleaseName)
+	if !found {
+		return nil, fmt.Errorf("%q must be in format <environmentName>---<releaseName>", environmentReleaseName)
+	}
+
+	// TODO better
+	releases, err := accessor.ListReleases(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list environments: %v", err)
+	}
+
+	var release *Release
+	for _, currRelease := range releases {
+		if currRelease.Name == releaseName {
+			release = &currRelease
+			break
+		}
+	}
+	if release == nil {
+		return nil, fmt.Errorf("failed to find release %q: %v", releaseName, err)
+	}
+
+	currReleaseEnvironmentInfo, _ := accessor.GetReleaseEnvironmentInfo(ctx, *release, environmentName)
+	if currReleaseEnvironmentInfo == nil {
+		return nil, fmt.Errorf("%q not found", environmentReleaseName)
+	}
+
+	ret := accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo)
+	return ret, nil
 }
 
 func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo) *status.EnvironmentRelease {
@@ -122,7 +132,7 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 		Environment: currReleaseEnvironmentInfo.EnvironmentFilename,
 		Images:      map[string]*status.ComponentInfo{},
 	}
-	for _, imageInfo := range currReleaseEnvironmentInfo.DeployedImages {
+	for _, imageInfo := range currReleaseEnvironmentInfo.Components {
 		ret.Images[imageInfo.Name] = &status.ComponentInfo{
 			Name: imageInfo.Name,
 			ImageInfo: status.ContainerImage{

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/clock"
 )
@@ -133,4 +134,8 @@ func (r *cachingReleaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, 
 
 func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, release Release) (*release_inspection.ReleaseInfo, error) {
 	return r.delegate.GetReleaseInfoForAllEnvironments(ctx, release)
+}
+
+func (r *cachingReleaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, release Release, environment string, otherRelease Release, otherEnvironment string) (*status.EnvironmentReleaseDiff, error) {
+	return r.delegate.GetReleaseEnvironmentDiff(ctx, release, environment, otherRelease, otherEnvironment)
 }

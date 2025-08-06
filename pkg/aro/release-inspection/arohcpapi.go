@@ -18,12 +18,12 @@ type ReleaseEnvironmentInfo struct {
 	ReleaseSHA          string
 	EnvironmentFilename string
 	configJSON          *arohcpapi.ConfigSchemaJSON
-	DeployedImages      map[string]*DeployedImageInfo
+	Components          map[string]*ComponentInfo
 }
 
 // configPertinentInfo tracks the information that we want to show a diff for and summarize
 
-type DeployedImageInfo struct {
+type ComponentInfo struct {
 	Name                 string
 	ImageInfo            *arohcpapi.ContainerImage
 	ImageCreationTime    *time.Time
@@ -43,11 +43,11 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		ReleaseSHA:          releaseSHA,
 		EnvironmentFilename: environmentFilename,
 		configJSON:          config,
-		DeployedImages:      map[string]*DeployedImageInfo{},
+		Components:          map[string]*ComponentInfo{},
 	}
 
 	addDeployedImageForComponent := func(componentName string, containerImage *arohcpapi.ContainerImage) {
-		currConfigInfo.DeployedImages[componentName] = createDeployedImageInfo(ctx,
+		currConfigInfo.Components[componentName] = createDeployedImageInfo(ctx,
 			imageInfoAccessor,
 			componentName,
 			HardcodedComponents[componentName].RepositoryURL,
@@ -76,7 +76,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	return currConfigInfo, nil
 }
 
-func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *DeployedImageInfo) {
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *ComponentInfo) {
 	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, currInfo.ImageInfo); err != nil {
 		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
 	} else {
@@ -92,10 +92,10 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *DeployedImageInfo {
+func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *ComponentInfo {
 	repoLink := must(url.Parse(repoURL))
 
-	deployedImageInfo := &DeployedImageInfo{
+	deployedImageInfo := &ComponentInfo{
 		Name:     name,
 		RepoLink: repoLink,
 	}
@@ -118,14 +118,14 @@ func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *R
 	changedComponents := set.Set[string]{}
 
 	if prevReleaseEnvironmentInfo == nil {
-		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
+		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Components {
 			changedComponents.Insert(currDeployedImageInfo.Name)
 		}
 		return changedComponents
 	}
 
-	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
-		prevDeployedImageInfo := prevReleaseEnvironmentInfo.DeployedImages[currDeployedImageInfo.Name]
+	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Components {
+		prevDeployedImageInfo := prevReleaseEnvironmentInfo.Components[currDeployedImageInfo.Name]
 		if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
 			changedComponents.Insert(currDeployedImageInfo.Name)
 		}

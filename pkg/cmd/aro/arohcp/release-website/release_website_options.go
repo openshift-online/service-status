@@ -61,6 +61,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	httpRouter.GET("/api/aro-hcp/releases/:name", release_webserver.GetRelease(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases", release_webserver.ListEnvironmentReleases(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases/:name", release_webserver.GetEnvironmentRelease(releaseAccessor))
+	httpRouter.GET("/api/aro-hcp/environmentreleases/:name/diff/:otherName", release_webserver.GetEnvironmentReleaseDiff(releaseAccessor))
 
 	// HTML endpoints
 	httpRouter.LoadHTMLGlob("pkg/aro/release-webserver/html-templates/*")
