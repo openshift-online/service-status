@@ -32,11 +32,11 @@ type ReleaseList struct {
 
 type EnvironmentRelease struct {
 	TypeMeta    `json:",inline"`
-	Name        string                        `json:"name"`
-	ReleaseName string                        `json:"releaseName"`
-	SHA         string                        `json:"sha"`
-	Environment string                        `json:"environment"`
-	Images      map[string]*DeployedImageInfo `json:"images"`
+	Name        string                    `json:"name"`
+	ReleaseName string                    `json:"releaseName"`
+	SHA         string                    `json:"sha"`
+	Environment string                    `json:"environment"`
+	Images      map[string]*ComponentInfo `json:"components"`
 }
 
 type EnvironmentReleaseList struct {
@@ -44,7 +44,7 @@ type EnvironmentReleaseList struct {
 	Items    []EnvironmentRelease `json:"items"`
 }
 
-type DeployedImageInfo struct {
+type ComponentInfo struct {
 	Name                     string `json:"name"`
 	ImageInfo                ContainerImage
 	ImageCreationTime        *time.Time `json:"imageCreationTime,omitempty"`
@@ -57,4 +57,34 @@ type ContainerImage struct {
 	Digest     string `json:"digest"`
 	Registry   string `json:"registry"`
 	Repository string `json:"repository"`
+}
+
+type EnvironmentReleaseDiff struct {
+	TypeMeta                  `json:",inline"`
+	Name                      string `json:"name"`
+	OldEnvironmentReleaseName string `json:"oldEnvironmentReleaseName"`
+
+	DifferentComponents map[string]*ComponentInfo `json:"differentComponents"`
+}
+
+type ComponentDiff struct {
+	Name      string `json:"name"`
+	ImageInfo ContainerImage
+
+	NumberOfChanges          int
+	ImageCreationTime        *time.Time `json:"imageCreationTime,omitempty"`
+	RepoURL                  *string    `json:"RepoURL"`
+	SourceSHA                string     `json:"sourceSHA"`
+	PermanentURLForSourceSHA *string    `json:"permanentURLForSourceSHA,omitempty"`
+}
+
+type ComponentChange struct {
+	ChangeType string   `json:"changeType"`
+	PRMerge    *PRMerge `json:"prMerge,omitempty"`
+}
+
+type PRMerge struct {
+	PRNumber      int32    `json:"PRNumber"`
+	ChangeSummary string   `json:"topLineCommitMessage"`
+	JIRARefs      []string `json:"jiraRefs"`
 }

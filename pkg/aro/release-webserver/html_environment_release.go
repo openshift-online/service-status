@@ -61,8 +61,8 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	changedNameToDetails := map[string]template.HTML{}
 	if prevReleaseEnvironmentInfo != nil {
 		for _, changedImageName := range changedComponents.UnsortedList() {
-			var currImageDetails *status.DeployedImageInfo
-			var prevImageDetails *status.DeployedImageInfo
+			var currImageDetails *status.ComponentInfo
+			var prevImageDetails *status.ComponentInfo
 			for _, imageDetails := range environmentReleaseInfo.Images {
 				if imageDetails.Name == changedImageName {
 					currImageDetails = imageDetails
@@ -113,7 +113,7 @@ func ServeEnvironmentReleaseSummary(releaseClient client.ReleaseClient) func(c *
 	return h.ServeGin
 }
 
-func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
+func htmlDetailsForComponent(imageDetails *status.ComponentInfo) string {
 	imageAgeString := "Unknown age"
 	imageTimeString := "Unknown time"
 	if imageDetails.ImageCreationTime != nil {
@@ -155,7 +155,7 @@ func htmlDetailsForComponent(imageDetails *status.DeployedImageInfo) string {
 	return detailsHTML
 }
 
-func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.DeployedImageInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) string {
+func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.ComponentInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) string {
 	prevReleaseString := fmt.Sprintf("<a href=/http/aro-hcp/environmentreleases/%s/summary.html>%s</a>", prevReleaseEnvironmentInfo.Name, prevReleaseEnvironmentInfo.Name)
 
 	imageAgeString := "Unknown age"

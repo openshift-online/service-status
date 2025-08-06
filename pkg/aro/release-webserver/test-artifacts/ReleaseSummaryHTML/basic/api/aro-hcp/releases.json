@@ -47,8 +47,8 @@
         {
             "kind": "Release",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "2025-07-23T09:36:05+02:00-e152e",
-            "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e"
+            "name": "2025-07-23T08:44:59-06:00-686c7",
+            "sha": "686c7a9bbc59ebe5480ef443bd4b0e20e94a21a4"
         }
     ]
 }

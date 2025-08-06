@@ -120,10 +120,10 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 		ReleaseName: currReleaseEnvironmentInfo.ReleaseName,
 		SHA:         currReleaseEnvironmentInfo.ReleaseSHA,
 		Environment: currReleaseEnvironmentInfo.EnvironmentFilename,
-		Images:      map[string]*status.DeployedImageInfo{},
+		Images:      map[string]*status.ComponentInfo{},
 	}
 	for _, imageInfo := range currReleaseEnvironmentInfo.DeployedImages {
-		ret.Images[imageInfo.Name] = &status.DeployedImageInfo{
+		ret.Images[imageInfo.Name] = &status.ComponentInfo{
 			Name: imageInfo.Name,
 			ImageInfo: status.ContainerImage{
 				Digest:     "",
