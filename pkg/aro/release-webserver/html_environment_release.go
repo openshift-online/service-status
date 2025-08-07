@@ -67,13 +67,13 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		for _, componentName := range changedComponents.UnsortedList() {
 			var currImageDetails *status.ComponentInfo
 			var prevImageDetails *status.ComponentInfo
-			for _, imageDetails := range environmentReleaseInfo.Images {
+			for _, imageDetails := range environmentReleaseInfo.Components {
 				if imageDetails.Name == componentName {
 					currImageDetails = imageDetails
 					break
 				}
 			}
-			for _, imageDetails := range prevReleaseEnvironmentInfo.Images {
+			for _, imageDetails := range prevReleaseEnvironmentInfo.Components {
 				if imageDetails.Name == componentName {
 					prevImageDetails = imageDetails
 					break
@@ -91,7 +91,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 
 	imageNames := []string{}
 	imageNameToDetails := map[string]template.HTML{}
-	for _, imageDetails := range environmentReleaseInfo.Images {
+	for _, imageDetails := range environmentReleaseInfo.Components {
 		imageNames = append(imageNames, imageDetails.Name)
 		detailsHTML := htmlDetailsForComponent(imageDetails)
 		imageNameToDetails[imageDetails.Name] = template.HTML(detailsHTML)
@@ -193,8 +193,12 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
 		}
 	}
 
+	numberOfChangesString := "Unknown changes"
 	diffLines := []string{}
 	if diff != nil {
+		if diff.NumberOfChanges >= 0 {
+			numberOfChangesString = fmt.Sprintf("%d changes", diff.NumberOfChanges)
+		}
 		for _, change := range diff.Changes {
 			switch {
 			case change.ChangeType == "Unavailable":
@@ -226,7 +230,7 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
 	}
 
 	detailsHTML := fmt.Sprintf(`
-		<h4><a target="_blank" href=%q>%s (%s, %s, %d changes)</a></h4>
+		<h4><a target="_blank" href=%q>%s (%s, %s, %s)</a></h4>
         <details>
             <summary class="small mb-3">click to expand details</summary>
             <ul>
@@ -245,7 +249,7 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
             </ul>
         </details>
 `,
-		ptr.Deref(currImageDetails.RepoURL, "MISSING"), currImageDetails.Name, imageAgeString, newerString, diff.NumberOfChanges,
+		ptr.Deref(currImageDetails.RepoURL, "MISSING"), currImageDetails.Name, imageAgeString, newerString, numberOfChangesString,
 		fmt.Sprintf("%s/%s@%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
 		newerString,
 		imageTimeString,

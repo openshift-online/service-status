@@ -36,7 +36,7 @@ type EnvironmentRelease struct {
 	ReleaseName string                    `json:"releaseName"`
 	SHA         string                    `json:"sha"`
 	Environment string                    `json:"environment"`
-	Images      map[string]*ComponentInfo `json:"components"`
+	Components  map[string]*ComponentInfo `json:"components"`
 }
 
 type EnvironmentReleaseList struct {

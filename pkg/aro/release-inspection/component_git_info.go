@@ -165,3 +165,21 @@ func (c *componentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, old
 
 	return commits, nil
 }
+
+type dummyComponentsGitInfo struct {
+}
+
+func NewDummyComponentsGitInfo() ComponentsGitInfo {
+	return &dummyComponentsGitInfo{}
+}
+
+func (c *dummyComponentsGitInfo) GetComponentGitAccessor(ctx context.Context, componentName string) (ComponentGitAccessor, error) {
+	return &dummyComponentGitAccessor{}, nil
+}
+
+type dummyComponentGitAccessor struct {
+}
+
+func (c *dummyComponentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, olderSHA string, topN int) ([]*object.Commit, error) {
+	return nil, nil
+}

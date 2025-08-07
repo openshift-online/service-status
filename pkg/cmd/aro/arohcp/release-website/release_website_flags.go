@@ -87,9 +87,6 @@ func (f *ReleaseMarkdownFlags) Validate() error {
 		return fmt.Errorf("one of --filebased-api-dir and --aro-hcp-dir must be specified")
 	}
 
-	if len(f.ComponentGitRepoParentDir) == 0 {
-		return fmt.Errorf("--component-git-repo-storage-dir must be specified")
-	}
 	if len(f.PullSecretDir) == 0 {
 		return fmt.Errorf("--pull-secret-dir must be specified")
 	}
@@ -109,14 +106,19 @@ func (f *ReleaseMarkdownFlags) Validate() error {
 }
 
 func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
+	gitAccessor := release_inspection.NewDummyComponentsGitInfo()
+	if len(f.ComponentGitRepoParentDir) > 0 {
+		gitAccessor = release_inspection.NewComponentsGitInfo(f.ComponentGitRepoParentDir)
+	}
+
 	return &ReleaseMarkdownOptions{
-		BindAddress:               f.BindAddress,
-		BindPort:                  f.BindPort,
-		FileBasedAPIDir:           f.FileBasedAPIDir,
-		AROHCPDir:                 f.AROHCPDir,
-		ComponentGitRepoParentDir: f.ComponentGitRepoParentDir,
-		NumberOfDays:              f.NumberOfDays,
-		ImageInfoAccessor:         release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
+		BindAddress:       f.BindAddress,
+		BindPort:          f.BindPort,
+		FileBasedAPIDir:   f.FileBasedAPIDir,
+		AROHCPDir:         f.AROHCPDir,
+		NumberOfDays:      f.NumberOfDays,
+		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
+		GitAccessor:       gitAccessor,
 
 		IOStreams: f.IOStreams,
 	}, nil

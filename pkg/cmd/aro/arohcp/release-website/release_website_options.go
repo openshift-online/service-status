@@ -19,12 +19,12 @@ type ReleaseMarkdownOptions struct {
 	BindAddress net.IP
 	BindPort    int
 
-	FileBasedAPIDir           string
-	AROHCPDir                 string
-	ComponentGitRepoParentDir string
-	NumberOfDays              int
+	FileBasedAPIDir string
+	AROHCPDir       string
+	NumberOfDays    int
 
 	ImageInfoAccessor release_inspection.ImageInfoAccessor
+	GitAccessor       release_inspection.ComponentsGitInfo
 
 	util.IOStreams
 }
@@ -37,7 +37,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 			o.AROHCPDir,
 			o.NumberOfDays,
 			o.ImageInfoAccessor,
-			release_inspection.NewComponentsGitInfo(o.ComponentGitRepoParentDir),
+			o.GitAccessor,
 		),
 		clock.RealClock{})
 

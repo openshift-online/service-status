@@ -130,10 +130,10 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 		ReleaseName: currReleaseEnvironmentInfo.ReleaseName,
 		SHA:         currReleaseEnvironmentInfo.ReleaseSHA,
 		Environment: currReleaseEnvironmentInfo.EnvironmentFilename,
-		Images:      map[string]*status.ComponentInfo{},
+		Components:  map[string]*status.ComponentInfo{},
 	}
 	for _, imageInfo := range currReleaseEnvironmentInfo.Components {
-		ret.Images[imageInfo.Name] = &status.ComponentInfo{
+		ret.Components[imageInfo.Name] = &status.ComponentInfo{
 			Name: imageInfo.Name,
 			ImageInfo: status.ContainerImage{
 				Digest:     "",
@@ -144,15 +144,15 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 			SourceSHA:         imageInfo.SourceSHA,
 		}
 		if imageInfo.RepoLink != nil {
-			ret.Images[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
+			ret.Components[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
 		}
 		if imageInfo.PermLinkForSourceSHA != nil {
-			ret.Images[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
+			ret.Components[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
 		}
 		if imageInfo.ImageInfo != nil {
-			ret.Images[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest
-			ret.Images[imageInfo.Name].ImageInfo.Registry = ptr.Deref(imageInfo.ImageInfo.Registry, "MISSING REGISTRY")
-			ret.Images[imageInfo.Name].ImageInfo.Repository = imageInfo.ImageInfo.Repository
+			ret.Components[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest
+			ret.Components[imageInfo.Name].ImageInfo.Registry = ptr.Deref(imageInfo.ImageInfo.Registry, "MISSING REGISTRY")
+			ret.Components[imageInfo.Name].ImageInfo.Repository = imageInfo.ImageInfo.Repository
 		}
 	}
 	return ret

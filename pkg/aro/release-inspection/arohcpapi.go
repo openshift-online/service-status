@@ -46,8 +46,8 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		Components:          map[string]*ComponentInfo{},
 	}
 
-	addDeployedImageForComponent := func(componentName string, containerImage *arohcpapi.ContainerImage) {
-		currConfigInfo.Components[componentName] = createDeployedImageInfo(ctx,
+	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
+		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
 			imageInfoAccessor,
 			componentName,
 			HardcodedComponents[componentName].RepositoryURL,
@@ -55,22 +55,22 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		)
 	}
 
-	addDeployedImageForComponent("ACR Pull", &config.ACRPull.Image)
+	addComponentInfo("ACR Pull", &config.ACRPull.Image)
 	if config.Backend != nil {
-		addDeployedImageForComponent("Backend", &config.Backend.Image)
+		addComponentInfo("Backend", &config.Backend.Image)
 	}
-	addDeployedImageForComponent("Backplane", &config.BackplaneAPI.Image)
-	addDeployedImageForComponent("Cluster Service", &config.ClustersService.Image)
-	addDeployedImageForComponent("Frontend", &config.Frontend.Image)
-	addDeployedImageForComponent("Hypershift", config.Hypershift.Image)
-	addDeployedImageForComponent("Maestro", &config.Maestro.Image)
-	addDeployedImageForComponent("OcMirror", &config.ImageSync.OcMirror.Image)
+	addComponentInfo("Backplane", &config.BackplaneAPI.Image)
+	addComponentInfo("Cluster Service", &config.ClustersService.Image)
+	addComponentInfo("Frontend", &config.Frontend.Image)
+	addComponentInfo("Hypershift", config.Hypershift.Image)
+	addComponentInfo("Maestro", &config.Maestro.Image)
+	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		addDeployedImageForComponent("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
+		addComponentInfo("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		addDeployedImageForComponent("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
+		addComponentInfo("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
@@ -92,10 +92,10 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *ComponentInfo {
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *ComponentInfo {
 	repoLink := must(url.Parse(repoURL))
 
-	deployedImageInfo := &ComponentInfo{
+	componentInfo := &ComponentInfo{
 		Name:     name,
 		RepoLink: repoLink,
 	}
@@ -107,27 +107,27 @@ func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAcc
 		if err != nil {
 			localContainerImage.Registry = ptr.To(fmt.Sprintf("missing image pull location for %q: %v", name, err))
 		}
-		deployedImageInfo.ImageInfo = &localContainerImage
+		componentInfo.ImageInfo = &localContainerImage
 	}
-	completeSourceSHAs(ctx, imageInfoAccessor, deployedImageInfo)
+	completeSourceSHAs(ctx, imageInfoAccessor, componentInfo)
 
-	return deployedImageInfo
+	return componentInfo
 }
 
 func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) set.Set[string] {
 	changedComponents := set.Set[string]{}
 
 	if prevReleaseEnvironmentInfo == nil {
-		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Components {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+		for _, currComponent := range currReleaseEnvironmentInfo.Components {
+			changedComponents.Insert(currComponent.Name)
 		}
 		return changedComponents
 	}
 
-	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Components {
-		prevDeployedImageInfo := prevReleaseEnvironmentInfo.Components[currDeployedImageInfo.Name]
-		if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+	for _, currComponent := range currReleaseEnvironmentInfo.Components {
+		prevComponent := prevReleaseEnvironmentInfo.Components[currComponent.Name]
+		if !reflect.DeepEqual(prevComponent.ImageInfo, currComponent.ImageInfo) {
+			changedComponents.Insert(currComponent.Name)
 		}
 	}
 
