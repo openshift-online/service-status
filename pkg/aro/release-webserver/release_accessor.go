@@ -28,7 +28,7 @@ type ReleaseAccessor interface {
 	ListEnvironments(ctx context.Context) ([]string, error)
 	ListReleases(ctx context.Context) (*status.ReleaseList, error)
 	GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error)
-	GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error)
+	GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error)
 	GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error)
 }
 
@@ -44,7 +44,7 @@ type releaseAccessor struct {
 	componentGitAccessor release_inspection.ComponentsGitInfo
 
 	gitLock              sync.Mutex
-	releaseNameToInfo    map[string]*release_inspection.ReleaseInfo
+	releaseNameToInfo    map[string]*status.ReleaseDetails
 	releaseNameToRelease map[string]*status.Release
 }
 
@@ -54,7 +54,7 @@ func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor re
 		numberOfDays:         numberOfDays,
 		imageInfoAccessor:    imageInfoAccessor,
 		componentGitAccessor: componentGitAccessor,
-		releaseNameToInfo:    map[string]*release_inspection.ReleaseInfo{},
+		releaseNameToInfo:    map[string]*status.ReleaseDetails{},
 		releaseNameToRelease: map[string]*status.Release{},
 	}
 }
@@ -225,7 +225,7 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 		DifferentComponents:         map[string]*status.ComponentDiff{},
 	}
 	for _, component := range environmentRelease.Components {
-		var otherComponent *status.ComponentInfo
+		var otherComponent *status.Component
 		for _, currOtherComponent := range otherEnvironmentRelease.Components {
 			if component.Name == currOtherComponent.Name {
 				otherComponent = currOtherComponent
@@ -350,10 +350,10 @@ func (r *releaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environ
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release info: %w", err)
 	}
-	return releaseInfo.GetEnvironmentRelease(environmentName), nil
+	return releaseInfo.Environments[environmentName], nil
 }
 
-func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error) {
+func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error) {
 	enviroments, err := r.ListEnvironments(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list environments: %w", err)

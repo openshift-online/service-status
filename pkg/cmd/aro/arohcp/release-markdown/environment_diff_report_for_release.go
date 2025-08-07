@@ -6,32 +6,30 @@ import (
 	"time"
 
 	"github.com/openshift-online/service-status/pkg/apis/status"
-	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/set"
 )
 
-func environmentsBySameness(currReleaseInfo *release_inspection.ReleaseInfo) []set.Set[string] {
+func environmentsBySameness(currReleaseDetails *status.ReleaseDetails) []set.Set[string] {
 	congruentEnvironmentSets := []set.Set[string]{}
 
 	usedEnvironments := set.New[string]()
-	for _, environmentFilename := range currReleaseInfo.GetEnvironmentNames() {
-		currEnvironmentInfo := currReleaseInfo.GetEnvironmentRelease(environmentFilename)
+	for environmentName, currEnvironmentInfo := range currReleaseDetails.Environments {
 		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.Environment, ".json")
 		if usedEnvironments.Has(currEnvironmentName) {
 			continue
 		}
 
-		otherEnvironmentInfos := []*status.EnvironmentRelease{}
-		for _, otherEnvironmentName := range currReleaseInfo.GetEnvironmentNames() {
-			if otherEnvironmentName == environmentFilename {
+		otherEnvironmentReleases := []*status.EnvironmentRelease{}
+		for _, otherEnvironmentName := range set.KeySet(currReleaseDetails.Environments).UnsortedList() {
+			if otherEnvironmentName == environmentName {
 				continue
 			}
-			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.GetEnvironmentRelease(otherEnvironmentName))
+			otherEnvironmentReleases = append(otherEnvironmentReleases, currReleaseDetails.Environments[otherEnvironmentName])
 		}
 
 		congruentEnvironments := set.Set[string]{}
 		congruentEnvironments.Insert(currEnvironmentName)
-		congruentEnvironments.Insert(environmentsWithIdenticalImages(currEnvironmentInfo, otherEnvironmentInfos).UnsortedList()...)
+		congruentEnvironments.Insert(environmentsWithIdenticalImages(currEnvironmentInfo, otherEnvironmentReleases).UnsortedList()...)
 		usedEnvironments.Insert(congruentEnvironments.UnsortedList()...)
 
 		congruentEnvironmentSets = append(congruentEnvironmentSets, congruentEnvironments)
@@ -40,12 +38,12 @@ func environmentsBySameness(currReleaseInfo *release_inspection.ReleaseInfo) []s
 	return congruentEnvironmentSets
 }
 
-func releaseEnvironmentSummaryMarkdown(currReleaseInfo *release_inspection.ReleaseInfo) string {
+func environmentReleaseSummaryMarkdown(currReleaseDetails *status.ReleaseDetails) string {
 	releaseSummaryMarkdown := &strings.Builder{}
-	fmt.Fprintf(releaseSummaryMarkdown, "# %s Release\n\n", currReleaseInfo.ReleaseName)
+	fmt.Fprintf(releaseSummaryMarkdown, "# %s Release\n\n", currReleaseDetails.Name)
 
 	wrote := false
-	congruentEnvironments := environmentsBySameness(currReleaseInfo)
+	congruentEnvironments := environmentsBySameness(currReleaseDetails)
 	environmentToCongruentEnvironments := map[string]set.Set[string]{}
 	for _, congruentEnvironment := range congruentEnvironments {
 		for currEnvironment := range congruentEnvironment {
@@ -62,22 +60,21 @@ func releaseEnvironmentSummaryMarkdown(currReleaseInfo *release_inspection.Relea
 	}
 
 	handledEnvironments := set.Set[string]{}
-	for _, environmentFilename := range currReleaseInfo.GetEnvironmentNames() {
-		currEnvironmentInfo := currReleaseInfo.GetEnvironmentRelease(environmentFilename)
-		currEnvironmentName := strings.TrimSuffix(currEnvironmentInfo.Environment, ".json")
+	for environmentName, currEnvironmentRelease := range currReleaseDetails.Environments {
+		currEnvironmentName := strings.TrimSuffix(currEnvironmentRelease.Environment, ".json")
 		if handledEnvironments.Has(currEnvironmentName) {
 			continue
 		}
 
 		otherEnvironmentInfos := []*status.EnvironmentRelease{}
-		for _, otherEnvironmentName := range currReleaseInfo.GetEnvironmentNames() {
-			if otherEnvironmentName == environmentFilename {
+		for _, otherEnvironmentName := range set.KeySet(currReleaseDetails.Environments).UnsortedList() {
+			if otherEnvironmentName == environmentName {
 				continue
 			}
-			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseInfo.GetEnvironmentRelease(otherEnvironmentName))
+			otherEnvironmentInfos = append(otherEnvironmentInfos, currReleaseDetails.Environments[otherEnvironmentName])
 		}
 
-		environmentMarkdown := markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo, otherEnvironmentInfos, environmentToCongruentEnvironments)
+		environmentMarkdown := markdownOfCurrentEnvironmentToOthers(currEnvironmentRelease, otherEnvironmentInfos, environmentToCongruentEnvironments)
 		fmt.Fprintf(releaseSummaryMarkdown, environmentMarkdown)
 
 		handledEnvironments.Insert(environmentToCongruentEnvironments[currEnvironmentName].UnsortedList()...)

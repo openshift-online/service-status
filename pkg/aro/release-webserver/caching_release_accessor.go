@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/openshift-online/service-status/pkg/apis/status"
-	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/clock"
 )
 
@@ -18,7 +17,7 @@ type cachingReleaseAccessor struct {
 
 	listReleases                     *stringBasedResultTimeBasedCacher[*status.ReleaseList]
 	listEnvironments                 *stringBasedResultTimeBasedCacher[[]string]
-	getReleaseInfoForAllEnvironments *stringBasedResultTimeBasedCacher[*release_inspection.ReleaseInfo]
+	getReleaseInfoForAllEnvironments *stringBasedResultTimeBasedCacher[*status.ReleaseDetails]
 	getReleaseEnvironmentInfo        *stringBasedResultTimeBasedCacher[*status.EnvironmentRelease]
 	getReleaseEnvironmentDiff        *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]
 }
@@ -35,7 +34,7 @@ func NewCachingReleaseAccessor(delegate ReleaseAccessor, clock clock.Clock) Rele
 			delegate: noKeyAdapter(delegate.ListEnvironments),
 			clock:    clock,
 		},
-		getReleaseInfoForAllEnvironments: &stringBasedResultTimeBasedCacher[*release_inspection.ReleaseInfo]{
+		getReleaseInfoForAllEnvironments: &stringBasedResultTimeBasedCacher[*status.ReleaseDetails]{
 			delegate: delegate.GetReleaseInfoForAllEnvironments,
 			clock:    clock,
 		},
@@ -118,7 +117,7 @@ func (r *cachingReleaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, 
 	return r.getReleaseEnvironmentInfo.Do(ctx, environmentReleaseName)
 }
 
-func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error) {
+func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error) {
 	return r.getReleaseInfoForAllEnvironments.Do(ctx, releaseName)
 }
 

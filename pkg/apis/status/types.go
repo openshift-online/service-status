@@ -30,13 +30,21 @@ type ReleaseList struct {
 	Items    []Release `json:"items"`
 }
 
+type ReleaseDetails struct {
+	TypeMeta `json:",inline"`
+	Name     string `json:"name"`
+	SHA      string `json:"sha"`
+
+	Environments map[string]*EnvironmentRelease `json:"environments"`
+}
+
 type EnvironmentRelease struct {
 	TypeMeta    `json:",inline"`
-	Name        string                    `json:"name"`
-	ReleaseName string                    `json:"releaseName"`
-	SHA         string                    `json:"sha"`
-	Environment string                    `json:"environment"`
-	Components  map[string]*ComponentInfo `json:"components"`
+	Name        string                `json:"name"`
+	ReleaseName string                `json:"releaseName"`
+	SHA         string                `json:"sha"`
+	Environment string                `json:"environment"`
+	Components  map[string]*Component `json:"components"`
 }
 
 type EnvironmentReleaseList struct {
@@ -44,7 +52,7 @@ type EnvironmentReleaseList struct {
 	Items    []EnvironmentRelease `json:"items"`
 }
 
-type ComponentInfo struct {
+type Component struct {
 	Name                     string `json:"name"`
 	ImageInfo                ContainerImage
 	ImageCreationTime        *time.Time `json:"imageCreationTime,omitempty"`

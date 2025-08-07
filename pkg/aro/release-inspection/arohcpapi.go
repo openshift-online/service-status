@@ -28,7 +28,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		ReleaseName: releaseName,
 		SHA:         releaseSHA,
 		Environment: environment,
-		Components:  map[string]*status.ComponentInfo{},
+		Components:  map[string]*status.Component{},
 	}
 
 	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
@@ -61,7 +61,7 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	return currConfigInfo, nil
 }
 
-func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *status.ComponentInfo) {
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *status.Component) {
 	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, &currInfo.ImageInfo); err != nil {
 		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
 	} else {
@@ -77,8 +77,8 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *status.ComponentInfo {
-	componentInfo := &status.ComponentInfo{
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *status.Component {
+	componentInfo := &status.Component{
 		Name: name,
 	}
 	if len(repoURL) > 0 {

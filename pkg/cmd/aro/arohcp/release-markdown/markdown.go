@@ -11,7 +11,7 @@ import (
 	"k8s.io/utils/set"
 )
 
-func markdownForPertinentInfo(info *status.ComponentInfo) string {
+func markdownForPertinentInfo(info *status.Component) string {
 	markdown := &strings.Builder{}
 	fmt.Fprintf(markdown, "### [%s](%s)\n", info.Name, info.RepoURL)
 	fmt.Fprintf(markdown, "* %s\n", info.RepoURL)
@@ -62,22 +62,22 @@ func environmentReleaseMarkdown(currEnvironmentReleaseInfo, prevEnvironmentRelea
 	return markdown.String()
 }
 
-func allReleaseSummaryMarkdown(allReleasesInfo *release_inspection.ReleasesInfo) string {
+func allReleaseSummaryMarkdown(allReleasesInfo *release_inspection.AllReleasesDetails) string {
 	releaseSummaryMarkdown := &strings.Builder{}
 
-	for _, environmentFilename := range allReleasesInfo.GetEnvironmentFilenames() {
-		fmt.Fprintf(releaseSummaryMarkdown, "# %s Releases\n\n", strings.TrimSuffix(environmentFilename, ".json"))
+	for _, environmentName := range allReleasesInfo.GetEnvironmentFilenames() {
+		fmt.Fprintf(releaseSummaryMarkdown, "# %s Releases\n\n", strings.TrimSuffix(environmentName, ".json"))
 
 		for i, currReleaseName := range allReleasesInfo.GetReleaseNames() {
 			currReleaseInfo := allReleasesInfo.GetReleaseInfo(currReleaseName)
-			currEnvironmentReleaseInfo := currReleaseInfo.GetEnvironmentRelease(environmentFilename)
+			currEnvironmentReleaseInfo := currReleaseInfo.Environments[environmentName]
 			if currEnvironmentReleaseInfo == nil {
 				continue
 			}
 			var prevEnvironmentReleaseInfo *status.EnvironmentRelease
 			if i > 0 {
 				prevReleaseInfo := allReleasesInfo.GetReleaseInfo(allReleasesInfo.GetReleaseNames()[i-1])
-				prevEnvironmentReleaseInfo = prevReleaseInfo.GetEnvironmentRelease(environmentFilename)
+				prevEnvironmentReleaseInfo = prevReleaseInfo.Environments[environmentName]
 			}
 
 			// TODO table

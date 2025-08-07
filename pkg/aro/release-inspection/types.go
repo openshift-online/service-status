@@ -7,43 +7,43 @@ import (
 	"k8s.io/utils/set"
 )
 
-type ReleasesInfo struct {
-	releaseToInfo map[string]*ReleaseInfo
+type AllReleasesDetails struct {
+	releaseNameToDetails map[string]*status.ReleaseDetails
 }
 
-func (r *ReleasesInfo) GetReleaseNames() []string {
+func (r *AllReleasesDetails) GetReleaseNames() []string {
 	if r == nil {
 		return nil
 	}
 
-	releasesOldestFirst := set.KeySet(r.releaseToInfo).SortedList()
+	releasesOldestFirst := set.KeySet(r.releaseNameToDetails).SortedList()
 	sort.Sort(sort.Reverse(sort.StringSlice(releasesOldestFirst)))
 	return releasesOldestFirst
 }
 
-func (r *ReleasesInfo) GetEnvironmentFilenames() []string {
+func (r *AllReleasesDetails) GetEnvironmentFilenames() []string {
 	if r == nil {
 		return nil
 	}
 	environmentNames := set.Set[string]{}
-	for _, currReleaseInfo := range r.releaseToInfo {
-		environmentNames.Insert(set.KeySet(currReleaseInfo.environmentToEnvironmentRelease).UnsortedList()...)
+	for _, currReleaseInfo := range r.releaseNameToDetails {
+		environmentNames.Insert(set.KeySet(currReleaseInfo.Environments).UnsortedList()...)
 	}
 	return environmentNames.SortedList()
 }
 
-func (r *ReleasesInfo) AddReleaseInfo(newReleaseInfo *ReleaseInfo) {
-	if r.releaseToInfo == nil {
-		r.releaseToInfo = make(map[string]*ReleaseInfo)
+func (r *AllReleasesDetails) AddReleaseDetails(newReleaseInfo *status.ReleaseDetails) {
+	if r.releaseNameToDetails == nil {
+		r.releaseNameToDetails = make(map[string]*status.ReleaseDetails)
 	}
-	r.releaseToInfo[newReleaseInfo.ReleaseName] = newReleaseInfo
+	r.releaseNameToDetails[newReleaseInfo.Name] = newReleaseInfo
 }
 
-func (r *ReleasesInfo) GetReleaseInfo(release string) *ReleaseInfo {
+func (r *AllReleasesDetails) GetReleaseInfo(release string) *status.ReleaseDetails {
 	if r == nil {
 		return nil
 	}
-	return r.releaseToInfo[release]
+	return r.releaseNameToDetails[release]
 }
 
 type ReleaseInfo struct {

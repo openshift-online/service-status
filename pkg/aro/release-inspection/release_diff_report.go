@@ -35,9 +35,15 @@ func NewReleaseDiffReport(imageInfoAccessor ImageInfoAccessor, releaseName, rele
 	}
 }
 
-func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (*ReleaseInfo, error) {
-	ret := &ReleaseInfo{
-		ReleaseName: r.releaseName,
+func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (*status.ReleaseDetails, error) {
+	ret := &status.ReleaseDetails{
+		TypeMeta: status.TypeMeta{
+			Kind:       "ReleaseDetails",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Name:         r.releaseName,
+		SHA:          r.releaseSHA,
+		Environments: map[string]*status.EnvironmentRelease{},
 	}
 
 	configOverlayFilename := filepath.Join(r.repoDir, "config", "config.msft.clouds-overlay.yaml")
@@ -81,7 +87,7 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 			localLogger.Error(err, "failed to release markdown for config JSON.  Continuing...")
 			continue
 		}
-		ret.addEnvironmentRelease(currReleaseEnvironmentInfo)
+		ret.Environments[currReleaseEnvironmentInfo.Environment] = currReleaseEnvironmentInfo
 	}
 
 	return ret, nil
