@@ -3,6 +3,7 @@ package release_inspection
 import (
 	"sort"
 
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	"k8s.io/utils/set"
 )
 
@@ -26,7 +27,7 @@ func (r *ReleasesInfo) GetEnvironmentFilenames() []string {
 	}
 	environmentNames := set.Set[string]{}
 	for _, currReleaseInfo := range r.releaseToInfo {
-		environmentNames.Insert(set.KeySet(currReleaseInfo.environmentToEnvironmentInfo).UnsortedList()...)
+		environmentNames.Insert(set.KeySet(currReleaseInfo.environmentToEnvironmentRelease).UnsortedList()...)
 	}
 	return environmentNames.SortedList()
 }
@@ -46,28 +47,28 @@ func (r *ReleasesInfo) GetReleaseInfo(release string) *ReleaseInfo {
 }
 
 type ReleaseInfo struct {
-	ReleaseName                  string
-	environmentToEnvironmentInfo map[string]*ReleaseEnvironmentInfo
+	ReleaseName                     string
+	environmentToEnvironmentRelease map[string]*status.EnvironmentRelease
 }
 
-func (r *ReleaseInfo) GetEnvironmentFilenames() []string {
+func (r *ReleaseInfo) GetEnvironmentNames() []string {
 	if r == nil {
 		return nil
 	}
-	environmentNames := set.KeySet(r.environmentToEnvironmentInfo)
+	environmentNames := set.KeySet(r.environmentToEnvironmentRelease)
 	return environmentNames.SortedList()
 }
 
-func (r *ReleaseInfo) addEnvironment(environmentInfo *ReleaseEnvironmentInfo) {
-	if r.environmentToEnvironmentInfo == nil {
-		r.environmentToEnvironmentInfo = make(map[string]*ReleaseEnvironmentInfo)
+func (r *ReleaseInfo) addEnvironmentRelease(environmentInfo *status.EnvironmentRelease) {
+	if r.environmentToEnvironmentRelease == nil {
+		r.environmentToEnvironmentRelease = make(map[string]*status.EnvironmentRelease)
 	}
-	r.environmentToEnvironmentInfo[environmentInfo.EnvironmentFilename] = environmentInfo
+	r.environmentToEnvironmentRelease[environmentInfo.Environment] = environmentInfo
 }
 
-func (r *ReleaseInfo) GetInfoForEnvironment(environment string) *ReleaseEnvironmentInfo {
+func (r *ReleaseInfo) GetEnvironmentRelease(environment string) *status.EnvironmentRelease {
 	if r == nil {
 		return nil
 	}
-	return r.environmentToEnvironmentInfo[environment]
+	return r.environmentToEnvironmentRelease[environment]
 }

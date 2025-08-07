@@ -11,13 +11,12 @@ import (
 	"sync"
 	"time"
 
-	arohcpapi "github.com/openshift-online/service-status/pkg/apis/aro-hcp"
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	"k8s.io/klog/v2"
-	"k8s.io/utils/ptr"
 )
 
 type ImageInfoAccessor interface {
-	GetImageInfo(ctx context.Context, containerImage *arohcpapi.ContainerImage) (ImageInfo, error)
+	GetImageInfo(ctx context.Context, containerImage *status.ContainerImage) (ImageInfo, error)
 }
 
 type ThreadSafeImageInfoAccessor struct {
@@ -35,7 +34,7 @@ func NewThreadSafeImageInfoAccessor(pullSecretDir string) *ThreadSafeImageInfoAc
 	}
 }
 
-func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containerImage *arohcpapi.ContainerImage) (ImageInfo, error) {
+func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containerImage *status.ContainerImage) (ImageInfo, error) {
 	imagePullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)
@@ -73,12 +72,11 @@ type ImageInfo struct {
 	SourceSHA         string
 }
 
-func PullSpecFromContainerImage(containerImage *arohcpapi.ContainerImage) (string, error) {
+func PullSpecFromContainerImage(containerImage *status.ContainerImage) (string, error) {
 	if containerImage == nil {
 		return "", fmt.Errorf("container image is missing")
 	}
-	registry := ptr.Deref(containerImage.Registry, "")
-	if len(registry) == 0 {
+	if len(containerImage.Registry) == 0 {
 		return "", fmt.Errorf("container registry is missing")
 	}
 	if len(containerImage.Digest) == 0 {
@@ -87,7 +85,7 @@ func PullSpecFromContainerImage(containerImage *arohcpapi.ContainerImage) (strin
 	if len(containerImage.Repository) == 0 {
 		return "", fmt.Errorf("container repository is missing")
 	}
-	return fmt.Sprintf("%s/%s@%s", registry, containerImage.Repository, containerImage.Digest), nil
+	return fmt.Sprintf("%s/%s@%s", containerImage.Registry, containerImage.Repository, containerImage.Digest), nil
 }
 
 func pullImage(ctx context.Context, imagePullSpec string, credentialFilePath string) error {
@@ -192,7 +190,7 @@ func getImageInfo(imageInspect map[string]interface{}) ImageInfo {
 	return imageInfo
 }
 
-func getImageInfoForImagePullSpec(ctx context.Context, containerImage *arohcpapi.ContainerImage, credentialFilePath string) (ImageInfo, error) {
+func getImageInfoForImagePullSpec(ctx context.Context, containerImage *status.ContainerImage, credentialFilePath string) (ImageInfo, error) {
 	pullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)

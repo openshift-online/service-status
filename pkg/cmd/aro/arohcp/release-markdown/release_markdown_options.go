@@ -122,12 +122,12 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 		if err := os.MkdirAll(path.Join(o.OutputDir, releaseName), 0755); err != nil {
 			return fmt.Errorf("failed to create output directory: %w", err)
 		}
-		for _, currReleaseEnvironmentFilemame := range newReleaseInfo.GetEnvironmentFilenames() {
-			currReleaseEnvironment := newReleaseInfo.GetInfoForEnvironment(currReleaseEnvironmentFilemame)
-			prevReleaseEnvironmentInfo := prevReleaseInfo.GetInfoForEnvironment(currReleaseEnvironment.EnvironmentFilename)
-			markdown := releaseEnvironmentMarkdown(currReleaseEnvironment, prevReleaseEnvironmentInfo)
+		for _, currReleaseEnvironmentFilemame := range newReleaseInfo.GetEnvironmentNames() {
+			currReleaseEnvironment := newReleaseInfo.GetEnvironmentRelease(currReleaseEnvironmentFilemame)
+			prevReleaseEnvironmentInfo := prevReleaseInfo.GetEnvironmentRelease(currReleaseEnvironment.Environment)
+			markdown := environmentReleaseMarkdown(currReleaseEnvironment, prevReleaseEnvironmentInfo)
 
-			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.EnvironmentFilename+".md")
+			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.Environment+".md")
 			if err := os.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", fullPath, err)
 			}
