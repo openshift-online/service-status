@@ -10,7 +10,7 @@ import (
 	"k8s.io/utils/set"
 )
 
-func markdownForPertinentInfo(info *release_inspection.DeployedImageInfo) string {
+func markdownForPertinentInfo(info *release_inspection.ComponentInfo) string {
 	markdown := &strings.Builder{}
 	fmt.Fprintf(markdown, "### [%s](%s)\n", info.Name, info.RepoLink)
 	fmt.Fprintf(markdown, "* %s\n", info.RepoLink)
@@ -39,10 +39,10 @@ func releaseEnvironmentMarkdown(currReleaseEnvironmentInfo, prevReleaseEnvironme
 	if len(changedComponents) == 0 {
 		fmt.Fprintf(markdown, "*No Changes*\n\n")
 	} else {
-		for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.DeployedImages).SortedList() {
-			currInfo := currReleaseEnvironmentInfo.DeployedImages[componentName]
+		for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.Components).SortedList() {
+			currInfo := currReleaseEnvironmentInfo.Components[componentName]
 			if prevReleaseEnvironmentInfo != nil {
-				prevInfo := prevReleaseEnvironmentInfo.DeployedImages[componentName]
+				prevInfo := prevReleaseEnvironmentInfo.Components[componentName]
 				if reflect.DeepEqual(currInfo, prevInfo) {
 					continue
 				}
@@ -53,8 +53,8 @@ func releaseEnvironmentMarkdown(currReleaseEnvironmentInfo, prevReleaseEnvironme
 	}
 
 	fmt.Fprintf(markdown, "## Content\n\n")
-	for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.DeployedImages).SortedList() {
-		info := currReleaseEnvironmentInfo.DeployedImages[componentName]
+	for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.Components).SortedList() {
+		info := currReleaseEnvironmentInfo.Components[componentName]
 		fmt.Fprintf(markdown, markdownForPertinentInfo(info))
 	}
 

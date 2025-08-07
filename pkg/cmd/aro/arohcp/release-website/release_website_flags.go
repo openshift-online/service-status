@@ -18,10 +18,11 @@ type ReleaseMarkdownFlags struct {
 	BindAddress net.IP
 	BindPort    int
 
-	FileBasedAPIDir string
-	AROHCPDir       string
-	PullSecretDir   string
-	NumberOfDays    int
+	FileBasedAPIDir           string
+	AROHCPDir                 string
+	PullSecretDir             string
+	ComponentGitRepoParentDir string
+	NumberOfDays              int
 
 	util.IOStreams
 }
@@ -69,6 +70,7 @@ func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&f.FileBasedAPIDir, "filebased-api-dir", f.FileBasedAPIDir, "The directory to read canned responses.")
 	flags.StringVar(&f.AROHCPDir, "aro-hcp-dir", f.AROHCPDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
 	flags.StringVar(&f.PullSecretDir, "pull-secret-dir", f.PullSecretDir, "The directory where dockerconfig.json's are located.")
+	flags.StringVar(&f.ComponentGitRepoParentDir, "component-git-repo-storage-dir", f.ComponentGitRepoParentDir, "The parent directory where components will be extracted for diff analysis.")
 
 	flags.IPVar(&f.BindAddress, "bind-address", f.BindAddress, "The IP address on which to listen for the --secure-port port.")
 	flags.IntVar(&f.BindPort, "bind-port", f.BindPort, "The port on which to serve HTTP with authentication and authorization.")
@@ -85,6 +87,15 @@ func (f *ReleaseMarkdownFlags) Validate() error {
 		return fmt.Errorf("one of --filebased-api-dir and --aro-hcp-dir must be specified")
 	}
 
+	if len(f.PullSecretDir) == 0 {
+		return fmt.Errorf("--pull-secret-dir must be specified")
+	}
+	if len(f.AROHCPDir) > 0 {
+		return nil
+	}
+	if len(f.FileBasedAPIDir) > 0 {
+	}
+
 	if len(f.BindAddress) == 0 || f.BindAddress.IsUnspecified() {
 		return fmt.Errorf("--bind-address must be specified")
 	}
@@ -95,6 +106,11 @@ func (f *ReleaseMarkdownFlags) Validate() error {
 }
 
 func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
+	gitAccessor := release_inspection.NewDummyComponentsGitInfo()
+	if len(f.ComponentGitRepoParentDir) > 0 {
+		gitAccessor = release_inspection.NewComponentsGitInfo(f.ComponentGitRepoParentDir)
+	}
+
 	return &ReleaseMarkdownOptions{
 		BindAddress:       f.BindAddress,
 		BindPort:          f.BindPort,
@@ -102,6 +118,7 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 		AROHCPDir:         f.AROHCPDir,
 		NumberOfDays:      f.NumberOfDays,
 		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
+		GitAccessor:       gitAccessor,
 
 		IOStreams: f.IOStreams,
 	}, nil

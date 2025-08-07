@@ -89,44 +89,44 @@ func environmentsWithIdenticalImages(currEnvironmentInfo *release_inspection.Rel
 	sameEnvironments := set.Set[string]{}
 
 	for _, otherEnvironmentInfo := range otherEnvironmentInfos {
-		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allComponents := set.Set[string]{}
+		allComponents.Insert(set.KeySet(currEnvironmentInfo.Components).UnsortedList()...)
+		allComponents.Insert(set.KeySet(otherEnvironmentInfo.Components).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
-		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
-			if currDeployedImageInfo == nil {
-				currMissingImages.Insert(deployedImageName)
+		for _, componentName := range allComponents.SortedList() {
+			currComponent := currEnvironmentInfo.Components[componentName]
+			otherComponent := otherEnvironmentInfo.Components[componentName]
+			if currComponent == nil {
+				currMissingImages.Insert(componentName)
 				continue
 			}
-			if otherDeployedImageInfo == nil {
-				otherMissingImages.Insert(deployedImageName)
-				continue
-			}
-
-			if currDeployedImageInfo.ImageInfo == nil {
-				differentImageDetails[deployedImageName] = "currDeployedImageInfo is missing, assuming different"
-				continue
-			}
-			if otherDeployedImageInfo.ImageInfo == nil {
-				differentImageDetails[deployedImageName] = "otherDeployedImageInfo is missing, assuming different"
+			if otherComponent == nil {
+				otherMissingImages.Insert(componentName)
 				continue
 			}
 
-			currImageDigest := currDeployedImageInfo.ImageInfo.Digest
-			otherImageDigest := otherDeployedImageInfo.ImageInfo.Digest
+			if currComponent.ImageInfo == nil {
+				differentImageDetails[componentName] = "currComponent is missing, assuming different"
+				continue
+			}
+			if otherComponent.ImageInfo == nil {
+				differentImageDetails[componentName] = "otherComponent is missing, assuming different"
+				continue
+			}
+
+			currImageDigest := currComponent.ImageInfo.Digest
+			otherImageDigest := otherComponent.ImageInfo.Digest
 			if currImageDigest == otherImageDigest {
-				sameImages.Insert(deployedImageName)
+				sameImages.Insert(componentName)
 				continue
 			}
-			differentImageDetails[deployedImageName] = "Different, but missing details"
+			differentImageDetails[componentName] = "Different, but missing details"
 
-			if currDeployedImageInfo.ImageCreationTime == nil || otherDeployedImageInfo.ImageCreationTime == nil {
+			if currComponent.ImageCreationTime == nil || otherComponent.ImageCreationTime == nil {
 				continue
 			}
 		}
@@ -162,66 +162,66 @@ func markdownOfCurrentEnvironmentToOthers(currEnvironmentInfo *release_inspectio
 			continue
 		}
 
-		allDeployedImages := set.Set[string]{}
-		allDeployedImages.Insert(set.KeySet(currEnvironmentInfo.DeployedImages).UnsortedList()...)
-		allDeployedImages.Insert(set.KeySet(otherEnvironmentInfo.DeployedImages).UnsortedList()...)
+		allComponents := set.Set[string]{}
+		allComponents.Insert(set.KeySet(currEnvironmentInfo.Components).UnsortedList()...)
+		allComponents.Insert(set.KeySet(otherEnvironmentInfo.Components).UnsortedList()...)
 
 		sameImages := set.Set[string]{}
 		differentImageDetails := map[string]string{}
 		currMissingImages := set.Set[string]{}
 		otherMissingImages := set.Set[string]{}
-		for _, deployedImageName := range allDeployedImages.SortedList() {
-			currDeployedImageInfo := currEnvironmentInfo.DeployedImages[deployedImageName]
-			otherDeployedImageInfo := otherEnvironmentInfo.DeployedImages[deployedImageName]
-			if currDeployedImageInfo == nil {
-				currMissingImages.Insert(deployedImageName)
+		for _, componentName := range allComponents.SortedList() {
+			currComponent := currEnvironmentInfo.Components[componentName]
+			otherComponent := otherEnvironmentInfo.Components[componentName]
+			if currComponent == nil {
+				currMissingImages.Insert(componentName)
 				continue
 			}
-			if otherDeployedImageInfo == nil {
-				otherMissingImages.Insert(deployedImageName)
-				continue
-			}
-
-			if currDeployedImageInfo.ImageInfo == nil {
-				differentImageDetails[deployedImageName] = "currDeployedImageInfo is missing, assuming different"
-				continue
-			}
-			if otherDeployedImageInfo.ImageInfo == nil {
-				differentImageDetails[deployedImageName] = "otherDeployedImageInfo is missing, assuming different"
+			if otherComponent == nil {
+				otherMissingImages.Insert(componentName)
 				continue
 			}
 
-			currImageDigest := currDeployedImageInfo.ImageInfo.Digest
-			otherImageDigest := otherDeployedImageInfo.ImageInfo.Digest
+			if currComponent.ImageInfo == nil {
+				differentImageDetails[componentName] = "currComponent is missing, assuming different"
+				continue
+			}
+			if otherComponent.ImageInfo == nil {
+				differentImageDetails[componentName] = "otherComponent is missing, assuming different"
+				continue
+			}
+
+			currImageDigest := currComponent.ImageInfo.Digest
+			otherImageDigest := otherComponent.ImageInfo.Digest
 			if currImageDigest == otherImageDigest {
-				sameImages.Insert(deployedImageName)
+				sameImages.Insert(componentName)
 				continue
 			}
 
 			switch {
-			case currDeployedImageInfo.ImageCreationTime == nil || otherDeployedImageInfo.ImageCreationTime == nil:
-				differentImageDetails[deployedImageName] = "is different, but missing details"
+			case currComponent.ImageCreationTime == nil || otherComponent.ImageCreationTime == nil:
+				differentImageDetails[componentName] = "is different, but missing details"
 
-			case currDeployedImageInfo.ImageCreationTime.After(*otherDeployedImageInfo.ImageCreationTime):
-				newerDuration := currDeployedImageInfo.ImageCreationTime.Sub(*otherDeployedImageInfo.ImageCreationTime)
+			case currComponent.ImageCreationTime.After(*otherComponent.ImageCreationTime):
+				newerDuration := currComponent.ImageCreationTime.Sub(*otherComponent.ImageCreationTime)
 				if newerDuration < 24*time.Hour {
-					differentImageDetails[deployedImageName] = fmt.Sprintf("is %v newer", newerDuration.Round(time.Hour))
+					differentImageDetails[componentName] = fmt.Sprintf("is %v newer", newerDuration.Round(time.Hour))
 				} else {
 					days := int64(newerDuration / (24 * time.Hour))
-					differentImageDetails[deployedImageName] = fmt.Sprintf("is %v days newer", days)
+					differentImageDetails[componentName] = fmt.Sprintf("is %v days newer", days)
 				}
 
-			case otherDeployedImageInfo.ImageCreationTime.After(*currDeployedImageInfo.ImageCreationTime):
-				olderDuration := otherDeployedImageInfo.ImageCreationTime.Sub(*currDeployedImageInfo.ImageCreationTime)
+			case otherComponent.ImageCreationTime.After(*currComponent.ImageCreationTime):
+				olderDuration := otherComponent.ImageCreationTime.Sub(*currComponent.ImageCreationTime)
 				if olderDuration < 24*time.Hour {
-					differentImageDetails[deployedImageName] = fmt.Sprintf("is %v older", olderDuration.Round(time.Hour))
+					differentImageDetails[componentName] = fmt.Sprintf("is %v older", olderDuration.Round(time.Hour))
 				} else {
 					days := int64(olderDuration / (24 * time.Hour))
-					differentImageDetails[deployedImageName] = fmt.Sprintf("is %v days older", days)
+					differentImageDetails[componentName] = fmt.Sprintf("is %v days older", days)
 				}
 
 			default:
-				differentImageDetails[deployedImageName] = "is different, but missing details (default case)"
+				differentImageDetails[componentName] = "is different, but missing details (default case)"
 			}
 		}
 		differentImages := set.KeySet(differentImageDetails)

@@ -122,3 +122,7 @@ func (c *fileBasedReleaseClient) GetEnvironmentRelease(ctx context.Context, envi
 
 	return nil, fmt.Errorf("environmentrelease %v not found", fmt.Sprintf("%v---%v", environmentName, releaseName))
 }
+
+func (c *fileBasedReleaseClient) GetEnvironmentReleaseDiff(ctx context.Context, environmentReleaseName, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
+	return nil, fmt.Errorf("not implemented")
+}

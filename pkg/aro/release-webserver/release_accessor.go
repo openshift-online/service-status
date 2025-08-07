@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +17,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -24,8 +27,9 @@ import (
 type ReleaseAccessor interface {
 	ListEnvironments(ctx context.Context) ([]string, error)
 	ListReleases(ctx context.Context) ([]Release, error)
-	GetReleaseEnvironmentInfo(ctx context.Context, release Release, environment string) (*release_inspection.ReleaseEnvironmentInfo, error)
-	GetReleaseInfoForAllEnvironments(ctx context.Context, release Release) (*release_inspection.ReleaseInfo, error)
+	GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*release_inspection.ReleaseEnvironmentInfo, error)
+	GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error)
+	GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error)
 }
 
 type Release struct {
@@ -34,31 +38,62 @@ type Release struct {
 }
 
 type releaseAccessor struct {
-	aroHCPDir         string
-	numberOfDays      int
-	imageInfoAccessor release_inspection.ImageInfoAccessor
+	aroHCPDir            string
+	numberOfDays         int
+	imageInfoAccessor    release_inspection.ImageInfoAccessor
+	componentGitAccessor release_inspection.ComponentsGitInfo
 
-	gitLock           sync.Mutex
-	releaseNameToInfo map[string]*release_inspection.ReleaseInfo
+	gitLock              sync.Mutex
+	releaseNameToInfo    map[string]*release_inspection.ReleaseInfo
+	releaseNameToRelease map[string]*Release
 }
 
-func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor) ReleaseAccessor {
+func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor, componentGitAccessor release_inspection.ComponentsGitInfo) ReleaseAccessor {
 	return &releaseAccessor{
-		aroHCPDir:         aroHCPDir,
-		numberOfDays:      numberOfDays,
-		imageInfoAccessor: imageInfoAccessor,
-		releaseNameToInfo: map[string]*release_inspection.ReleaseInfo{},
+		aroHCPDir:            aroHCPDir,
+		numberOfDays:         numberOfDays,
+		imageInfoAccessor:    imageInfoAccessor,
+		componentGitAccessor: componentGitAccessor,
+		releaseNameToInfo:    map[string]*release_inspection.ReleaseInfo{},
+		releaseNameToRelease: map[string]*Release{},
 	}
 }
 
-func (r releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error) {
+func (r *releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error) {
 	// TODO list the releases to locate all the available names.
 	return []string{"int", "stg", "prod"}, nil
 }
 
 var interestingFiles = set.New("config/config.msft.clouds-overlay.yaml")
 
-func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
+func (r *releaseAccessor) getReleaseFromName(ctx context.Context, releaseName string) (*Release, error) {
+	r.gitLock.Lock()
+
+	release := r.releaseNameToRelease[releaseName]
+	if release != nil {
+		defer r.gitLock.Unlock()
+		return release, nil
+	}
+
+	r.gitLock.Unlock()
+
+	releases, err := r.ListReleases(ctx)
+	if err != nil {
+		for _, release := range releases {
+			if release.Name == releaseName {
+				r.releaseNameToRelease[releaseName] = &release
+				return &release, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("failed to find release %q", releaseName)
+}
+
+func (r *releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
+	r.gitLock.Lock()
+	defer r.gitLock.Unlock()
+
 	logger := klog.FromContext(ctx)
 
 	aroHCPRepo, err := git.PlainOpen(r.aroHCPDir)
@@ -151,21 +186,170 @@ func (r releaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
 	}
 	logger.Info("Found releases.", "releaseCount", len(releases))
 
+	for i, release := range releases {
+		r.releaseNameToRelease[release.Name] = &releases[i]
+	}
+
 	return releases, nil
 }
 
-func (r *releaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, release Release, environment string) (*release_inspection.ReleaseEnvironmentInfo, error) {
-	releaseInfo, err := r.GetReleaseInfoForAllEnvironments(ctx, release)
+func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentName string) (*status.EnvironmentReleaseDiff, error) {
+	environmentRelease, err := r.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get release environment info: %w", err)
+	}
+	otherEnvironmentRelease, err := r.GetReleaseEnvironmentInfo(ctx, otherEnvironmentName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get other release environment info: %w", err)
+	}
+
+	ret := &status.EnvironmentReleaseDiff{
+		TypeMeta: status.TypeMeta{
+			Kind:       "EnvironmentReleaseDiff",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Name:                        environmentReleaseName,
+		OtherEnvironmentReleaseName: otherEnvironmentName,
+		DifferentComponents:         map[string]*status.ComponentDiff{},
+	}
+	for _, component := range environmentRelease.Components {
+		var otherComponent *release_inspection.ComponentInfo
+		for _, currOtherComponent := range otherEnvironmentRelease.Components {
+			if component.Name == currOtherComponent.Name {
+				otherComponent = currOtherComponent
+				break
+			}
+		}
+		if otherComponent == nil {
+			continue
+		}
+
+		if component.RepoLink == nil {
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To("No known repository link"),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
+		}
+		if strings.Contains(component.RepoLink.String(), "gitlab") {
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To("Cannot yet reach gitlab."),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
+		}
+		if len(component.SourceSHA) == 0 {
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To(fmt.Sprintf("target environment release has no SHA")),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
+		}
+		if len(otherComponent.SourceSHA) == 0 {
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To(fmt.Sprintf("source environment release has no SHA")),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
+		}
+
+		gitAccessor, err := r.componentGitAccessor.GetComponentGitAccessor(ctx, component.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get component git accessor: %w", err)
+		}
+		diffs, err := gitAccessor.GetDiffForSHAs(ctx, component.SourceSHA, otherComponent.SourceSHA, 100)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get diff component %q, curr=%q, other=%q for SHAs: %w", component.Name, component.SourceSHA, otherComponent.SourceSHA, err)
+		}
+		if len(diffs) == 0 {
+			continue
+		}
+
+		componentDiff := &status.ComponentDiff{
+			Name:    component.Name,
+			Changes: []status.ComponentChange{},
+		}
+		for _, diff := range diffs {
+			if len(diff.ParentHashes) < 2 {
+				continue
+			}
+			componentDiff.NumberOfChanges++
+
+			currChange := status.ComponentChange{
+				ChangeType: "PRMerge",
+				PRMerge: &status.PRMerge{
+					SHA: diff.Hash.String(),
+				},
+			}
+
+			// Extract PR number from merge commit message
+			if prMatch := regexp.MustCompile(`Merge pull request #(\d+)`).FindStringSubmatch(diff.Message); len(prMatch) > 1 {
+				if prNum, err := strconv.Atoi(prMatch[1]); err == nil {
+					currChange.PRMerge.PRNumber = int32(prNum)
+				}
+			}
+
+			messageLines := strings.SplitN(diff.Message, "\n", 4)
+			if len(messageLines) < 3 {
+				currChange.PRMerge.ChangeSummary = fmt.Sprintf("Hash: %s, Message: %s", diff.Hash.String(), messageLines[0])
+			} else {
+				currChange.PRMerge.ChangeSummary = messageLines[2]
+			}
+
+			componentDiff.Changes = append(componentDiff.Changes, currChange)
+		}
+		ret.DifferentComponents[component.Name] = componentDiff
+	}
+
+	return ret, nil
+}
+
+func (r *releaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*release_inspection.ReleaseEnvironmentInfo, error) {
+	environmentName, releaseName, _ := SplitEnvironmentReleaseName(environmentReleaseName)
+	releaseInfo, err := r.GetReleaseInfoForAllEnvironments(ctx, releaseName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release info: %w", err)
 	}
-	return releaseInfo.GetInfoForEnvironment(environment), nil
+	return releaseInfo.GetInfoForEnvironment(environmentName), nil
 }
 
-func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, release Release) (*release_inspection.ReleaseInfo, error) {
+func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error) {
 	enviroments, err := r.ListEnvironments(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list environments: %w", err)
+	}
+
+	release, err := r.getReleaseFromName(ctx, releaseName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get release: %w", err)
 	}
 
 	r.gitLock.Lock()
@@ -194,7 +378,7 @@ func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, 
 	}()
 
 	localLogger := klog.FromContext(ctx)
-	localLogger = klog.LoggerWithValues(localLogger, "releaseName", release.Name)
+	localLogger = klog.LoggerWithValues(localLogger, "releaseName", releaseName)
 	localCtx := klog.NewContext(ctx, localLogger)
 
 	err = aroHCPWorkTree.Reset(&git.ResetOptions{
@@ -211,13 +395,13 @@ func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, 
 		return nil, nil
 	}
 
-	releaseDiffReporter := release_inspection.NewReleaseDiffReport(r.imageInfoAccessor, release.Name, release.Commit.String(), r.aroHCPDir, enviroments)
+	releaseDiffReporter := release_inspection.NewReleaseDiffReport(r.imageInfoAccessor, releaseName, release.Commit.String(), r.aroHCPDir, enviroments)
 	newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release markdowns: %w", err)
 	}
 
-	r.releaseNameToInfo[release.Name] = newReleaseInfo
+	r.releaseNameToInfo[releaseName] = newReleaseInfo
 
-	return r.releaseNameToInfo[release.Name], nil
+	return r.releaseNameToInfo[releaseName], nil
 }

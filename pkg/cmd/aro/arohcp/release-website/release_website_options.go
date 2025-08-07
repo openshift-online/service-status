@@ -24,6 +24,7 @@ type ReleaseMarkdownOptions struct {
 	NumberOfDays    int
 
 	ImageInfoAccessor release_inspection.ImageInfoAccessor
+	GitAccessor       release_inspection.ComponentsGitInfo
 
 	util.IOStreams
 }
@@ -32,7 +33,12 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	logger := klog.FromContext(ctx)
 
 	releaseAccessor := release_webserver.NewCachingReleaseAccessor(
-		release_webserver.NewReleaseAccessor(o.AROHCPDir, o.NumberOfDays, o.ImageInfoAccessor),
+		release_webserver.NewReleaseAccessor(
+			o.AROHCPDir,
+			o.NumberOfDays,
+			o.ImageInfoAccessor,
+			o.GitAccessor,
+		),
 		clock.RealClock{})
 
 	var releaseClient client.ReleaseClient
@@ -55,6 +61,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	httpRouter.GET("/api/aro-hcp/releases/:name", release_webserver.GetRelease(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases", release_webserver.ListEnvironmentReleases(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases/:name", release_webserver.GetEnvironmentRelease(releaseAccessor))
+	httpRouter.GET("/api/aro-hcp/environmentreleases/:name/diff/:otherName", release_webserver.GetEnvironmentReleaseDiff(releaseAccessor))
 
 	// HTML endpoints
 	httpRouter.LoadHTMLGlob("pkg/aro/release-webserver/html-templates/*")

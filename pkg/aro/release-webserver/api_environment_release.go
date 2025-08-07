@@ -1,6 +1,7 @@
 package release_webserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -36,7 +37,7 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 		}
 		for _, environment := range environments {
 			for _, release := range releases {
-				currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, release, environment)
+				currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, GetEnvironmentReleaseName(environment, release.Name))
 				if err != nil {
 					c.String(500, "failed to get release env env=%q, release=%q: %v", environment, release, err)
 					return
@@ -69,42 +70,29 @@ func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 
-		name := c.Param("name")
-		environmentName, releaseName, found := SplitEnvironmentReleaseName(name)
-		if !found {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", name)})
+		environmentReleaseName := c.Param("name")
+		ret, err := getEnvironmentRelease(ctx, accessor, environmentReleaseName)
+		if err != nil && strings.Contains(err.Error(), "not found") {
+			c.String(http.StatusNotFound, "not found")
 			return
 		}
-
-		// TODO better
-		releases, err := accessor.ListReleases(ctx)
 		if err != nil {
-			c.String(500, "failed to list environments: %v", err)
+			c.String(http.StatusInternalServerError, "failed to get release info: %v", err)
 			return
 		}
-
-		var release *Release
-		for _, currRelease := range releases {
-			if currRelease.Name == releaseName {
-				release = &currRelease
-				break
-			}
-		}
-		if release == nil {
-			c.String(500, "failed to find release %q: %v", releaseName, err)
-			return
-		}
-
-		currReleaseEnvironmentInfo, _ := accessor.GetReleaseEnvironmentInfo(ctx, *release, environmentName)
-		if currReleaseEnvironmentInfo == nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("%q not found", name)})
-			return
-		}
-
-		ret := accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo)
 
 		c.IndentedJSON(http.StatusOK, ret)
 	}
+}
+
+func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
+	currReleaseEnvironmentInfo, _ := accessor.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+	if currReleaseEnvironmentInfo == nil {
+		return nil, fmt.Errorf("%q not found", environmentReleaseName)
+	}
+
+	ret := accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo)
+	return ret, nil
 }
 
 func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo) *status.EnvironmentRelease {
@@ -120,10 +108,10 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 		ReleaseName: currReleaseEnvironmentInfo.ReleaseName,
 		SHA:         currReleaseEnvironmentInfo.ReleaseSHA,
 		Environment: currReleaseEnvironmentInfo.EnvironmentFilename,
-		Images:      map[string]*status.DeployedImageInfo{},
+		Components:  map[string]*status.ComponentInfo{},
 	}
-	for _, imageInfo := range currReleaseEnvironmentInfo.DeployedImages {
-		ret.Images[imageInfo.Name] = &status.DeployedImageInfo{
+	for _, imageInfo := range currReleaseEnvironmentInfo.Components {
+		ret.Components[imageInfo.Name] = &status.ComponentInfo{
 			Name: imageInfo.Name,
 			ImageInfo: status.ContainerImage{
 				Digest:     "",
@@ -134,15 +122,15 @@ func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection
 			SourceSHA:         imageInfo.SourceSHA,
 		}
 		if imageInfo.RepoLink != nil {
-			ret.Images[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
+			ret.Components[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
 		}
 		if imageInfo.PermLinkForSourceSHA != nil {
-			ret.Images[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
+			ret.Components[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
 		}
 		if imageInfo.ImageInfo != nil {
-			ret.Images[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest
-			ret.Images[imageInfo.Name].ImageInfo.Registry = ptr.Deref(imageInfo.ImageInfo.Registry, "MISSING REGISTRY")
-			ret.Images[imageInfo.Name].ImageInfo.Repository = imageInfo.ImageInfo.Repository
+			ret.Components[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest
+			ret.Components[imageInfo.Name].ImageInfo.Registry = ptr.Deref(imageInfo.ImageInfo.Registry, "MISSING REGISTRY")
+			ret.Components[imageInfo.Name].ImageInfo.Repository = imageInfo.ImageInfo.Repository
 		}
 	}
 	return ret

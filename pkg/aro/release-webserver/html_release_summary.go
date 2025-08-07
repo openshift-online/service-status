@@ -106,16 +106,16 @@ func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *s
 	changedComponents := set.Set[string]{}
 
 	if prevReleaseEnvironmentInfo == nil {
-		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Images {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+		for _, currComponent := range currReleaseEnvironmentInfo.Components {
+			changedComponents.Insert(currComponent.Name)
 		}
 		return changedComponents
 	}
 
-	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.Images {
-		prevDeployedImageInfo := prevReleaseEnvironmentInfo.Images[currDeployedImageInfo.Name]
-		if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+	for _, currComponent := range currReleaseEnvironmentInfo.Components {
+		prevComponent := prevReleaseEnvironmentInfo.Components[currComponent.Name]
+		if !reflect.DeepEqual(prevComponent.ImageInfo, currComponent.ImageInfo) {
+			changedComponents.Insert(currComponent.Name)
 		}
 	}
 

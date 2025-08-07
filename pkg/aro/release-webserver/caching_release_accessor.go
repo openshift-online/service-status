@@ -2,9 +2,12 @@ package release_webserver
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/clock"
 )
@@ -13,82 +16,66 @@ type cachingReleaseAccessor struct {
 	delegate ReleaseAccessor
 	clock    clock.Clock
 
-	listReleases              *singleResultTimeBasedCacher[[]Release]
-	listEnvironments          *singleResultTimeBasedCacher[[]string]
-	getReleaseEnvironmentInfo *releaseEnvironmentBasedResultTimeBasedCacher[*release_inspection.ReleaseEnvironmentInfo]
+	listReleases                     *stringBasedResultTimeBasedCacher[[]Release]
+	listEnvironments                 *stringBasedResultTimeBasedCacher[[]string]
+	getReleaseInfoForAllEnvironments *stringBasedResultTimeBasedCacher[*release_inspection.ReleaseInfo]
+	getReleaseEnvironmentInfo        *stringBasedResultTimeBasedCacher[*release_inspection.ReleaseEnvironmentInfo]
+	getReleaseEnvironmentDiff        *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]
 }
 
 func NewCachingReleaseAccessor(delegate ReleaseAccessor, clock clock.Clock) ReleaseAccessor {
 	return &cachingReleaseAccessor{
 		delegate: delegate,
 		clock:    clock,
-		listReleases: &singleResultTimeBasedCacher[[]Release]{
-			delegate: delegate.ListReleases,
+		listReleases: &stringBasedResultTimeBasedCacher[[]Release]{
+			delegate: noKeyAdapter(delegate.ListReleases),
 			clock:    clock,
 		},
-		listEnvironments: &singleResultTimeBasedCacher[[]string]{
-			delegate: delegate.ListEnvironments,
+		listEnvironments: &stringBasedResultTimeBasedCacher[[]string]{
+			delegate: noKeyAdapter(delegate.ListEnvironments),
 			clock:    clock,
 		},
-		getReleaseEnvironmentInfo: &releaseEnvironmentBasedResultTimeBasedCacher[*release_inspection.ReleaseEnvironmentInfo]{
+		getReleaseInfoForAllEnvironments: &stringBasedResultTimeBasedCacher[*release_inspection.ReleaseInfo]{
+			delegate: delegate.GetReleaseInfoForAllEnvironments,
+			clock:    clock,
+		},
+		getReleaseEnvironmentInfo: &stringBasedResultTimeBasedCacher[*release_inspection.ReleaseEnvironmentInfo]{
 			delegate: delegate.GetReleaseEnvironmentInfo,
 			clock:    clock,
 		},
+		getReleaseEnvironmentDiff: &stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]{
+			delegate: twoStringAdapter(delegate.GetReleaseEnvironmentDiff),
+			clock:    clock,
+		},
 	}
 }
 
-type singleResultTimeBasedCacher[T any] struct {
-	delegate func(ctx context.Context) (T, error)
+func noKeyAdapter[T any](fn func(ctx context.Context) (T, error)) func(ctx context.Context, key string) (T, error) {
+	return func(ctx context.Context, key string) (T, error) {
+		return fn(ctx)
+	}
+}
+
+func twoStringAdapter[T any](fn func(ctx context.Context, part1, part2 string) (T, error)) func(ctx context.Context, key string) (T, error) {
+	return func(ctx context.Context, key string) (T, error) {
+		part1, part2, found := strings.Cut(key, "###")
+		if !found {
+			panic("caller error: key should contain ### separator")
+		}
+		return fn(ctx, part1, part2)
+	}
+}
+
+type stringBasedResultTimeBasedCacher[T any] struct {
+	delegate func(ctx context.Context, key string) (T, error)
 	clock    clock.Clock
 
 	lock        sync.RWMutex
-	lastRefresh time.Time
-	result      T
+	lastRefresh map[string]time.Time
+	results     map[string]T
 }
 
-func (r *singleResultTimeBasedCacher[T]) Do(ctx context.Context) (T, error) {
-	r.lock.RLock()
-	if r.clock.Since(r.lastRefresh) < 1*time.Hour {
-		defer r.lock.RUnlock()
-		return r.result, nil
-	}
-	r.lock.RUnlock()
-
-	r.lock.Lock()
-	defer r.lock.Unlock()
-
-	if r.clock.Since(r.lastRefresh) < 1*time.Hour {
-		return r.result, nil
-	}
-
-	curr, err := r.delegate(ctx)
-	if err != nil {
-		return curr, err
-	}
-
-	r.lastRefresh = r.clock.Now()
-	r.result = curr
-	return r.result, nil
-}
-
-type releaseEnvironmentBasedResultTimeBasedCacher[T any] struct {
-	delegate func(ctx context.Context, release Release, environment string) (T, error)
-	clock    clock.Clock
-
-	lock        sync.RWMutex
-	lastRefresh map[releaseEnvironmentKey]time.Time
-	results     map[releaseEnvironmentKey]T
-}
-type releaseEnvironmentKey struct {
-	Release     Release
-	Environment string
-}
-
-func (r *releaseEnvironmentBasedResultTimeBasedCacher[T]) Do(ctx context.Context, release Release, environment string) (T, error) {
-	key := releaseEnvironmentKey{
-		Release:     release,
-		Environment: environment,
-	}
+func (r *stringBasedResultTimeBasedCacher[T]) Do(ctx context.Context, key string) (T, error) {
 	r.lock.RLock()
 	if r.clock.Since(r.lastRefresh[key]) < 1*time.Hour {
 		defer r.lock.RUnlock()
@@ -103,16 +90,16 @@ func (r *releaseEnvironmentBasedResultTimeBasedCacher[T]) Do(ctx context.Context
 		return r.results[key], nil
 	}
 
-	curr, err := r.delegate(ctx, release, environment)
+	curr, err := r.delegate(ctx, key)
 	if err != nil {
 		return curr, err
 	}
 
 	if r.results == nil {
-		r.results = make(map[releaseEnvironmentKey]T)
+		r.results = make(map[string]T)
 	}
 	if r.lastRefresh == nil {
-		r.lastRefresh = make(map[releaseEnvironmentKey]time.Time)
+		r.lastRefresh = make(map[string]time.Time)
 	}
 	r.lastRefresh[key] = r.clock.Now()
 	r.results[key] = curr
@@ -120,17 +107,21 @@ func (r *releaseEnvironmentBasedResultTimeBasedCacher[T]) Do(ctx context.Context
 }
 
 func (r *cachingReleaseAccessor) ListEnvironments(ctx context.Context) ([]string, error) {
-	return r.listEnvironments.Do(ctx)
+	return r.listEnvironments.Do(ctx, "")
 }
 
 func (r *cachingReleaseAccessor) ListReleases(ctx context.Context) ([]Release, error) {
-	return r.listReleases.Do(ctx)
+	return r.listReleases.Do(ctx, "")
 }
 
-func (r *cachingReleaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, release Release, environment string) (*release_inspection.ReleaseEnvironmentInfo, error) {
-	return r.getReleaseEnvironmentInfo.Do(ctx, release, environment)
+func (r *cachingReleaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*release_inspection.ReleaseEnvironmentInfo, error) {
+	return r.getReleaseEnvironmentInfo.Do(ctx, environmentReleaseName)
 }
 
-func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, release Release) (*release_inspection.ReleaseInfo, error) {
-	return r.delegate.GetReleaseInfoForAllEnvironments(ctx, release)
+func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*release_inspection.ReleaseInfo, error) {
+	return r.getReleaseInfoForAllEnvironments.Do(ctx, releaseName)
+}
+
+func (r *cachingReleaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
+	return r.getReleaseEnvironmentDiff.Do(ctx, fmt.Sprintf("%v###%v", environmentReleaseName, otherEnvironmentReleaseName))
 }

@@ -5,11 +5,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "int---2025-07-25T12:52:08+02:00-da32b",
-            "releaseName": "2025-07-25T12:52:08+02:00-da32b",
-            "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f",
+            "name": "int---2025-08-04T14:40:09-04:00-53c44",
+            "releaseName": "2025-08-04T14:40:09-04:00-53c44",
+            "sha": "53c4458374b15dba844a0bab58232fc2ab609ed7",
             "environment": "int",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -18,19 +18,147 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:e470a4ad44f23684d36e1352a36892cffa8cbc604bac76b17a7e9b5d9dff5ed1",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-31T17:40:44.701780441Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "a94db93dadfab72618a9d64b62d813cb1cf21825",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/a94db93dadfab72618a9d64b62d813cb1cf21825/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
                     "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "int---2025-07-31T15:13:04+02:00-dbe7a",
+            "releaseName": "2025-07-31T15:13:04+02:00-dbe7a",
+            "sha": "dbe7a8eddd45709c743960548a3f257e2102d867",
+            "environment": "int",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -59,13 +187,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -99,7 +228,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -110,8 +239,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -121,7 +251,388 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "int---2025-07-31T11:17:09+02:00-8f6e1",
+            "releaseName": "2025-07-31T11:17:09+02:00-8f6e1",
+            "sha": "8f6e14ba8f824d011c8ba10dc85938eed8d22600",
+            "environment": "int",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "int---2025-07-29T16:40:36-05:00-bf91c",
+            "releaseName": "2025-07-29T16:40:36-05:00-bf91c",
+            "sha": "bf91c11be9b28987efd0434748d1307bddd6f717",
+            "environment": "int",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "int---2025-07-25T12:52:08+02:00-da32b",
+            "releaseName": "2025-07-25T12:52:08+02:00-da32b",
+            "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f",
+            "environment": "int",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -133,7 +644,7 @@
             "releaseName": "2025-07-24T17:42:46+02:00-71f19",
             "sha": "71f19f629c20217067a47259fc3205f92a8bba6d",
             "environment": "int",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -142,7 +653,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -153,8 +664,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -188,8 +700,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -223,7 +736,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -234,8 +747,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -245,7 +759,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -257,7 +771,7 @@
             "releaseName": "2025-07-24T11:51:48+02:00-533d5",
             "sha": "533d5604a3df6bb2f2d6dcfb25238a8bfd3b04e0",
             "environment": "int",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -266,7 +780,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -277,8 +791,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -312,8 +827,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -347,7 +863,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -358,8 +874,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -369,7 +886,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -377,11 +894,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "int---2025-07-23T09:36:05+02:00-e152e",
-            "releaseName": "2025-07-23T09:36:05+02:00-e152e",
-            "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e",
+            "name": "int---2025-07-23T08:44:59-06:00-686c7",
+            "releaseName": "2025-07-23T08:44:59-06:00-686c7",
+            "sha": "686c7a9bbc59ebe5480ef443bd4b0e20e94a21a4",
             "environment": "int",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -390,7 +907,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -401,8 +918,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -436,8 +954,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -471,7 +990,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -482,8 +1001,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -493,7 +1013,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -501,11 +1021,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "int---2025-07-18T07:36:53-06:00-dda4c",
-            "releaseName": "2025-07-18T07:36:53-06:00-dda4c",
-            "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644",
-            "environment": "int",
-            "images": {
+            "name": "stg---2025-08-04T14:40:09-04:00-53c44",
+            "releaseName": "2025-08-04T14:40:09-04:00-53c44",
+            "sha": "53c4458374b15dba844a0bab58232fc2ab609ed7",
+            "environment": "stg",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -514,19 +1034,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -543,11 +1064,11 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
+                    "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
                     "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
@@ -555,13 +1076,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -595,7 +1117,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -606,8 +1128,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -617,7 +1140,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -625,11 +1148,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "int---2025-07-17T11:29:50-04:00-5f7af",
-            "releaseName": "2025-07-17T11:29:50-04:00-5f7af",
-            "sha": "5f7af00ab5acaed9d1baea5c160e000926258391",
-            "environment": "int",
-            "images": {
+            "name": "stg---2025-07-31T15:13:04+02:00-dbe7a",
+            "releaseName": "2025-07-31T15:13:04+02:00-dbe7a",
+            "sha": "dbe7a8eddd45709c743960548a3f257e2102d867",
+            "environment": "stg",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -638,19 +1161,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -667,11 +1191,11 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
                     "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
@@ -679,13 +1203,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -719,7 +1244,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -730,8 +1255,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -741,7 +1267,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -749,11 +1275,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "int---2025-07-17T11:38:39+02:00-43197",
-            "releaseName": "2025-07-17T11:38:39+02:00-43197",
-            "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f",
-            "environment": "int",
-            "images": {
+            "name": "stg---2025-07-31T11:17:09+02:00-8f6e1",
+            "releaseName": "2025-07-31T11:17:09+02:00-8f6e1",
+            "sha": "8f6e14ba8f824d011c8ba10dc85938eed8d22600",
+            "environment": "stg",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -762,19 +1288,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:bc3ff48643b53c892bcb09811b2067a7796adc641f78f03c76abfd9ec68af1c1",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-16T19:21:10.996675569Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -791,25 +1318,24 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/uhc-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d...\nError: initializing source docker://quay.io/app-sre/uhc-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d: reading manifest sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d in quay.io/app-sre/uhc-clusters-service: manifest unknown\n"
                 },
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:35493652afd42a4ead08b230ef50570adcd2e91048afa117b223190592f65279",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-16T19:20:09.923986789Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -843,7 +1369,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -854,8 +1380,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -865,7 +1392,134 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "stg---2025-07-29T16:40:36-05:00-bf91c",
+            "releaseName": "2025-07-29T16:40:36-05:00-bf91c",
+            "sha": "bf91c11be9b28987efd0434748d1307bddd6f717",
+            "environment": "stg",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -877,7 +1531,7 @@
             "releaseName": "2025-07-25T12:52:08+02:00-da32b",
             "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f",
             "environment": "stg",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -886,7 +1540,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -897,8 +1551,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -932,8 +1587,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -967,7 +1623,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -978,8 +1634,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -989,7 +1646,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1001,7 +1658,7 @@
             "releaseName": "2025-07-24T17:42:46+02:00-71f19",
             "sha": "71f19f629c20217067a47259fc3205f92a8bba6d",
             "environment": "stg",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1010,7 +1667,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -1021,8 +1678,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1054,8 +1712,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1089,7 +1748,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1100,8 +1759,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1111,7 +1771,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1123,7 +1783,7 @@
             "releaseName": "2025-07-24T11:51:48+02:00-533d5",
             "sha": "533d5604a3df6bb2f2d6dcfb25238a8bfd3b04e0",
             "environment": "stg",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1132,7 +1792,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -1143,8 +1803,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1176,8 +1837,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1211,7 +1873,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1222,8 +1884,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1233,7 +1896,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1241,11 +1904,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "stg---2025-07-23T09:36:05+02:00-e152e",
-            "releaseName": "2025-07-23T09:36:05+02:00-e152e",
-            "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e",
+            "name": "stg---2025-07-23T08:44:59-06:00-686c7",
+            "releaseName": "2025-07-23T08:44:59-06:00-686c7",
+            "sha": "686c7a9bbc59ebe5480ef443bd4b0e20e94a21a4",
             "environment": "stg",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1254,7 +1917,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -1265,8 +1928,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1298,8 +1962,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1333,7 +1998,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1344,8 +2009,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1355,7 +2021,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1363,11 +2029,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "stg---2025-07-18T07:36:53-06:00-dda4c",
-            "releaseName": "2025-07-18T07:36:53-06:00-dda4c",
-            "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644",
-            "environment": "stg",
-            "images": {
+            "name": "prod---2025-08-04T14:40:09-04:00-53c44",
+            "releaseName": "2025-08-04T14:40:09-04:00-53c44",
+            "sha": "53c4458374b15dba844a0bab58232fc2ab609ed7",
+            "environment": "prod",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1376,19 +2042,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1405,11 +2072,11 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
+                    "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
                     "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
@@ -1417,13 +2084,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1457,7 +2125,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1468,8 +2136,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1479,7 +2148,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1487,11 +2156,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "stg---2025-07-17T11:29:50-04:00-5f7af",
-            "releaseName": "2025-07-17T11:29:50-04:00-5f7af",
-            "sha": "5f7af00ab5acaed9d1baea5c160e000926258391",
-            "environment": "stg",
-            "images": {
+            "name": "prod---2025-07-31T15:13:04+02:00-dbe7a",
+            "releaseName": "2025-07-31T15:13:04+02:00-dbe7a",
+            "sha": "dbe7a8eddd45709c743960548a3f257e2102d867",
+            "environment": "prod",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1500,19 +2169,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1529,11 +2199,11 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
                     "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
@@ -1541,13 +2211,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1581,7 +2252,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1592,8 +2263,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1603,7 +2275,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1611,11 +2283,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "stg---2025-07-17T11:38:39+02:00-43197",
-            "releaseName": "2025-07-17T11:38:39+02:00-43197",
-            "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f",
-            "environment": "stg",
-            "images": {
+            "name": "prod---2025-07-31T11:17:09+02:00-8f6e1",
+            "releaseName": "2025-07-31T11:17:09+02:00-8f6e1",
+            "sha": "8f6e14ba8f824d011c8ba10dc85938eed8d22600",
+            "environment": "prod",
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1624,19 +2296,20 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
                     "name": "Backend",
                     "ImageInfo": {
-                        "digest": "sha256:bc3ff48643b53c892bcb09811b2067a7796adc641f78f03c76abfd9ec68af1c1",
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpbackend"
                     },
-                    "imageCreationTime": "2025-07-16T19:21:10.996675569Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1653,11 +2326,11 @@
                 "Cluster Service": {
                     "name": "Cluster Service",
                     "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
                         "repository": "app-sre/uhc-clusters-service"
                     },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
                     "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
                     "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
@@ -1665,13 +2338,14 @@
                 "Frontend": {
                     "name": "Frontend",
                     "ImageInfo": {
-                        "digest": "sha256:35493652afd42a4ead08b230ef50570adcd2e91048afa117b223190592f65279",
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
                         "registry": "arohcpsvcdev.azurecr.io",
                         "repository": "arohcpfrontend"
                     },
-                    "imageCreationTime": "2025-07-16T19:20:09.923986789Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1705,7 +2379,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1716,8 +2390,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1727,7 +2402,134 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                }
+            }
+        },
+        {
+            "kind": "EnvironmentRelease",
+            "apiVersion": "service-status.hcm.openshift.io/v1",
+            "name": "prod---2025-07-29T16:40:36-05:00-bf91c",
+            "releaseName": "2025-07-29T16:40:36-05:00-bf91c",
+            "sha": "bf91c11be9b28987efd0434748d1307bddd6f717",
+            "environment": "prod",
+            "components": {
+                "ACR Pull": {
+                    "name": "ACR Pull",
+                    "ImageInfo": {
+                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
+                        "registry": "mcr.microsoft.com",
+                        "repository": "aks/msi-acrpull"
+                    },
+                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "Backend": {
+                    "name": "Backend",
+                    "ImageInfo": {
+                        "digest": "sha256:8763e4325ddb0afede0ad1dde152c158e0f8d59b65a242083b5dbeb18c75756a",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpbackend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:52.172137159Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Backplane": {
+                    "name": "Backplane",
+                    "ImageInfo": {
+                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
+                        "registry": "quay.io",
+                        "repository": "app-sre/backplane-api"
+                    },
+                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
+                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
+                },
+                "Cluster Service": {
+                    "name": "Cluster Service",
+                    "ImageInfo": {
+                        "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
+                        "registry": "quay.io",
+                        "repository": "app-sre/uhc-clusters-service"
+                    },
+                    "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                },
+                "Frontend": {
+                    "name": "Frontend",
+                    "ImageInfo": {
+                        "digest": "sha256:4cf0f970fa79ecdfb029680b6acec8db6b541da6650bfaedbe2be9f773c1537d",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "arohcpfrontend"
+                    },
+                    "imageCreationTime": "2025-07-29T21:09:01.852867582Z",
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
+                },
+                "Hypershift": {
+                    "name": "Hypershift",
+                    "ImageInfo": {
+                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
+                        "registry": "quay.io",
+                        "repository": "acm-d/rhtap-hypershift-operator"
+                    },
+                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
+                    "RepoURL": "https://github.com/openshift/hypershift",
+                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
+                },
+                "Maestro": {
+                    "name": "Maestro",
+                    "ImageInfo": {
+                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
+                        "registry": "quay.io",
+                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
+                    },
+                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
+                    "RepoURL": "https://github.com/openshift-online/maestro/",
+                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
+                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
+                },
+                "Management Prometheus Spec": {
+                    "name": "Management Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
+                    "sourceSHA": ""
+                },
+                "OcMirror": {
+                    "name": "OcMirror",
+                    "ImageInfo": {
+                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
+                        "registry": "arohcpsvcdev.azurecr.io",
+                        "repository": "image-sync/oc-mirror"
+                    },
+                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
+                },
+                "Service Prometheus Spec": {
+                    "name": "Service Prometheus Spec",
+                    "ImageInfo": {
+                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
+                        "registry": "mcr.microsoft.com/oss/v2",
+                        "repository": "prometheus/prometheus"
+                    },
+                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1739,7 +2541,7 @@
             "releaseName": "2025-07-25T12:52:08+02:00-da32b",
             "sha": "da32b996ef872865c1ad0dd0051fa931728e8b3f",
             "environment": "prod",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1748,7 +2550,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -1759,8 +2561,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1794,8 +2597,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1829,7 +2633,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1840,8 +2644,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1851,7 +2656,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1863,7 +2668,7 @@
             "releaseName": "2025-07-24T17:42:46+02:00-71f19",
             "sha": "71f19f629c20217067a47259fc3205f92a8bba6d",
             "environment": "prod",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1872,7 +2677,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -1883,8 +2688,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -1918,8 +2724,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -1953,7 +2760,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -1964,8 +2771,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -1975,7 +2783,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -1987,7 +2795,7 @@
             "releaseName": "2025-07-24T11:51:48+02:00-533d5",
             "sha": "533d5604a3df6bb2f2d6dcfb25238a8bfd3b04e0",
             "environment": "prod",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -1996,7 +2804,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -2007,8 +2815,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -2042,8 +2851,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -2077,7 +2887,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -2088,8 +2898,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -2099,7 +2910,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }
@@ -2107,11 +2918,11 @@
         {
             "kind": "EnvironmentRelease",
             "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "prod---2025-07-23T09:36:05+02:00-e152e",
-            "releaseName": "2025-07-23T09:36:05+02:00-e152e",
-            "sha": "e152e5cc66b58d727c0e51f4ada35f7963896b4e",
+            "name": "prod---2025-07-23T08:44:59-06:00-686c7",
+            "releaseName": "2025-07-23T08:44:59-06:00-686c7",
+            "sha": "686c7a9bbc59ebe5480ef443bd4b0e20e94a21a4",
             "environment": "prod",
-            "images": {
+            "components": {
                 "ACR Pull": {
                     "name": "ACR Pull",
                     "ImageInfo": {
@@ -2120,7 +2931,7 @@
                         "repository": "aks/msi-acrpull"
                     },
                     "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "Backend": {
@@ -2131,8 +2942,9 @@
                         "repository": "arohcpbackend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Backplane": {
                     "name": "Backplane",
@@ -2166,8 +2978,9 @@
                         "repository": "arohcpfrontend"
                     },
                     "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/Azure/ARO-HCP",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/Azure/ARO-HCP/tree//"
                 },
                 "Hypershift": {
                     "name": "Hypershift",
@@ -2201,7 +3014,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 },
                 "OcMirror": {
@@ -2212,8 +3025,9 @@
                         "repository": "image-sync/oc-mirror"
                     },
                     "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
+                    "RepoURL": "https://github.com/openshift/oc-mirror",
+                    "sourceSHA": "",
+                    "permanentURLForSourceSHA": "https://github.com/openshift/oc-mirror/tree//"
                 },
                 "Service Prometheus Spec": {
                     "name": "Service Prometheus Spec",
@@ -2223,379 +3037,7 @@
                         "repository": "prometheus/prometheus"
                     },
                     "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                }
-            }
-        },
-        {
-            "kind": "EnvironmentRelease",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "prod---2025-07-18T07:36:53-06:00-dda4c",
-            "releaseName": "2025-07-18T07:36:53-06:00-dda4c",
-            "sha": "dda4ccb11187d1ebd926b7f55d570ab1801ef644",
-            "environment": "prod",
-            "images": {
-                "ACR Pull": {
-                    "name": "ACR Pull",
-                    "ImageInfo": {
-                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
-                        "registry": "mcr.microsoft.com",
-                        "repository": "aks/msi-acrpull"
-                    },
-                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backend": {
-                    "name": "Backend",
-                    "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpbackend"
-                    },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backplane": {
-                    "name": "Backplane",
-                    "ImageInfo": {
-                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
-                        "registry": "quay.io",
-                        "repository": "app-sre/backplane-api"
-                    },
-                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
-                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
-                },
-                "Cluster Service": {
-                    "name": "Cluster Service",
-                    "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
-                        "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
-                    },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
-                },
-                "Frontend": {
-                    "name": "Frontend",
-                    "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpfrontend"
-                    },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Hypershift": {
-                    "name": "Hypershift",
-                    "ImageInfo": {
-                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
-                        "registry": "quay.io",
-                        "repository": "acm-d/rhtap-hypershift-operator"
-                    },
-                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
-                    "RepoURL": "https://github.com/openshift/hypershift",
-                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
-                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
-                },
-                "Maestro": {
-                    "name": "Maestro",
-                    "ImageInfo": {
-                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
-                        "registry": "quay.io",
-                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
-                    },
-                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
-                    "RepoURL": "https://github.com/openshift-online/maestro/",
-                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
-                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
-                },
-                "Management Prometheus Spec": {
-                    "name": "Management Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "OcMirror": {
-                    "name": "OcMirror",
-                    "ImageInfo": {
-                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "image-sync/oc-mirror"
-                    },
-                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Service Prometheus Spec": {
-                    "name": "Service Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                }
-            }
-        },
-        {
-            "kind": "EnvironmentRelease",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "prod---2025-07-17T11:29:50-04:00-5f7af",
-            "releaseName": "2025-07-17T11:29:50-04:00-5f7af",
-            "sha": "5f7af00ab5acaed9d1baea5c160e000926258391",
-            "environment": "prod",
-            "images": {
-                "ACR Pull": {
-                    "name": "ACR Pull",
-                    "ImageInfo": {
-                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
-                        "registry": "mcr.microsoft.com",
-                        "repository": "aks/msi-acrpull"
-                    },
-                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backend": {
-                    "name": "Backend",
-                    "ImageInfo": {
-                        "digest": "sha256:8e56e398aeecbddc4da9af94a94fefa6c0c08bcf3262ee0fbc62c635dfcb1425",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpbackend"
-                    },
-                    "imageCreationTime": "2025-07-17T14:33:51.174848303Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backplane": {
-                    "name": "Backplane",
-                    "ImageInfo": {
-                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
-                        "registry": "quay.io",
-                        "repository": "app-sre/backplane-api"
-                    },
-                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
-                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
-                },
-                "Cluster Service": {
-                    "name": "Cluster Service",
-                    "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
-                        "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
-                    },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
-                },
-                "Frontend": {
-                    "name": "Frontend",
-                    "ImageInfo": {
-                        "digest": "sha256:9d63e3cfd5905ca8fe465d25b424508d8e6c3544d5d7db0e0fa2de1a65f4b691",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpfrontend"
-                    },
-                    "imageCreationTime": "2025-07-17T14:33:00.063658196Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Hypershift": {
-                    "name": "Hypershift",
-                    "ImageInfo": {
-                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
-                        "registry": "quay.io",
-                        "repository": "acm-d/rhtap-hypershift-operator"
-                    },
-                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
-                    "RepoURL": "https://github.com/openshift/hypershift",
-                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
-                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
-                },
-                "Maestro": {
-                    "name": "Maestro",
-                    "ImageInfo": {
-                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
-                        "registry": "quay.io",
-                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
-                    },
-                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
-                    "RepoURL": "https://github.com/openshift-online/maestro/",
-                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
-                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
-                },
-                "Management Prometheus Spec": {
-                    "name": "Management Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "OcMirror": {
-                    "name": "OcMirror",
-                    "ImageInfo": {
-                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "image-sync/oc-mirror"
-                    },
-                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Service Prometheus Spec": {
-                    "name": "Service Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                }
-            }
-        },
-        {
-            "kind": "EnvironmentRelease",
-            "apiVersion": "service-status.hcm.openshift.io/v1",
-            "name": "prod---2025-07-17T11:38:39+02:00-43197",
-            "releaseName": "2025-07-17T11:38:39+02:00-43197",
-            "sha": "431971133632036284ccfe8b2cb1bcb98f604d1f",
-            "environment": "prod",
-            "images": {
-                "ACR Pull": {
-                    "name": "ACR Pull",
-                    "ImageInfo": {
-                        "digest": "sha256:c802a91b3b0fe4a3875a03904140a14eb54c8b94db1d510946c9c438d28689c0",
-                        "registry": "mcr.microsoft.com",
-                        "repository": "aks/msi-acrpull"
-                    },
-                    "imageCreationTime": "2025-03-13T00:04:22.522575517Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backend": {
-                    "name": "Backend",
-                    "ImageInfo": {
-                        "digest": "sha256:bc3ff48643b53c892bcb09811b2067a7796adc641f78f03c76abfd9ec68af1c1",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpbackend"
-                    },
-                    "imageCreationTime": "2025-07-16T19:21:10.996675569Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Backplane": {
-                    "name": "Backplane",
-                    "ImageInfo": {
-                        "digest": "sha256:822477832a73c7eab7fe27200994f10030f708f4a752f33ded3f8f8eaa0470f6",
-                        "registry": "quay.io",
-                        "repository": "app-sre/backplane-api"
-                    },
-                    "imageCreationTime": "2025-02-11T01:04:44.281940655Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/backplane-api",
-                    "sourceSHA": "967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/backplane-api/-/tree/967861a8dbbb288b8cec9f1fee7ccbf6c7ee9a20"
-                },
-                "Cluster Service": {
-                    "name": "Cluster Service",
-                    "ImageInfo": {
-                        "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
-                        "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
-                    },
-                    "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
-                },
-                "Frontend": {
-                    "name": "Frontend",
-                    "ImageInfo": {
-                        "digest": "sha256:35493652afd42a4ead08b230ef50570adcd2e91048afa117b223190592f65279",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "arohcpfrontend"
-                    },
-                    "imageCreationTime": "2025-07-16T19:20:09.923986789Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Hypershift": {
-                    "name": "Hypershift",
-                    "ImageInfo": {
-                        "digest": "sha256:caa1da4abd381492c07951575b8e64c6cce499252b697e3f6fade575803b2bcf",
-                        "registry": "quay.io",
-                        "repository": "acm-d/rhtap-hypershift-operator"
-                    },
-                    "imageCreationTime": "2025-07-14T13:19:31.039963444Z",
-                    "RepoURL": "https://github.com/openshift/hypershift",
-                    "sourceSHA": "02f840a91bdeab7d08ee33d4a835acef3aea9d45",
-                    "permanentURLForSourceSHA": "https://github.com/openshift/hypershift/tree/02f840a91bdeab7d08ee33d4a835acef3aea9d45/"
-                },
-                "Maestro": {
-                    "name": "Maestro",
-                    "ImageInfo": {
-                        "digest": "sha256:00e0aa8746725c257b370bdd530ef961eb9b88f8c583d2c848b99264d073d5f3",
-                        "registry": "quay.io",
-                        "repository": "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro"
-                    },
-                    "imageCreationTime": "2025-06-13T01:45:01.300612898Z",
-                    "RepoURL": "https://github.com/openshift-online/maestro/",
-                    "sourceSHA": "5d2463677cde8375568baccfa7dfe3b9e86df218",
-                    "permanentURLForSourceSHA": "https://github.com/openshift-online/maestro//tree/5d2463677cde8375568baccfa7dfe3b9e86df218/"
-                },
-                "Management Prometheus Spec": {
-                    "name": "Management Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "OcMirror": {
-                    "name": "OcMirror",
-                    "ImageInfo": {
-                        "digest": "sha256:92dc2b18de0126caa2212f62c54023f6e8ecf12e2025c37a5f4151d0253ae14e",
-                        "registry": "arohcpsvcdev.azurecr.io",
-                        "repository": "image-sync/oc-mirror"
-                    },
-                    "imageCreationTime": "2025-04-24T07:06:38.585840804Z",
-                    "RepoURL": "https://example.com",
-                    "sourceSHA": ""
-                },
-                "Service Prometheus Spec": {
-                    "name": "Service Prometheus Spec",
-                    "ImageInfo": {
-                        "digest": "sha256:2dcc22f4a8ea5c198e1c9eb6e7f04d127c55924da72e0f4334e659633185283c",
-                        "registry": "mcr.microsoft.com/oss/v2",
-                        "repository": "prometheus/prometheus"
-                    },
-                    "imageCreationTime": "2025-02-06T20:56:20.782680538Z",
-                    "RepoURL": "https://example.com",
+                    "RepoURL": "",
                     "sourceSHA": ""
                 }
             }

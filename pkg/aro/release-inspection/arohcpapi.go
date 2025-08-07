@@ -18,12 +18,12 @@ type ReleaseEnvironmentInfo struct {
 	ReleaseSHA          string
 	EnvironmentFilename string
 	configJSON          *arohcpapi.ConfigSchemaJSON
-	DeployedImages      map[string]*DeployedImageInfo
+	Components          map[string]*ComponentInfo
 }
 
 // configPertinentInfo tracks the information that we want to show a diff for and summarize
 
-type DeployedImageInfo struct {
+type ComponentInfo struct {
 	Name                 string
 	ImageInfo            *arohcpapi.ContainerImage
 	ImageCreationTime    *time.Time
@@ -43,97 +43,40 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		ReleaseSHA:          releaseSHA,
 		EnvironmentFilename: environmentFilename,
 		configJSON:          config,
-		DeployedImages:      map[string]*DeployedImageInfo{},
+		Components:          map[string]*ComponentInfo{},
 	}
 
-	currConfigInfo.DeployedImages["Cluster Service"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Cluster Service",
-		"https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-		&config.ClustersService.Image,
-	)
-	currConfigInfo.DeployedImages["Hypershift"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Hypershift",
-		"https://github.com/openshift/hypershift",
-		config.Hypershift.Image,
-	)
+	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
+		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
+			imageInfoAccessor,
+			componentName,
+			HardcodedComponents[componentName].RepositoryURL,
+			containerImage,
+		)
+	}
+
+	addComponentInfo("ACR Pull", &config.ACRPull.Image)
 	if config.Backend != nil {
-		currConfigInfo.DeployedImages["Backend"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Backend",
-			"https://github.com/Azure/ARO-HCP",
-			&config.Backend.Image,
-		)
+		addComponentInfo("Backend", &config.Backend.Image)
 	}
-	currConfigInfo.DeployedImages["Backplane"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Backplane",
-		"https://gitlab.cee.redhat.com/service/backplane-api",
-		&config.BackplaneAPI.Image,
-	)
-	currConfigInfo.DeployedImages["Frontend"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Frontend",
-		"https://github.com/Azure/ARO-HCP",
-		&config.Frontend.Image,
-	)
-	currConfigInfo.DeployedImages["OcMirror"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"OcMirror",
-		"https://example.com",
-		&config.ImageSync.OcMirror.Image,
-	)
-	// TODO
-	//currConfigInfo.pertinentInfo.deployedImages["Maestro Agent Sidecar"] = createDeployedImageInfo(ctx,
-	//	"Maestro Agent Sidecar",
-	//	"https://example.com",
-	//	&config.Maestro.Agent.Sidecar, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
-	currConfigInfo.DeployedImages["Maestro"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"Maestro",
-		"https://github.com/openshift-online/maestro/",
-		&config.Maestro.Image,
-	)
-	// TODO
-	//currConfigInfo.pertinentInfo.deployedImages["Prometheus"] = createDeployedImageInfo(ctx,
-	//	"Prometheus",
-	//	"https://example.com",
-	//	&config.Mgmt.Prometheus.PrometheusOperator, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
+	addComponentInfo("Backplane", &config.BackplaneAPI.Image)
+	addComponentInfo("Cluster Service", &config.ClustersService.Image)
+	addComponentInfo("Frontend", &config.Frontend.Image)
+	addComponentInfo("Hypershift", config.Hypershift.Image)
+	addComponentInfo("Maestro", &config.Maestro.Image)
+	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
+
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.DeployedImages["Management Prometheus Spec"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Management Prometheus Spec",
-			"https://example.com",
-			config.Mgmt.Prometheus.PrometheusSpec.Image,
-		)
+		addComponentInfo("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
-	currConfigInfo.DeployedImages["ACR Pull"] = createDeployedImageInfo(ctx,
-		imageInfoAccessor,
-		"ACR Pull",
-		"https://example.com",
-		&config.ACRPull.Image,
-	)
-	//currConfigInfo.pertinentInfo.deployedImages["Mise"] = createDeployedImageInfo(ctx,
-	//	"Mise",
-	//	"https://example.com",
-	//	&config.Mise, // this isn't properly schema'd awesome
-	//	prevDeployedImages)
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		currConfigInfo.DeployedImages["Service Prometheus Spec"] = createDeployedImageInfo(ctx,
-			imageInfoAccessor,
-			"Service Prometheus Spec",
-			"https://example.com",
-			config.Svc.Prometheus.PrometheusSpec.Image,
-		)
+		addComponentInfo("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
 }
 
-func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *DeployedImageInfo) {
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *ComponentInfo) {
 	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, currInfo.ImageInfo); err != nil {
 		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
 	} else {
@@ -149,10 +92,10 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *DeployedImageInfo {
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *ComponentInfo {
 	repoLink := must(url.Parse(repoURL))
 
-	deployedImageInfo := &DeployedImageInfo{
+	componentInfo := &ComponentInfo{
 		Name:     name,
 		RepoLink: repoLink,
 	}
@@ -164,27 +107,27 @@ func createDeployedImageInfo(ctx context.Context, imageInfoAccessor ImageInfoAcc
 		if err != nil {
 			localContainerImage.Registry = ptr.To(fmt.Sprintf("missing image pull location for %q: %v", name, err))
 		}
-		deployedImageInfo.ImageInfo = &localContainerImage
+		componentInfo.ImageInfo = &localContainerImage
 	}
-	completeSourceSHAs(ctx, imageInfoAccessor, deployedImageInfo)
+	completeSourceSHAs(ctx, imageInfoAccessor, componentInfo)
 
-	return deployedImageInfo
+	return componentInfo
 }
 
 func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) set.Set[string] {
 	changedComponents := set.Set[string]{}
 
 	if prevReleaseEnvironmentInfo == nil {
-		for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+		for _, currComponent := range currReleaseEnvironmentInfo.Components {
+			changedComponents.Insert(currComponent.Name)
 		}
 		return changedComponents
 	}
 
-	for _, currDeployedImageInfo := range currReleaseEnvironmentInfo.DeployedImages {
-		prevDeployedImageInfo := prevReleaseEnvironmentInfo.DeployedImages[currDeployedImageInfo.Name]
-		if !reflect.DeepEqual(prevDeployedImageInfo.ImageInfo, currDeployedImageInfo.ImageInfo) {
-			changedComponents.Insert(currDeployedImageInfo.Name)
+	for _, currComponent := range currReleaseEnvironmentInfo.Components {
+		prevComponent := prevReleaseEnvironmentInfo.Components[currComponent.Name]
+		if !reflect.DeepEqual(prevComponent.ImageInfo, currComponent.ImageInfo) {
+			changedComponents.Insert(currComponent.Name)
 		}
 	}
 

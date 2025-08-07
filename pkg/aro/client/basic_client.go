@@ -18,6 +18,7 @@ type ReleaseClient interface {
 	GetRelease(ctx context.Context, name string) (*status.Release, error)
 	ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error)
 	GetEnvironmentRelease(ctx context.Context, environmentName, releaseName string) (*status.EnvironmentRelease, error)
+	GetEnvironmentReleaseDiff(ctx context.Context, environmentReleaseName, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error)
 }
 
 type basicReleaseClient struct {
@@ -128,6 +129,20 @@ func (c *basicReleaseClient) GetEnvironmentRelease(ctx context.Context, environm
 	}
 
 	var result status.EnvironmentRelease
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (c *basicReleaseClient) GetEnvironmentReleaseDiff(ctx context.Context, environmentReleaseName, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
+	url := fmt.Sprintf("%s/api/aro-hcp/environmentreleases/%v/diff/%v", c.baseURL, url.PathEscape(environmentReleaseName), url.PathEscape(otherEnvironmentReleaseName))
+	body, err := c.get(ctx, url)
+	if err != nil {
+		return nil, err
+	}
+
+	var result status.EnvironmentReleaseDiff
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
