@@ -60,22 +60,31 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	changedComponents := ChangedComponents(environmentReleaseInfo, prevReleaseEnvironmentInfo)
 	changedNameToDetails := map[string]template.HTML{}
 	if prevReleaseEnvironmentInfo != nil {
-		for _, changedImageName := range changedComponents.UnsortedList() {
+		diff, err := h.releaseClient.GetEnvironmentReleaseDiff(ctx, environmentReleaseInfo.Name, prevReleaseEnvironmentInfo.Name)
+		if err != nil {
+			fmt.Printf("failed to get diff for %q and %q: %v", environmentReleaseInfo.Name, prevReleaseEnvironmentInfo.Name, err)
+		}
+		for _, componentName := range changedComponents.UnsortedList() {
 			var currImageDetails *status.ComponentInfo
 			var prevImageDetails *status.ComponentInfo
 			for _, imageDetails := range environmentReleaseInfo.Images {
-				if imageDetails.Name == changedImageName {
+				if imageDetails.Name == componentName {
 					currImageDetails = imageDetails
 					break
 				}
 			}
 			for _, imageDetails := range prevReleaseEnvironmentInfo.Images {
-				if imageDetails.Name == changedImageName {
+				if imageDetails.Name == componentName {
 					prevImageDetails = imageDetails
 					break
 				}
 			}
-			detailsDiffHTML := htmlDetailsForComponentDiff(currImageDetails, prevImageDetails, prevReleaseEnvironmentInfo)
+
+			var componentDiff *status.ComponentDiff
+			if diff != nil {
+				componentDiff = diff.DifferentComponents[componentName]
+			}
+			detailsDiffHTML := htmlDetailsForComponentDiff(currImageDetails, prevImageDetails, prevReleaseEnvironmentInfo, componentDiff)
 			changedNameToDetails[currImageDetails.Name] = template.HTML(detailsDiffHTML)
 		}
 	}
@@ -155,7 +164,7 @@ func htmlDetailsForComponent(imageDetails *status.ComponentInfo) string {
 	return detailsHTML
 }
 
-func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.ComponentInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) string {
+func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.ComponentInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease, diff *status.ComponentDiff) string {
 	prevReleaseString := fmt.Sprintf("<a href=/http/aro-hcp/environmentreleases/%s/summary.html>%s</a>", prevReleaseEnvironmentInfo.Name, prevReleaseEnvironmentInfo.Name)
 
 	imageAgeString := "Unknown age"
@@ -184,8 +193,40 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
 		}
 	}
 
+	diffLines := []string{}
+	if diff != nil {
+		for _, change := range diff.Changes {
+			switch {
+			case change.ChangeType == "Unavailable":
+				if change.Unavailable == nil {
+					diffLines = append(diffLines, "<li>Unavailable, no info</li>")
+				} else {
+					diffLines = append(diffLines, fmt.Sprintf("<li>Unavailable, %s</li>", *change.Unavailable))
+				}
+			case change.ChangeType == "PRMerge":
+				if change.PRMerge == nil {
+					diffLines = append(diffLines, "<li>PR merge, no info</li>")
+				} else {
+					diffLines = append(diffLines, fmt.Sprintf("<li>%s <a target=\"_blank\" href=%q>#%d</a></li>",
+						change.PRMerge.ChangeSummary,
+						fmt.Sprintf("%s/pull/%d", ptr.Deref(currImageDetails.RepoURL, ""), change.PRMerge.PRNumber),
+						change.PRMerge.PRNumber,
+					))
+				}
+			}
+		}
+		if prevImageDetails != nil && len(prevImageDetails.SourceSHA) > 0 {
+			diffLines = append(diffLines,
+				fmt.Sprintf("<li><a target=\"_blank\" href=\"%s/compare/%s...%s\">Full changelog</a></li>",
+					ptr.Deref(currImageDetails.RepoURL, ""),
+					prevImageDetails.SourceSHA,
+					currImageDetails.SourceSHA,
+				))
+		}
+	}
+
 	detailsHTML := fmt.Sprintf(`
-		<h4><a target="_blank" href=%q>%s (%s, %s)</a></h4>
+		<h4><a target="_blank" href=%q>%s (%s, %s, %d changes)</a></h4>
         <details>
             <summary class="small mb-3">click to expand details</summary>
             <ul>
@@ -197,16 +238,21 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
                 </ul>
                 <li>Commit: %s</li>
                 <li>Previous Release: %s</li>
+				<li>Changes:</li>
+				<ul>
+					%s
+				</ul>
             </ul>
         </details>
 `,
-		ptr.Deref(currImageDetails.RepoURL, "MISSING"), currImageDetails.Name, imageAgeString, newerString,
+		ptr.Deref(currImageDetails.RepoURL, "MISSING"), currImageDetails.Name, imageAgeString, newerString, diff.NumberOfChanges,
 		fmt.Sprintf("%s/%s@%s", currImageDetails.ImageInfo.Registry, currImageDetails.ImageInfo.Repository, currImageDetails.ImageInfo.Digest),
 		newerString,
 		imageTimeString,
 		prevTimeString,
 		imageSourceSHAString,
 		prevReleaseString,
+		strings.Join(diffLines, "\n\t\t\t\t\t"),
 	)
 
 	return detailsHTML
