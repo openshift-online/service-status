@@ -62,7 +62,7 @@ func environmentReleaseMarkdown(currEnvironmentReleaseInfo, prevEnvironmentRelea
 	return markdown.String()
 }
 
-func allReleaseSummaryMarkdown(allReleasesInfo *release_inspection.AllReleasesDetails) string {
+func allReleaseSummaryMarkdown(allReleasesInfo *AllReleasesDetails) string {
 	releaseSummaryMarkdown := &strings.Builder{}
 
 	for _, environmentName := range allReleasesInfo.GetEnvironmentFilenames() {

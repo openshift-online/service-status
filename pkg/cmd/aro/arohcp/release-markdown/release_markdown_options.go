@@ -91,7 +91,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	}
 	logger.Info("Found releases.", "releaseCount", len(allReleaseCommits))
 
-	allReleasesInfo := &release_inspection.AllReleasesDetails{}
+	allReleasesInfo := &AllReleasesDetails{}
 	prevReleaseDetails := &status.ReleaseDetails{}
 	for i := len(allReleaseCommits) - 1; i >= 0; i-- {
 		commit := allReleaseCommits[i]

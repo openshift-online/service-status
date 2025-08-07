@@ -1,4 +1,4 @@
-package release_inspection
+package release_markdown
 
 import (
 	"sort"
@@ -44,31 +44,4 @@ func (r *AllReleasesDetails) GetReleaseInfo(release string) *status.ReleaseDetai
 		return nil
 	}
 	return r.releaseNameToDetails[release]
-}
-
-type ReleaseInfo struct {
-	ReleaseName                     string
-	environmentToEnvironmentRelease map[string]*status.EnvironmentRelease
-}
-
-func (r *ReleaseInfo) GetEnvironmentNames() []string {
-	if r == nil {
-		return nil
-	}
-	environmentNames := set.KeySet(r.environmentToEnvironmentRelease)
-	return environmentNames.SortedList()
-}
-
-func (r *ReleaseInfo) addEnvironmentRelease(environmentInfo *status.EnvironmentRelease) {
-	if r.environmentToEnvironmentRelease == nil {
-		r.environmentToEnvironmentRelease = make(map[string]*status.EnvironmentRelease)
-	}
-	r.environmentToEnvironmentRelease[environmentInfo.Environment] = environmentInfo
-}
-
-func (r *ReleaseInfo) GetEnvironmentRelease(environment string) *status.EnvironmentRelease {
-	if r == nil {
-		return nil
-	}
-	return r.environmentToEnvironmentRelease[environment]
 }
