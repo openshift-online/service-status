@@ -84,6 +84,27 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		RepositoryURL:       "https://github.com/openshift/oc-mirror",
 		MasterBranch:        "main",
 	},
+	"Package Operator Package": {
+		Name:                "Package Operator Package",
+		ImagePullRegistry:   "quay.io",
+		ImagePullRepository: "package-operator/package-operator-package",
+		RepositoryURL:       "https://github.com/package-operator/package-operator",
+		MasterBranch:        "main",
+	},
+	"Package Operator Manager": {
+		Name:                "Package Operator Manager",
+		ImagePullRegistry:   "quay.io",
+		ImagePullRepository: "package-operator/package-operator-manager",
+		RepositoryURL:       "https://github.com/package-operator/package-operator",
+		MasterBranch:        "main",
+	},
+	"Package Operator Remote Phase Manager": {
+		Name:                "Package Operator Remote Phase Manager",
+		ImagePullRegistry:   "quay.io",
+		ImagePullRepository: "package-operator/remote-phase-manager",
+		RepositoryURL:       "https://github.com/package-operator/package-operator",
+		MasterBranch:        "main",
+	},
 	"Management Prometheus Spec": {
 		Name:                "Management Prometheus Spec",
 		ImagePullRegistry:   "mcr.microsoft.com/oss/v2",
