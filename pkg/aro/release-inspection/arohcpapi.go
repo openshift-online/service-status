@@ -40,6 +40,9 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		)
 	}
 
+	if config.ACM != nil {
+		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle)
+	}
 	addComponentInfo("ACR Pull", &config.ACRPull.Image)
 	if config.Backend != nil {
 		addComponentInfo("Backend", &config.Backend.Image)
@@ -49,6 +52,9 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	addComponentInfo("Frontend", &config.Frontend.Image)
 	addComponentInfo("Hypershift", config.Hypershift.Image)
 	addComponentInfo("Maestro", &config.Maestro.Image)
+	if config.ACM != nil {
+		addComponentInfo("MCE", &config.ACM.MCE.Bundle)
+	}
 	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {

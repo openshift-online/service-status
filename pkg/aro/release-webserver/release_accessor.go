@@ -78,6 +78,9 @@ func (r *releaseAccessor) getReleaseFromName(ctx context.Context, releaseName st
 	r.gitLock.Unlock()
 
 	releases, err := r.ListReleases(ctx)
+
+	r.gitLock.Lock()
+	defer r.gitLock.Unlock()
 	if err != nil {
 		for _, currRelease := range releases.Items {
 			if currRelease.Name == releaseName {

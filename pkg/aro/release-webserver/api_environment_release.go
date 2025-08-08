@@ -83,7 +83,10 @@ func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 }
 
 func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
-	currReleaseEnvironmentInfo, _ := accessor.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+	currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get release environment info: %w", err)
+	}
 	if currReleaseEnvironmentInfo == nil {
 		return nil, fmt.Errorf("%q not found", environmentReleaseName)
 	}

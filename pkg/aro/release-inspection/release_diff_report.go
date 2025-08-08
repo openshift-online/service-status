@@ -1,6 +1,7 @@
 package release_inspection
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,8 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"dario.cat/mergo"
 	"github.com/openshift-online/service-status/pkg/apis/status"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/yaml"
 
 	arohcpapi "github.com/openshift-online/service-status/pkg/apis/aro-hcp"
 	"k8s.io/klog/v2"
@@ -54,10 +56,13 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s: %w", baseConfigFilename, err)
 	}
-	baseConfig := &arohcpapi.ConfigSchemaJSON{}
-	if err := yaml.Unmarshal(baseConfigBytes, baseConfig); err != nil {
+	// it's not actually yaml (eek).  Coerce
+	baseConfigBytes = bytes.ReplaceAll(baseConfigBytes, []byte("{{ .ev2.availabilityZoneCount }}"), []byte("2"))
+	baseConfigMap := map[string]interface{}{}
+	if err := yaml.Unmarshal(baseConfigBytes, &baseConfigMap); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config.yaml: %w", err)
 	}
+	baseConfigMap = baseConfigMap["defaults"].(map[string]interface{})
 
 	configOverlayFilename := filepath.Join(r.repoDir, "config", "config.msft.clouds-overlay.yaml")
 	configOverlayJSONBytes, err := os.ReadFile(configOverlayFilename)
@@ -76,7 +81,7 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 		localLogger := klog.FromContext(ctx)
 		localLogger = klog.LoggerWithValues(localLogger, "configFile", environmentName)
 
-		var overlayConfig *arohcpapi.ConfigSchemaJSON // may be an overlay
+		overlayConfigMap := map[string]interface{}{}
 		switch {
 		case environmentName == "int" || environmentName == "stg" || environmentName == "prod":
 			intOverlayMap := allConfigOverlays.Clouds["public"].(map[string]interface{})["environments"].(map[string]interface{})[environmentName].(map[string]interface{})["defaults"]
@@ -84,12 +89,24 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal JSON: %w", err)
 			}
-			if err := json.Unmarshal(overlayConfigJSON, &overlayConfig); err != nil {
+			if err := json.Unmarshal(overlayConfigJSON, &overlayConfigMap); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 			}
 
 		default:
 			panic(fmt.Sprintf("TODO we may later add parsing of rendered files: %v", environmentName))
+		}
+
+		if err := mergo.Merge(&overlayConfigMap, baseConfigMap); err != nil {
+			return nil, fmt.Errorf("failed to merge base config with overlay: %w", err)
+		}
+		var overlayConfig *arohcpapi.ConfigSchemaJSON // may be an overlay
+		overlayConfigJSON, err := json.MarshalIndent(overlayConfigMap, "", "    ")
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal JSON: %w", err)
+		}
+		if err := json.Unmarshal(overlayConfigJSON, &overlayConfig); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 		}
 
 		currReleaseEnvironmentInfo, err := scrapeInfoForAROHCPConfig(ctx, r.imageInfoAccessor, r.releaseName, r.releaseSHA, environmentName, overlayConfig)
