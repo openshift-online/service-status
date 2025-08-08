@@ -14,6 +14,13 @@ type HardcodedComponentInfo struct {
 }
 
 var HardcodedComponents = map[string]HardcodedComponentInfo{
+	"ACM Operator": {
+		Name:                "ACM Operator",
+		ImagePullRegistry:   "registry.redhat.io",
+		ImagePullRepository: "rhacm2/acm-operator-bundle",
+		RepositoryURL:       "",
+		MasterBranch:        "",
+	},
 	"ACR Pull": {
 		Name:                "ACR Pull",
 		ImagePullRegistry:   "mcr.microsoft.com",
@@ -62,6 +69,13 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro",
 		RepositoryURL:       "https://github.com/openshift-online/maestro/",
 		MasterBranch:        "main",
+	},
+	"MCE": {
+		Name:                "MCE",
+		ImagePullRegistry:   "registry.redhat.io",
+		ImagePullRepository: "multicluster-engine/mce-operator-bundle",
+		RepositoryURL:       "",
+		MasterBranch:        "",
 	},
 	"OcMirror": {
 		Name:                "OcMirror",
