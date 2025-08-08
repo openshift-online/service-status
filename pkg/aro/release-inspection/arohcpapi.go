@@ -3,47 +3,32 @@ package release_inspection
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"reflect"
 	"strings"
-	"time"
 
 	arohcpapi "github.com/openshift-online/service-status/pkg/apis/aro-hcp"
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
 )
 
-type ReleaseEnvironmentInfo struct {
-	ReleaseName         string
-	ReleaseSHA          string
-	EnvironmentFilename string
-	configJSON          *arohcpapi.ConfigSchemaJSON
-	Components          map[string]*ComponentInfo
-}
-
 // configPertinentInfo tracks the information that we want to show a diff for and summarize
 
-type ComponentInfo struct {
-	Name                 string
-	ImageInfo            *arohcpapi.ContainerImage
-	ImageCreationTime    *time.Time
-	RepoLink             *url.URL
-	SourceSHA            string
-	PermLinkForSourceSHA *url.URL
+func getEnvironmentReleaseName(environment, release string) string {
+	return fmt.Sprintf("%s---%s", environment, release)
 }
 
-type DeployedSourceCommits struct {
-	PRURL     *url.URL
-	SourceSHA string
-}
-
-func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA, environmentFilename string, config *arohcpapi.ConfigSchemaJSON) (*ReleaseEnvironmentInfo, error) {
-	currConfigInfo := &ReleaseEnvironmentInfo{
-		ReleaseName:         releaseName,
-		ReleaseSHA:          releaseSHA,
-		EnvironmentFilename: environmentFilename,
-		configJSON:          config,
-		Components:          map[string]*ComponentInfo{},
+func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA, environment string, config *arohcpapi.ConfigSchemaJSON) (*status.EnvironmentRelease, error) {
+	currConfigInfo := &status.EnvironmentRelease{
+		TypeMeta: status.TypeMeta{
+			Kind:       "EnvironmentRelease",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Name:        getEnvironmentReleaseName(environment, releaseName),
+		ReleaseName: releaseName,
+		SHA:         releaseSHA,
+		Environment: environment,
+		Components:  map[string]*status.Component{},
 	}
 
 	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
@@ -76,45 +61,44 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	return currConfigInfo, nil
 }
 
-func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *ComponentInfo) {
-	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, currInfo.ImageInfo); err != nil {
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *status.Component) {
+	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, &currInfo.ImageInfo); err != nil {
 		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
 	} else {
 		currInfo.ImageCreationTime = imageInfo.ImageCreationTime
 		currInfo.SourceSHA = imageInfo.SourceSHA
 
 		switch {
-		case strings.Contains(currInfo.RepoLink.String(), "github.com"):
-			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/tree/" + currInfo.SourceSHA + "/"))
-		case strings.Contains(currInfo.RepoLink.String(), "gitlab.cee.redhat.com"):
-			currInfo.PermLinkForSourceSHA = must(url.Parse(currInfo.RepoLink.String() + "/-/tree/" + currInfo.SourceSHA))
+		case currInfo.RepoURL != nil && strings.Contains(*currInfo.RepoURL, "github.com"):
+			currInfo.PermanentURLForSourceSHA = ptr.To(*currInfo.RepoURL + "/tree/" + currInfo.SourceSHA + "/")
+		case currInfo.RepoURL != nil && strings.Contains(*currInfo.RepoURL, "gitlab.cee.redhat.com"):
+			currInfo.PermanentURLForSourceSHA = ptr.To(*currInfo.RepoURL + "/-/tree/" + currInfo.SourceSHA)
 		}
 	}
 }
 
-func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *ComponentInfo {
-	repoLink := must(url.Parse(repoURL))
-
-	componentInfo := &ComponentInfo{
-		Name:     name,
-		RepoLink: repoLink,
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *status.Component {
+	componentInfo := &status.Component{
+		Name: name,
+	}
+	if len(repoURL) > 0 {
+		componentInfo.RepoURL = ptr.To(repoURL)
 	}
 	if containerImage != nil {
 		registry, repository, err := imagePullLocationForName(name)
-		localContainerImage := *containerImage
-		localContainerImage.Registry = &registry
-		localContainerImage.Repository = repository
+		componentInfo.ImageInfo.Digest = containerImage.Digest
+		componentInfo.ImageInfo.Repository = repository
+		componentInfo.ImageInfo.Registry = registry
 		if err != nil {
-			localContainerImage.Registry = ptr.To(fmt.Sprintf("missing image pull location for %q: %v", name, err))
+			componentInfo.ImageInfo.Registry = fmt.Sprintf("missing image pull location for %q: %v", name, err)
 		}
-		componentInfo.ImageInfo = &localContainerImage
 	}
 	completeSourceSHAs(ctx, imageInfoAccessor, componentInfo)
 
 	return componentInfo
 }
 
-func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *ReleaseEnvironmentInfo) set.Set[string] {
+func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) set.Set[string] {
 	changedComponents := set.Set[string]{}
 
 	if prevReleaseEnvironmentInfo == nil {

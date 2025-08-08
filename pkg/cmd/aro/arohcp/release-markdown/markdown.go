@@ -6,15 +6,16 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/set"
 )
 
-func markdownForPertinentInfo(info *release_inspection.ComponentInfo) string {
+func markdownForPertinentInfo(info *status.Component) string {
 	markdown := &strings.Builder{}
-	fmt.Fprintf(markdown, "### [%s](%s)\n", info.Name, info.RepoLink)
-	fmt.Fprintf(markdown, "* %s\n", info.RepoLink)
-	fmt.Fprintf(markdown, "* Pull Spec: %s\n", stringOrErr(release_inspection.PullSpecFromContainerImage(info.ImageInfo)))
+	fmt.Fprintf(markdown, "### [%s](%s)\n", info.Name, info.RepoURL)
+	fmt.Fprintf(markdown, "* %s\n", info.RepoURL)
+	fmt.Fprintf(markdown, "* Pull Spec: %s\n", stringOrErr(release_inspection.PullSpecFromContainerImage(&info.ImageInfo)))
 	if info.ImageCreationTime != nil {
 		fmt.Fprintf(markdown, "  * Image built %s.\n", humanize.Time(*info.ImageCreationTime))
 	} else {
@@ -23,26 +24,26 @@ func markdownForPertinentInfo(info *release_inspection.ComponentInfo) string {
 	if strings.HasPrefix(info.SourceSHA, "ERROR") {
 		fmt.Fprintf(markdown, "* Commit: %s\n", info.SourceSHA)
 	} else {
-		fmt.Fprintf(markdown, "* Commit: [%s](%s)\n", info.SourceSHA, info.PermLinkForSourceSHA)
+		fmt.Fprintf(markdown, "* Commit: [%s](%s)\n", info.SourceSHA, info.PermanentURLForSourceSHA)
 	}
 	fmt.Fprintf(markdown, "\n")
 
 	return markdown.String()
 }
 
-func releaseEnvironmentMarkdown(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo) string {
+func environmentReleaseMarkdown(currEnvironmentReleaseInfo, prevEnvironmentReleaseInfo *status.EnvironmentRelease) string {
 	markdown := &strings.Builder{}
-	fmt.Fprintf(markdown, "# Release %v\n\n", currReleaseEnvironmentInfo.ReleaseName)
+	fmt.Fprintf(markdown, "# Release %v\n\n", currEnvironmentReleaseInfo.ReleaseName)
 
 	fmt.Fprintf(markdown, "## Diff\n\n")
-	changedComponents := release_inspection.ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
+	changedComponents := release_inspection.ChangedComponents(currEnvironmentReleaseInfo, prevEnvironmentReleaseInfo)
 	if len(changedComponents) == 0 {
 		fmt.Fprintf(markdown, "*No Changes*\n\n")
 	} else {
-		for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.Components).SortedList() {
-			currInfo := currReleaseEnvironmentInfo.Components[componentName]
-			if prevReleaseEnvironmentInfo != nil {
-				prevInfo := prevReleaseEnvironmentInfo.Components[componentName]
+		for _, componentName := range set.KeySet(currEnvironmentReleaseInfo.Components).SortedList() {
+			currInfo := currEnvironmentReleaseInfo.Components[componentName]
+			if prevEnvironmentReleaseInfo != nil {
+				prevInfo := prevEnvironmentReleaseInfo.Components[componentName]
 				if reflect.DeepEqual(currInfo, prevInfo) {
 					continue
 				}
@@ -53,36 +54,36 @@ func releaseEnvironmentMarkdown(currReleaseEnvironmentInfo, prevReleaseEnvironme
 	}
 
 	fmt.Fprintf(markdown, "## Content\n\n")
-	for _, componentName := range set.KeySet(currReleaseEnvironmentInfo.Components).SortedList() {
-		info := currReleaseEnvironmentInfo.Components[componentName]
+	for _, componentName := range set.KeySet(currEnvironmentReleaseInfo.Components).SortedList() {
+		info := currEnvironmentReleaseInfo.Components[componentName]
 		fmt.Fprintf(markdown, markdownForPertinentInfo(info))
 	}
 
 	return markdown.String()
 }
 
-func allReleaseSummaryMarkdown(allReleasesInfo *release_inspection.ReleasesInfo) string {
+func allReleaseSummaryMarkdown(allReleasesInfo *AllReleasesDetails) string {
 	releaseSummaryMarkdown := &strings.Builder{}
 
-	for _, environmentFilename := range allReleasesInfo.GetEnvironmentFilenames() {
-		fmt.Fprintf(releaseSummaryMarkdown, "# %s Releases\n\n", strings.TrimSuffix(environmentFilename, ".json"))
+	for _, environmentName := range allReleasesInfo.GetEnvironmentFilenames() {
+		fmt.Fprintf(releaseSummaryMarkdown, "# %s Releases\n\n", strings.TrimSuffix(environmentName, ".json"))
 
 		for i, currReleaseName := range allReleasesInfo.GetReleaseNames() {
 			currReleaseInfo := allReleasesInfo.GetReleaseInfo(currReleaseName)
-			currReleaseEnvironmentInfo := currReleaseInfo.GetInfoForEnvironment(environmentFilename)
-			if currReleaseEnvironmentInfo == nil {
+			currEnvironmentReleaseInfo := currReleaseInfo.Environments[environmentName]
+			if currEnvironmentReleaseInfo == nil {
 				continue
 			}
-			var prevReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo
+			var prevEnvironmentReleaseInfo *status.EnvironmentRelease
 			if i > 0 {
 				prevReleaseInfo := allReleasesInfo.GetReleaseInfo(allReleasesInfo.GetReleaseNames()[i-1])
-				prevReleaseEnvironmentInfo = prevReleaseInfo.GetInfoForEnvironment(environmentFilename)
+				prevEnvironmentReleaseInfo = prevReleaseInfo.Environments[environmentName]
 			}
 
 			// TODO table
-			changedComponents := release_inspection.ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
+			changedComponents := release_inspection.ChangedComponents(currEnvironmentReleaseInfo, prevEnvironmentReleaseInfo)
 			fmt.Fprintf(releaseSummaryMarkdown, "* [%s](%s) %d changes (%v)\n",
-				currReleaseEnvironmentInfo.ReleaseName,
+				currEnvironmentReleaseInfo.ReleaseName,
 				"TODO",
 				len(changedComponents),
 				strings.Join(changedComponents.SortedList(), ", "),

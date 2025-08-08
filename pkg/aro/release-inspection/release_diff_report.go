@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	"gopkg.in/yaml.v3"
 
 	arohcpapi "github.com/openshift-online/service-status/pkg/apis/aro-hcp"
@@ -34,9 +35,15 @@ func NewReleaseDiffReport(imageInfoAccessor ImageInfoAccessor, releaseName, rele
 	}
 }
 
-func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (*ReleaseInfo, error) {
-	ret := &ReleaseInfo{
-		ReleaseName: r.releaseName,
+func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (*status.ReleaseDetails, error) {
+	ret := &status.ReleaseDetails{
+		TypeMeta: status.TypeMeta{
+			Kind:       "ReleaseDetails",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Name:         r.releaseName,
+		SHA:          r.releaseSHA,
+		Environments: map[string]*status.EnvironmentRelease{},
 	}
 
 	configOverlayFilename := filepath.Join(r.repoDir, "config", "config.msft.clouds-overlay.yaml")
@@ -74,33 +81,33 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 			panic(fmt.Sprintf("TODO we may later add parsing of rendered files: %v", environmentFilename))
 		}
 
-		currReleaseEnvironmentInfo, err := r.releaseMarkdownForConfigJSON(localCtx, environmentFilename, configJSON)
+		currReleaseEnvironmentInfo, err := r.environmentReleaseForAROHCPConfigJSON(localCtx, environmentFilename, configJSON)
 		if err != nil {
 			// the schema in ARO-HCP is changing incompatibly, so we are not guaranteed to be able to parse older releases
 			localLogger.Error(err, "failed to release markdown for config JSON.  Continuing...")
 			continue
 		}
-		ret.addEnvironment(currReleaseEnvironmentInfo)
+		ret.Environments[currReleaseEnvironmentInfo.Environment] = currReleaseEnvironmentInfo
 	}
 
 	return ret, nil
 }
 
-func (r *ReleaseDiffReport) releaseMarkdownForConfigJSON(ctx context.Context, environmentName string, currReleaseEnvironmentJSON []byte) (*ReleaseEnvironmentInfo, error) {
+func (r *ReleaseDiffReport) environmentReleaseForAROHCPConfigJSON(ctx context.Context, environmentName string, currReleaseEnvironmentJSON []byte) (*status.EnvironmentRelease, error) {
 	config := &arohcpapi.ConfigSchemaJSON{}
 	err := json.Unmarshal(currReleaseEnvironmentJSON, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	ret, err := r.releaseMarkdownForConfig(ctx, environmentName, config)
+	ret, err := r.environmentReleaseForAROHCPConfig(ctx, environmentName, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create markdown for %s: %w", r.releaseName, err)
 	}
 	return ret, nil
 }
 
-func (r *ReleaseDiffReport) releaseMarkdownForConfig(ctx context.Context, environmentName string, config *arohcpapi.ConfigSchemaJSON) (*ReleaseEnvironmentInfo, error) {
+func (r *ReleaseDiffReport) environmentReleaseForAROHCPConfig(ctx context.Context, environmentName string, config *arohcpapi.ConfigSchemaJSON) (*status.EnvironmentRelease, error) {
 	logger := klog.FromContext(ctx)
 	logger.Info("Scraping info")
 

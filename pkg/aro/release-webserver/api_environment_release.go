@@ -8,8 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/apis/status"
-	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
-	"k8s.io/utils/ptr"
 )
 
 func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
@@ -36,7 +34,7 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 			Items: []status.EnvironmentRelease{},
 		}
 		for _, environment := range environments {
-			for _, release := range releases {
+			for _, release := range releases.Items {
 				currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, GetEnvironmentReleaseName(environment, release.Name))
 				if err != nil {
 					c.String(500, "failed to get release env env=%q, release=%q: %v", environment, release, err)
@@ -45,8 +43,7 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 				if currReleaseEnvironmentInfo == nil {
 					continue
 				}
-				ret.Items = append(ret.Items, *accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo))
-
+				ret.Items = append(ret.Items, *currReleaseEnvironmentInfo)
 			}
 		}
 
@@ -91,47 +88,5 @@ func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, enviro
 		return nil, fmt.Errorf("%q not found", environmentReleaseName)
 	}
 
-	ret := accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo)
-	return ret, nil
-}
-
-func accessorEnvInfoToReleaseInfo(currReleaseEnvironmentInfo *release_inspection.ReleaseEnvironmentInfo) *status.EnvironmentRelease {
-	if currReleaseEnvironmentInfo == nil {
-		return nil
-	}
-	ret := &status.EnvironmentRelease{
-		TypeMeta: status.TypeMeta{
-			Kind:       "EnvironmentRelease",
-			APIVersion: "service-status.hcm.openshift.io/v1",
-		},
-		Name:        fmt.Sprintf("%s---%s", currReleaseEnvironmentInfo.EnvironmentFilename, currReleaseEnvironmentInfo.ReleaseName),
-		ReleaseName: currReleaseEnvironmentInfo.ReleaseName,
-		SHA:         currReleaseEnvironmentInfo.ReleaseSHA,
-		Environment: currReleaseEnvironmentInfo.EnvironmentFilename,
-		Components:  map[string]*status.ComponentInfo{},
-	}
-	for _, imageInfo := range currReleaseEnvironmentInfo.Components {
-		ret.Components[imageInfo.Name] = &status.ComponentInfo{
-			Name: imageInfo.Name,
-			ImageInfo: status.ContainerImage{
-				Digest:     "",
-				Registry:   "",
-				Repository: "",
-			},
-			ImageCreationTime: imageInfo.ImageCreationTime,
-			SourceSHA:         imageInfo.SourceSHA,
-		}
-		if imageInfo.RepoLink != nil {
-			ret.Components[imageInfo.Name].RepoURL = ptr.To(imageInfo.RepoLink.String())
-		}
-		if imageInfo.PermLinkForSourceSHA != nil {
-			ret.Components[imageInfo.Name].PermanentURLForSourceSHA = ptr.To(imageInfo.PermLinkForSourceSHA.String())
-		}
-		if imageInfo.ImageInfo != nil {
-			ret.Components[imageInfo.Name].ImageInfo.Digest = imageInfo.ImageInfo.Digest
-			ret.Components[imageInfo.Name].ImageInfo.Registry = ptr.Deref(imageInfo.ImageInfo.Registry, "MISSING REGISTRY")
-			ret.Components[imageInfo.Name].ImageInfo.Repository = imageInfo.ImageInfo.Repository
-		}
-	}
-	return ret
+	return currReleaseEnvironmentInfo, nil
 }

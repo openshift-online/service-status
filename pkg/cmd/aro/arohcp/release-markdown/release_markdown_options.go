@@ -13,10 +13,12 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"github.com/openshift-online/service-status/pkg/util"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
+	"k8s.io/utils/set"
 )
 
 type ReleaseMarkdownOptions struct {
@@ -89,8 +91,8 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	}
 	logger.Info("Found releases.", "releaseCount", len(allReleaseCommits))
 
-	allReleasesInfo := &release_inspection.ReleasesInfo{}
-	prevReleaseInfo := &release_inspection.ReleaseInfo{}
+	allReleasesInfo := &AllReleasesDetails{}
+	prevReleaseDetails := &status.ReleaseDetails{}
 	for i := len(allReleaseCommits) - 1; i >= 0; i-- {
 		commit := allReleaseCommits[i]
 		releaseName := fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5])
@@ -114,7 +116,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 		}
 
 		releaseDiffReporter := release_inspection.NewReleaseDiffReport(o.ImageInfoAccessor, releaseName, commit.Hash.String(), o.AROHCPDir, environments)
-		newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
+		newReleaseDetails, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
 		if err != nil {
 			return fmt.Errorf("failed to get release markdowns: %w", err)
 		}
@@ -122,21 +124,21 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 		if err := os.MkdirAll(path.Join(o.OutputDir, releaseName), 0755); err != nil {
 			return fmt.Errorf("failed to create output directory: %w", err)
 		}
-		for _, currReleaseEnvironmentFilemame := range newReleaseInfo.GetEnvironmentFilenames() {
-			currReleaseEnvironment := newReleaseInfo.GetInfoForEnvironment(currReleaseEnvironmentFilemame)
-			prevReleaseEnvironmentInfo := prevReleaseInfo.GetInfoForEnvironment(currReleaseEnvironment.EnvironmentFilename)
-			markdown := releaseEnvironmentMarkdown(currReleaseEnvironment, prevReleaseEnvironmentInfo)
+		for _, currEnvironmentName := range set.KeySet(newReleaseDetails.Environments).SortedList() {
+			currReleaseEnvironment := newReleaseDetails.Environments[currEnvironmentName]
+			prevReleaseEnvironmentInfo := prevReleaseDetails.Environments[currReleaseEnvironment.Environment]
+			markdown := environmentReleaseMarkdown(currReleaseEnvironment, prevReleaseEnvironmentInfo)
 
-			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.EnvironmentFilename+".md")
+			fullPath := filepath.Join(o.OutputDir, releaseName, currReleaseEnvironment.Environment+".md")
 			if err := os.WriteFile(fullPath, []byte(markdown), 0644); err != nil {
 				return fmt.Errorf("failed to write file %s: %w", fullPath, err)
 			}
 		}
 
-		prevReleaseInfo = newReleaseInfo
-		allReleasesInfo.AddReleaseInfo(newReleaseInfo)
+		prevReleaseDetails = newReleaseDetails
+		allReleasesInfo.AddReleaseDetails(newReleaseDetails)
 
-		environmentComparisonMarkdown := releaseEnvironmentSummaryMarkdown(newReleaseInfo)
+		environmentComparisonMarkdown := environmentReleaseSummaryMarkdown(newReleaseDetails)
 		environmentComparisonPath := filepath.Join(o.OutputDir, releaseName, "environment-comparison.md")
 		if err := os.WriteFile(environmentComparisonPath, []byte(environmentComparisonMarkdown), 0644); err != nil {
 			return fmt.Errorf("failed to write file %s: %w", environmentComparisonPath, err)
