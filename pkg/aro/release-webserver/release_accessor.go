@@ -64,7 +64,10 @@ func (r *releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error
 	return []string{"int", "stg", "prod"}, nil
 }
 
-var interestingFiles = set.New("config/config.msft.clouds-overlay.yaml")
+var interestingFiles = set.New(
+	"config/config.msft.clouds-overlay.yaml",
+	"config/config.yaml",
+)
 
 func (r *releaseAccessor) getReleaseFromName(ctx context.Context, releaseName string) (*status.Release, error) {
 	r.gitLock.Lock()
