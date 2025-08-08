@@ -56,6 +56,11 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		addComponentInfo("MCE", &config.ACM.MCE.Bundle)
 	}
 	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
+	if config.Pko != nil {
+		addComponentInfo("Package Operator Package", &config.Pko.ImagePackage)
+		addComponentInfo("Package Operator Manager", &config.Pko.ImageManager)
+		addComponentInfo("Package Operator Remote Phase Manager", &config.Pko.RemotePhaseManager)
+	}
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
 		addComponentInfo("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
