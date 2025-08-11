@@ -27,7 +27,7 @@ var (
 var HardcodedComponents = map[string]HardcodedComponentInfo{
 	"ACM Operator": {
 		Name:                "ACM Operator",
-		ImagePullRegistry:   "registry.redhat.io",
+		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "rhacm2/acm-operator-bundle",
 		RepositoryURL:       "",
 		MasterBranch:        "",
@@ -87,7 +87,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"MCE": {
 		Name:                "MCE",
-		ImagePullRegistry:   "registry.redhat.io",
+		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "multicluster-engine/mce-operator-bundle",
 		RepositoryURL:       "",
 		MasterBranch:        "",
