@@ -103,15 +103,15 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		prevEnvReleaseNameURLEscaped = url.PathEscape(prevReleaseEnvironmentInfo.Name)
 	}
 	c.HTML(200, "http/aro-hcp/environment-release.html", gin.H{
-		"currEnvRelease":               environmentReleaseInfo,
-		"prevEnvRelease":               prevReleaseEnvironmentInfo,
-		"prevEnvReleaseNameURLEscaped": prevEnvReleaseNameURLEscaped,
-		"environmentName":              environmentReleaseInfo.Environment,
-		"release":                      release,
-		"changedImageNames":            changedComponents.SortedList(),
-		"changedImageNameToDetails":    changedNameToDetails,
-		"imageNames":                   imageNames,
-		"imageNameToDetails":           imageNameToDetails,
+		"currEnvRelease":                environmentReleaseInfo,
+		"prevEnvRelease":                prevReleaseEnvironmentInfo,
+		"prevEnvReleaseNameURLEscaped":  prevEnvReleaseNameURLEscaped,
+		"environmentName":               environmentReleaseInfo.Environment,
+		"release":                       release,
+		"changedComponentNames":         changedComponents.SortedList(),
+		"changedComponentNameToDetails": changedNameToDetails,
+		"componentNames":                imageNames,
+		"componentNameToDetails":        imageNameToDetails,
 	})
 }
 
