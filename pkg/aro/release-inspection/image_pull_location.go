@@ -3,6 +3,7 @@ package release_inspection
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type HardcodedComponentInfo struct {
@@ -11,7 +12,17 @@ type HardcodedComponentInfo struct {
 	ImagePullRepository string
 	RepositoryURL       string
 	MasterBranch        string
+
+	// how old can an image be before we say there is a need to update it
+	LatencyThreshold time.Duration
 }
+
+var (
+	teamLatency    = 2 * 24 * time.Hour
+	orgLatency     = 3 * 24 * time.Hour
+	companyLatency = 4 * 24 * time.Hour
+	worldLatency   = 60 * 24 * time.Hour
+)
 
 var HardcodedComponents = map[string]HardcodedComponentInfo{
 	"ACM Operator": {
@@ -34,6 +45,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "arohcpbackend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
 		MasterBranch:        "main",
+		LatencyThreshold:    teamLatency,
 	},
 	"Backplane": {
 		Name:                "Backplane",
@@ -48,6 +60,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "app-sre/uhc-clusters-service",
 		RepositoryURL:       "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
 		MasterBranch:        "master",
+		LatencyThreshold:    orgLatency,
 	},
 	"Frontend": {
 		Name:                "Frontend",
@@ -55,6 +68,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "arohcpfrontend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
 		MasterBranch:        "main",
+		LatencyThreshold:    teamLatency,
 	},
 	"Hypershift": {
 		Name:                "Hypershift",
@@ -62,6 +76,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "acm-d/rhtap-hypershift-operator",
 		RepositoryURL:       "https://github.com/openshift/hypershift",
 		MasterBranch:        "main",
+		LatencyThreshold:    companyLatency,
 	},
 	"Maestro": {
 		Name:                "Maestro",
@@ -111,6 +126,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "prometheus/prometheus",
 		RepositoryURL:       "",
 		MasterBranch:        "",
+		LatencyThreshold:    worldLatency,
 	},
 	"Service Prometheus Spec": {
 		Name:                "Service Prometheus Spec",
@@ -118,6 +134,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "prometheus/prometheus",
 		RepositoryURL:       "",
 		MasterBranch:        "",
+		LatencyThreshold:    worldLatency,
 	},
 }
 

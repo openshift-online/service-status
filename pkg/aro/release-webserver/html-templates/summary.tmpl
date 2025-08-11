@@ -27,10 +27,11 @@
 {{ $environmentToReleaseToHTML := .environmentToReleaseToHTML }}
 {{ $environments := .environments }}
 {{ $releases := .releases }}
+{{ $environmentToSummaryHTML := .environmentToSummaryHTML }}
 
 {{range $environment := $environments.Items}}
     <h2 id="{{$environment.Name}}"><a href="#{{$environment.Name}}" class="text-dark">{{$environment.Name}}</a></h2>
-    <p>Useful description of environment goes here</p>
+    <p class="small mb-3">{{ index $environmentToSummaryHTML $environment.Name}}</p>
 
     <table  id="{{$environment}}_table" class="table text-nowrap">
         <tr>

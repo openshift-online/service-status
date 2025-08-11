@@ -27,8 +27,8 @@
 </head>
 
 <body>
-{{ $imageNameToDetails := .imageNameToDetails }}
-{{ $changedImageNameToDetails := .changedImageNameToDetails }}
+{{ $componentNameToDetails := .componentNameToDetails }}
+{{ $changedComponentNameToDetails := .changedComponentNameToDetails }}
 
 <div class="container">
 
@@ -70,16 +70,16 @@
 <p>SHA: TODO-code-link-here</p>
 
 <h3>Components</h3>
-{{range $changedImageName := .changedImageNames}}
-    {{ index $changedImageNameToDetails $changedImageName }}
+{{range $changedComponentName := .changedComponentNames}}
+    {{ index $changedComponentNameToDetails $changedComponentName }}
 {{end}}
 
 
 <h2>All Content</h2>
 <h3>Components</h3>
 
-{{range $imageName := .imageNames}}
-    {{ index $imageNameToDetails $imageName }}
+{{range $componentName := .componentNames}}
+    {{ index $componentNameToDetails $componentName }}
 {{end}}
 </div>
 </body>
