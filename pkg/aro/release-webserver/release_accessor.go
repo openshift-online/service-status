@@ -81,15 +81,16 @@ func (r *releaseAccessor) getReleaseFromName(ctx context.Context, releaseName st
 	r.gitLock.Unlock()
 
 	releases, err := r.ListReleases(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list releases: %w", err)
+	}
 
 	r.gitLock.Lock()
 	defer r.gitLock.Unlock()
-	if err != nil {
-		for _, currRelease := range releases.Items {
-			if currRelease.Name == releaseName {
-				r.releaseNameToRelease[releaseName] = &currRelease
-				return &currRelease, nil
-			}
+	for _, currRelease := range releases.Items {
+		if currRelease.Name == releaseName {
+			r.releaseNameToRelease[releaseName] = &currRelease
+			return &currRelease, nil
 		}
 	}
 
