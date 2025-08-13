@@ -219,14 +219,14 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
 				}
 			}
 		}
-		if prevImageDetails != nil && len(prevImageDetails.SourceSHA) > 0 {
-			diffLines = append(diffLines,
-				fmt.Sprintf("<li><a target=\"_blank\" href=\"%s/compare/%s...%s\">Full changelog</a></li>",
-					ptr.Deref(currImageDetails.RepoURL, ""),
-					prevImageDetails.SourceSHA,
-					currImageDetails.SourceSHA,
-				))
-		}
+	}
+	if len(ptr.Deref(currImageDetails.RepoURL, "")) > 0 && prevImageDetails != nil && len(prevImageDetails.SourceSHA) > 0 {
+		diffLines = append(diffLines,
+			fmt.Sprintf("<li><a target=\"_blank\" href=\"%s/compare/%s...%s\">Full changelog</a></li>",
+				ptr.Deref(currImageDetails.RepoURL, ""),
+				prevImageDetails.SourceSHA,
+				currImageDetails.SourceSHA,
+			))
 	}
 
 	detailsHTML := fmt.Sprintf(`

@@ -302,11 +302,33 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 
 		gitAccessor, err := r.componentGitAccessor.GetComponentGitAccessor(ctx, component.Name)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get component git accessor: %w", err)
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To(fmt.Sprintf("failed to get component git accessor: %v", err)),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
 		}
 		diffs, err := gitAccessor.GetDiffForSHAs(ctx, component.SourceSHA, otherComponent.SourceSHA, 100)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get diff component %q, curr=%q, other=%q for SHAs: %w", component.Name, component.SourceSHA, otherComponent.SourceSHA, err)
+			componentDiff := &status.ComponentDiff{
+				Name:            component.Name,
+				NumberOfChanges: -1,
+				Changes: []status.ComponentChange{
+					{
+						ChangeType:  "Unavailable",
+						Unavailable: ptr.To(fmt.Sprintf("failed to get diff component %q, curr=%q, other=%q for SHAs: %v", component.Name, component.SourceSHA, otherComponent.SourceSHA, err)),
+					},
+				},
+			}
+			ret.DifferentComponents[component.Name] = componentDiff
+			continue
 		}
 		if len(diffs) == 0 {
 			continue
