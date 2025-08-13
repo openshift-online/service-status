@@ -29,8 +29,8 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		Name:                "ACM Operator",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "rhacm2/acm-operator-bundle",
-		RepositoryURL:       "",
-		MasterBranch:        "",
+		RepositoryURL:       "https://github.com/stolostron/acm-operator-bundle",
+		MasterBranch:        "main",
 	},
 	"ACR Pull": {
 		Name:                "ACR Pull",
@@ -89,8 +89,8 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		Name:                "MCE",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "multicluster-engine/mce-operator-bundle",
-		RepositoryURL:       "",
-		MasterBranch:        "",
+		RepositoryURL:       "https://github.com/stolostron/mce-operator-bundle",
+		MasterBranch:        "main",
 	},
 	"OcMirror": {
 		Name:                "OcMirror",
