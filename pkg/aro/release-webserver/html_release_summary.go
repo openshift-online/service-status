@@ -89,7 +89,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				),
 			)
 
-			if i == 0 { // first one is the summary one
+			if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
 				environmentToSummaryHTML[environment.Name] = summaryForEnvironment(currReleaseEnvironmentInfo)
 			}
 		}
