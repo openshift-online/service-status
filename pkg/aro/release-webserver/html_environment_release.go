@@ -41,22 +41,33 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		return
 	}
 
-	// find the previous release. Very expensive, but probably ok
-	releases, err := h.releaseClient.ListReleases(ctx)
-	if err != nil {
-		c.String(500, "failed to list releases: %v", err)
-		return
+	var prevReleaseEnvironmentInfo *status.EnvironmentRelease
+	if otherReleaseID := c.Query("from"); len(otherReleaseID) == 0 {
+		// find the previous release. Very expensive, but probably ok
+		releases, err := h.releaseClient.ListReleases(ctx)
+		if err != nil {
+			c.String(500, "failed to list releases: %v", err)
+			return
+		}
+
+		for i, currRelease := range releases.Items {
+			if currRelease.Name != releaseName {
+				continue
+			}
+			if i+1 < len(releases.Items) {
+				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environmentName, releases.Items[i+1].Name)
+			}
+		}
+	} else {
+		otherEnvironmentName, otherReleaseName, _ := SplitEnvironmentReleaseName(otherReleaseID)
+		var err error
+		prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, otherEnvironmentName, otherReleaseName)
+		if err != nil {
+			c.String(500, "failed to get from environment release: %v", err)
+			return
+		}
 	}
 
-	var prevReleaseEnvironmentInfo *status.EnvironmentRelease
-	for i, currRelease := range releases.Items {
-		if currRelease.Name != releaseName {
-			continue
-		}
-		if i+1 < len(releases.Items) {
-			prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environmentName, releases.Items[i+1].Name)
-		}
-	}
 	changedComponents := ChangedComponents(environmentReleaseInfo, prevReleaseEnvironmentInfo)
 	changedNameToDetails := map[string]template.HTML{}
 	if prevReleaseEnvironmentInfo != nil {
@@ -102,6 +113,13 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	if prevReleaseEnvironmentInfo != nil {
 		prevEnvReleaseNameURLEscaped = url.PathEscape(prevReleaseEnvironmentInfo.Name)
 	}
+
+	allEnvironmentReleases, err := h.releaseClient.ListEnvironmentReleases(ctx)
+	if err != nil {
+		c.String(500, "failed to list allEnvironmentReleases: %v", err)
+		return
+	}
+
 	c.HTML(200, "http/aro-hcp/environment-release.html", gin.H{
 		"currEnvRelease":                environmentReleaseInfo,
 		"prevEnvRelease":                prevReleaseEnvironmentInfo,
@@ -112,6 +130,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		"changedComponentNameToDetails": changedNameToDetails,
 		"componentNames":                imageNames,
 		"componentNameToDetails":        imageNameToDetails,
+		"allEnvironmentReleases":        allEnvironmentReleases.Items,
 	})
 }
 

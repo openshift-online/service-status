@@ -74,6 +74,21 @@
     {{ index $changedComponentNameToDetails $changedComponentName }}
 {{end}}
 
+    <div class="alert alert-info" id="coreos-base-alert">
+        <p> Change comparison release
+            <form class="form-inline" method="GET">
+                <select name="from" class="form-control mr-2">
+                    <option value="">Select release to compare</option>
+                    {{range .allEnvironmentReleases}}
+                        <option value="{{.Name}}">{{.Environment}} {{.ReleaseName}}</option>
+                    {{end}}
+                </select>
+
+                <input class="btn btn-link" type="submit" value="Compare">
+            </form>
+        </p>
+    </div>
+
 
 <h2>All Content</h2>
 <h3>Components</h3>
