@@ -38,13 +38,33 @@ type ReleaseDetails struct {
 	Environments map[string]*EnvironmentRelease `json:"environments"`
 }
 
+type JobRunResults struct {
+	OverallResult JobOverallResult `json:"overall_result"`
+	URL           string           `json:"url"`
+}
+
+type JobOverallResult string
+
+const (
+	JobSucceeded             JobOverallResult = "S"
+	JobRunning               JobOverallResult = "R"
+	JobInfrastructureFailure JobOverallResult = "N"
+	JobInstallFailure        JobOverallResult = "I"
+	JobUpgradeFailure        JobOverallResult = "U"
+	JobTestFailure           JobOverallResult = "F"
+	JobFailureBeforeSetup    JobOverallResult = "n"
+	JobAborted               JobOverallResult = "A"
+	JobUnknown               JobOverallResult = "f"
+)
+
 type EnvironmentRelease struct {
-	TypeMeta    `json:",inline"`
-	Name        string                `json:"name"`
-	ReleaseName string                `json:"releaseName"`
-	SHA         string                `json:"sha"`
-	Environment string                `json:"environment"`
-	Components  map[string]*Component `json:"components"`
+	TypeMeta              `json:",inline"`
+	Name                  string                `json:"name"`
+	ReleaseName           string                `json:"releaseName"`
+	SHA                   string                `json:"sha"`
+	Environment           string                `json:"environment"`
+	Components            map[string]*Component `json:"components"`
+	ProbableJobRunResults []JobRunResults       `json:"probableJobRunResults"`
 }
 
 type EnvironmentReleaseList struct {

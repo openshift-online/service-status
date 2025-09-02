@@ -19,6 +19,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/openshift-online/service-status/pkg/apis/status"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
+	"github.com/openshift-online/service-status/pkg/aro/sippy"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
 	"k8s.io/utils/set"
@@ -383,6 +384,28 @@ func (r *releaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environ
 }
 
 func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error) {
+	localLogger := klog.FromContext(ctx)
+	localLogger = klog.LoggerWithValues(localLogger, "releaseName", releaseName)
+	localCtx := klog.NewContext(ctx, localLogger)
+
+	intJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-integration")
+	if err != nil {
+		localLogger.Error(err, "failed to list job runs")
+	}
+	stageJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-stage")
+	if err != nil {
+		localLogger.Error(err, "failed to list job runs")
+	}
+	prodJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-production")
+	if err != nil {
+		localLogger.Error(err, "failed to list job runs")
+	}
+	environmentNameToJobRuns := map[string][]sippy.JobRun{
+		"int":  intJobRuns,
+		"stg":  stageJobRuns,
+		"prod": prodJobRuns,
+	}
+
 	enviroments, err := r.ListEnvironments(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list environments: %w", err)
@@ -417,10 +440,6 @@ func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, 
 			fmt.Printf("failed to reset aro hcp worktree back to original: %v", err)
 		}
 	}()
-
-	localLogger := klog.FromContext(ctx)
-	localLogger = klog.LoggerWithValues(localLogger, "releaseName", releaseName)
-	localCtx := klog.NewContext(ctx, localLogger)
 
 	err = aroHCPWorkTree.Reset(&git.ResetOptions{
 		Commit: plumbing.NewHash(release.SHA),
