@@ -18,9 +18,8 @@ type HardcodedComponentInfo struct {
 }
 
 var (
-	teamLatency    = 2 * 24 * time.Hour
-	orgLatency     = 3 * 24 * time.Hour
-	companyLatency = 4 * 24 * time.Hour
+	orgLatency     = 5 * 24 * time.Hour
+	companyLatency = 5 * 24 * time.Hour
 	worldLatency   = 60 * 24 * time.Hour
 )
 
@@ -45,7 +44,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "arohcpbackend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
 		MasterBranch:        "main",
-		LatencyThreshold:    teamLatency,
+		LatencyThreshold:    orgLatency,
 	},
 	"Backplane": {
 		Name:                "Backplane",
@@ -68,7 +67,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 		ImagePullRepository: "arohcpfrontend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
 		MasterBranch:        "main",
-		LatencyThreshold:    teamLatency,
+		LatencyThreshold:    orgLatency,
 	},
 	"Hypershift": {
 		Name:                "Hypershift",

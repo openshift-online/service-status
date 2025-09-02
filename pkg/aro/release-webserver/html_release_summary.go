@@ -103,36 +103,28 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 	})
 }
 
-func countWeekendDays(start, end time.Time) int {
-	weekendDays := 0
-	for current := start; current.Before(end); current = current.Add(24 * time.Hour) {
-		if current.Weekday() == time.Saturday || current.Weekday() == time.Sunday {
-			weekendDays++
-		}
-	}
-	return weekendDays
-}
-
 func summaryForEnvironment(environmentRelease *status.EnvironmentRelease) template.HTML {
 	now := time.Now()
 	lines := []string{}
-	for _, componentName := range set.KeySet(environmentRelease.Components).SortedList() {
-		component := environmentRelease.Components[componentName]
-		if component.ImageCreationTime == nil {
-			continue
-		}
-		acceptableLatency := release_inspection.HardcodedComponents[component.Name].LatencyThreshold
-		if acceptableLatency == 0 {
-			continue
-		}
+	if environmentRelease.Environment == "int" {
+		for _, componentName := range set.KeySet(environmentRelease.Components).SortedList() {
+			component := environmentRelease.Components[componentName]
+			if component.ImageCreationTime == nil {
+				continue
+			}
+			acceptableLatency := release_inspection.HardcodedComponents[component.Name].LatencyThreshold
+			if acceptableLatency == 0 {
+				continue
+			}
 
-		weekendDays := countWeekendDays(*component.ImageCreationTime, now)
-		roughWorkingDuration := now.Sub(*component.ImageCreationTime) - (time.Duration(weekendDays) * 24 * time.Hour)
-		if roughWorkingDuration > acceptableLatency {
-			lines = append(lines,
-				fmt.Sprintf("<li><b>%s</b> needs to be updated.  It is about %d working days old and should be updated every %d days.</li>",
-					component.Name, roughWorkingDuration/(24*time.Hour), acceptableLatency/(24*time.Hour)),
-			)
+			daysOld := now.Sub(*component.ImageCreationTime) / (24 * time.Hour)
+			roughWorkingDuration := now.Sub(*component.ImageCreationTime) - daysOld
+			if roughWorkingDuration > acceptableLatency {
+				lines = append(lines,
+					fmt.Sprintf("<li><b>%s</b> needs to be updated.  It is about %d days old and should be updated every %d days.</li>",
+						component.Name, roughWorkingDuration/(24*time.Hour), acceptableLatency/(24*time.Hour)),
+				)
+			}
 		}
 	}
 
