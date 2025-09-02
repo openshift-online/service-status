@@ -4,11 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"k8s.io/klog/v2"
 )
 
 func GetEnvironmentReleaseDiff(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
+		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
+		ctx = klog.NewContext(ctx, logger)
 
 		environmentReleaseName := c.Param("name")
 		otherEnvironmentReleaseName := c.Param("otherName")
