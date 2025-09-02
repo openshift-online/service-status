@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/openshift-online/service-status/pkg/apis/status"
+	"k8s.io/klog/v2"
 	"k8s.io/utils/clock"
 )
 
@@ -75,6 +76,8 @@ type stringBasedResultTimeBasedCacher[T any] struct {
 }
 
 func (r *stringBasedResultTimeBasedCacher[T]) Do(ctx context.Context, key string) (T, error) {
+	logger := klog.FromContext(ctx)
+
 	r.lock.RLock()
 	if r.clock.Since(r.lastRefresh[key]) < 1*time.Hour {
 		defer r.lock.RUnlock()
@@ -86,6 +89,7 @@ func (r *stringBasedResultTimeBasedCacher[T]) Do(ctx context.Context, key string
 	defer r.lock.Unlock()
 
 	if r.clock.Since(r.lastRefresh[key]) < 1*time.Hour {
+		logger.Info("returning cached result", "key", key)
 		return r.results[key], nil
 	}
 

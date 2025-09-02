@@ -35,6 +35,8 @@ func NewThreadSafeImageInfoAccessor(pullSecretDir string) *ThreadSafeImageInfoAc
 }
 
 func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containerImage *status.ContainerImage) (ImageInfo, error) {
+	logger := klog.FromContext(ctx)
+
 	imagePullSpec, err := PullSpecFromContainerImage(containerImage)
 	if err != nil {
 		return ImageInfo{}, fmt.Errorf("error getting pull spec from container image: %v", err)
@@ -44,6 +46,7 @@ func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containe
 	defer t.lock.Unlock()
 
 	if cachedResult, ok := t.imagePullSpecToResult[imagePullSpec]; ok {
+		logger.Info("returning cached result", "imagePullSpec", imagePullSpec)
 		return cachedResult.imageInfo, cachedResult.err
 	}
 
@@ -53,6 +56,10 @@ func (t *ThreadSafeImageInfoAccessor) GetImageInfo(ctx context.Context, containe
 	}
 
 	imageInfo, err := getImageInfoForImagePullSpec(ctx, containerImage, credentialFilePath)
+	if err != nil {
+		return ImageInfo{}, fmt.Errorf("error getting image info from image pull spec: %v", err)
+	}
+
 	liveResult := imageInfoResult{
 		imageInfo: imageInfo,
 		err:       err,

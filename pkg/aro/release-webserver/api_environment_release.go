@@ -8,11 +8,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/apis/status"
+	"k8s.io/klog/v2"
 )
 
 func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
+		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
+		ctx = klog.NewContext(ctx, logger)
 
 		environments, err := accessor.ListEnvironments(ctx)
 		if err != nil {
@@ -66,6 +69,8 @@ func SplitEnvironmentReleaseName(name string) (string, string, bool) {
 func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
+		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
+		ctx = klog.NewContext(ctx, logger)
 
 		environmentReleaseName := c.Param("name")
 		ret, err := getEnvironmentRelease(ctx, accessor, environmentReleaseName)
