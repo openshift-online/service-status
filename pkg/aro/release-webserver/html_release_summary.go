@@ -28,32 +28,25 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 		return
 	}
 
-	releases, err := h.releaseClient.ListReleases(ctx)
-	if err != nil {
-		c.String(500, "failed to list releases: %v", err)
-		return
-	}
-
-	environmentToReleaseToHTML := map[string]map[string]template.HTML{}
+	environmentReleaseToHTML := map[string]template.HTML{}
+	environmentToEnvironmentReleaseNames := map[string][]string{}
 	environmentToSummaryHTML := map[string]template.HTML{}
 	for _, environment := range environments.Items {
-		for i, release := range releases.Items {
-			currReleaseEnvironmentInfo, _ := h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, release.Name)
-			if currReleaseEnvironmentInfo == nil {
-				continue
-			}
+		environmentReleases, err := h.releaseClient.ListEnvironmentReleasesForEnvironment(ctx, environment.Name)
+		if err != nil {
+			c.String(500, "failed to list environments: %v", err)
+			return
+		}
+
+		for i, currReleaseEnvironmentInfo := range environmentReleases.Items {
+			environmentToEnvironmentReleaseNames[environment.Name] = append(environmentToEnvironmentReleaseNames[environment.Name], currReleaseEnvironmentInfo.Name)
+
 			var prevReleaseEnvironmentInfo *status.EnvironmentRelease
-			if i+1 < len(releases.Items) {
-				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, releases.Items[i+1].Name)
+			if i+1 < len(environmentReleases.Items) {
+				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, environmentReleases.Items[i+1].ReleaseName)
 			}
 
-			releaseMap, ok := environmentToReleaseToHTML[environment.Name]
-			if !ok {
-				releaseMap = map[string]template.HTML{}
-				environmentToReleaseToHTML[environment.Name] = releaseMap
-			}
-
-			changedComponents := ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
+			changedComponents := ChangedComponents(&currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
 
 			changesList := ""
 			if len(changedComponents) > 0 {
@@ -68,7 +61,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				continue // don't display releases with no changes.
 			}
 
-			releaseMap[release.Name] = template.HTML(
+			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = template.HTML(
 				fmt.Sprintf(`
         <tr>
             <td class="text-monospace">
@@ -82,24 +75,24 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
             </td>
         </tr>
 `,
-					fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(GetEnvironmentReleaseName(environment.Name, release.Name))),
-					release.Name,
-					release.SHA,
+					fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(GetEnvironmentReleaseName(environment.Name, currReleaseEnvironmentInfo.ReleaseName))),
+					currReleaseEnvironmentInfo.ReleaseName,
+					currReleaseEnvironmentInfo.SHA,
 					changesList,
 				),
 			)
 
 			if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
-				environmentToSummaryHTML[environment.Name] = summaryForEnvironment(currReleaseEnvironmentInfo)
+				environmentToSummaryHTML[environment.Name] = summaryForEnvironment(&currReleaseEnvironmentInfo)
 			}
 		}
 	}
 
 	c.HTML(200, "http/aro-hcp/summary.html", gin.H{
-		"environments":               environments,
-		"releases":                   releases,
-		"environmentToReleaseToHTML": environmentToReleaseToHTML,
-		"environmentToSummaryHTML":   environmentToSummaryHTML,
+		"environments":                         environments,
+		"environmentToEnvironmentReleaseNames": environmentToEnvironmentReleaseNames,
+		"environmentReleaseToHTML":             environmentReleaseToHTML,
+		"environmentToSummaryHTML":             environmentToSummaryHTML,
 	})
 }
 

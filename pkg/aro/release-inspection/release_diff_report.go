@@ -17,41 +17,22 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type ReleaseDiffReport struct {
-	// these fields are for input, not output
-
-	imageInfoAccessor ImageInfoAccessor
-	releaseName       string
-	releaseSHA        string
-	environments      []string
-	repoDir           string
+type EnvironmentReleaseLookupInformation struct {
+	EnvironmentName    string
+	ReleaseName        string
+	ReleaseSHA         string
+	InterestingContent map[string][]byte
 }
 
-func NewReleaseDiffReport(imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA string, repoDir string, environments []string) *ReleaseDiffReport {
-	return &ReleaseDiffReport{
-		imageInfoAccessor: imageInfoAccessor,
-		releaseName:       releaseName,
-		releaseSHA:        releaseSHA,
-		repoDir:           repoDir,
-		environments:      environments,
-	}
-}
-
-func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (*status.ReleaseDetails, error) {
-	ret := &status.ReleaseDetails{
-		TypeMeta: status.TypeMeta{
-			Kind:       "ReleaseDetails",
-			APIVersion: "service-status.hcm.openshift.io/v1",
-		},
-		Name:         r.releaseName,
-		SHA:          r.releaseSHA,
-		Environments: map[string]*status.EnvironmentRelease{},
-	}
-
-	baseConfigFilename := filepath.Join(r.repoDir, "config", "config.yaml")
+// CompleteEnvironmentReleaseInput assumes the repo directory is already in the correct state for the release.  It inspects
+// the content and returns a set of "files" that are the merged result of the repo state.
+// Currently this is the config.yaml with the correct config.msft.clouds-overlay.yaml region overlayed.
+// This could later be extended to include other files.
+func CompleteEnvironmentReleaseInput(ctx context.Context, repoDir, environmentName string) (map[string][]byte, error) {
+	baseConfigFilename := filepath.Join(repoDir, "config", "config.yaml")
 	baseConfigBytes, err := os.ReadFile(baseConfigFilename)
 	if errors.Is(err, os.ErrNotExist) {
-		return ret, nil
+		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s: %w", baseConfigFilename, err)
@@ -64,10 +45,10 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 	}
 	baseConfigMap = baseConfigMap["defaults"].(map[string]interface{})
 
-	configOverlayFilename := filepath.Join(r.repoDir, "config", "config.msft.clouds-overlay.yaml")
+	configOverlayFilename := filepath.Join(repoDir, "config", "config.msft.clouds-overlay.yaml")
 	configOverlayJSONBytes, err := os.ReadFile(configOverlayFilename)
 	if errors.Is(err, os.ErrNotExist) {
-		return ret, nil
+		return nil, nil
 	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file %s: %w", configOverlayFilename, err)
@@ -77,46 +58,49 @@ func (r *ReleaseDiffReport) ReleaseInfoForAllEnvironments(ctx context.Context) (
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	for _, environmentName := range r.environments {
-		localLogger := klog.FromContext(ctx)
-		localLogger = klog.LoggerWithValues(localLogger, "configFile", environmentName)
+	localLogger := klog.FromContext(ctx)
+	localLogger = klog.LoggerWithValues(localLogger, "configFile", environmentName)
 
-		overlayConfigMap := map[string]interface{}{}
-		switch {
-		case environmentName == "int" || environmentName == "stg" || environmentName == "prod":
-			intOverlayMap := allConfigOverlays.Clouds["public"].(map[string]interface{})["environments"].(map[string]interface{})[environmentName].(map[string]interface{})["defaults"]
-			overlayConfigJSON, err := json.MarshalIndent(intOverlayMap, "", "    ")
-			if err != nil {
-				return nil, fmt.Errorf("failed to marshal JSON: %w", err)
-			}
-			if err := json.Unmarshal(overlayConfigJSON, &overlayConfigMap); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
-			}
-
-		default:
-			panic(fmt.Sprintf("TODO we may later add parsing of rendered files: %v", environmentName))
-		}
-
-		if err := mergo.Merge(&overlayConfigMap, baseConfigMap); err != nil {
-			return nil, fmt.Errorf("failed to merge base config with overlay: %w", err)
-		}
-		var overlayConfig *arohcpapi.ConfigSchemaJSON // may be an overlay
-		overlayConfigJSON, err := json.MarshalIndent(overlayConfigMap, "", "    ")
+	overlayConfigMap := map[string]interface{}{}
+	switch {
+	case environmentName == "int" || environmentName == "stg" || environmentName == "prod":
+		intOverlayMap := allConfigOverlays.Clouds["public"].(map[string]interface{})["environments"].(map[string]interface{})[environmentName].(map[string]interface{})["defaults"]
+		overlayConfigJSON, err := json.MarshalIndent(intOverlayMap, "", "    ")
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal JSON: %w", err)
 		}
-		if err := json.Unmarshal(overlayConfigJSON, &overlayConfig); err != nil {
+		if err := json.Unmarshal(overlayConfigJSON, &overlayConfigMap); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 		}
 
-		currReleaseEnvironmentInfo, err := scrapeInfoForAROHCPConfig(ctx, r.imageInfoAccessor, r.releaseName, r.releaseSHA, environmentName, overlayConfig)
-		if err != nil {
-			// the schema in ARO-HCP is changing incompatibly, so we are not guaranteed to be able to parse older releases
-			localLogger.Error(err, "failed to read ARO HCP config for environment=%q release=%q.  Continuing...", environmentName, r.releaseName)
-			continue
-		}
-		ret.Environments[currReleaseEnvironmentInfo.Environment] = currReleaseEnvironmentInfo
+	default:
+		panic(fmt.Sprintf("TODO we may later add parsing of rendered files: %q", environmentName))
+	}
+
+	if err := mergo.Merge(&overlayConfigMap, baseConfigMap); err != nil {
+		return nil, fmt.Errorf("failed to merge base config with overlay: %w", err)
+	}
+	overlayConfigJSON, err := json.MarshalIndent(overlayConfigMap, "", "    ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	// virtual file
+	ret := map[string][]byte{
+		"virtual-config/environment-release-config.json": overlayConfigJSON,
 	}
 
 	return ret, nil
+}
+
+func ReleaseInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseLookupInformation *EnvironmentReleaseLookupInformation) (*status.EnvironmentRelease, error) {
+	localLogger := klog.FromContext(ctx)
+	localLogger = klog.LoggerWithValues(localLogger, "releaseLookupInformation", releaseLookupInformation)
+
+	var overlayConfig *arohcpapi.ConfigSchemaJSON // may be an overlay
+	if err := json.Unmarshal(releaseLookupInformation.InterestingContent["virtual-config/environment-release-config.json"], &overlayConfig); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	return scrapeInfoForAROHCPConfig(ctx, imageInfoAccessor, releaseLookupInformation.EnvironmentName, releaseLookupInformation.ReleaseName, releaseLookupInformation.ReleaseSHA, overlayConfig)
 }

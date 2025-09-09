@@ -57,40 +57,21 @@ func (c *fileBasedReleaseClient) GetEnvironment(ctx context.Context, name string
 	return nil, fmt.Errorf("environment %v not found", name)
 }
 
-func (c *fileBasedReleaseClient) ListReleases(ctx context.Context) (*status.ReleaseList, error) {
-	url := filepath.Join("api/aro-hcp/releases.json")
+func (c *fileBasedReleaseClient) ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error) {
+	url := filepath.Join("api/aro-hcp/environmentreleases.json")
 	body, err := c.get(ctx, url)
 	if err != nil {
 		return nil, err
 	}
 
-	var result status.ReleaseList
+	var result status.EnvironmentReleaseList
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
 }
 
-func (c *fileBasedReleaseClient) GetRelease(ctx context.Context, name string) (*status.Release, error) {
-	url := filepath.Join("api/aro-hcp/releases.json")
-	body, err := c.get(ctx, url)
-	if err != nil {
-		return nil, err
-	}
-	var list status.ReleaseList
-	if err := json.Unmarshal(body, &list); err != nil {
-		return nil, err
-	}
-	for _, item := range list.Items {
-		if item.Name == name {
-			return &item, nil
-		}
-	}
-
-	return nil, fmt.Errorf("release %v not found", name)
-}
-
-func (c *fileBasedReleaseClient) ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error) {
+func (c *fileBasedReleaseClient) ListEnvironmentReleasesForEnvironment(ctx context.Context, environment string) (*status.EnvironmentReleaseList, error) {
 	url := filepath.Join("api/aro-hcp/environmentreleases.json")
 	body, err := c.get(ctx, url)
 	if err != nil {

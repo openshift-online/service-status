@@ -24,9 +24,9 @@
         Jump to: <a href="#int">int</a> | <a href="#stg">stg</a> | <a href="#prod">prod</a>
     </p>
 
-{{ $environmentToReleaseToHTML := .environmentToReleaseToHTML }}
+{{ $environmentReleaseToHTML := .environmentReleaseToHTML }}
 {{ $environments := .environments }}
-{{ $releases := .releases }}
+{{ $environmentToEnvironmentReleaseNames := .environmentToEnvironmentReleaseNames }}
 {{ $environmentToSummaryHTML := .environmentToSummaryHTML }}
 
 {{range $environment := $environments.Items}}
@@ -39,9 +39,10 @@
             <th>SHA</th>
             <th>Changes</th>
         </tr>
-    {{range $release := $releases.Items}}
-        {{ index $environmentToReleaseToHTML $environment.Name $release.Name }}
-    {{end}}
+
+        {{range $environmentReleaseName := index $environmentToEnvironmentReleaseNames $environment.Name}}
+            {{ index $environmentReleaseToHTML $environmentReleaseName }}
+        {{end}}
     </table>
 {{end}}
 
