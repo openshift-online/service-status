@@ -57,8 +57,7 @@ func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	// JSON endpoints
 	httpRouter.GET("/api/aro-hcp/environments", release_webserver.ListEnvironments(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environments/:name", release_webserver.GetEnvironment(releaseAccessor))
-	httpRouter.GET("/api/aro-hcp/releases", release_webserver.ListReleases(releaseAccessor))
-	httpRouter.GET("/api/aro-hcp/releases/:name", release_webserver.GetRelease(releaseAccessor))
+	httpRouter.GET("/api/aro-hcp/environments/:name/environmentreleases", release_webserver.ListEnvironmentReleasesForEnvironment(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases", release_webserver.ListEnvironmentReleases(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases/:name", release_webserver.GetEnvironmentRelease(releaseAccessor))
 	httpRouter.GET("/api/aro-hcp/environmentreleases/:name/diff/:otherName", release_webserver.GetEnvironmentReleaseDiff(releaseAccessor))

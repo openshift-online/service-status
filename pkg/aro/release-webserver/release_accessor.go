@@ -27,10 +27,13 @@ import (
 
 type ReleaseAccessor interface {
 	ListEnvironments(ctx context.Context) ([]string, error)
-	ListReleases(ctx context.Context) (*status.ReleaseList, error)
-	GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error)
-	GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error)
+	ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error)
+	ListEnvironmentReleasesForEnvironment(ctx context.Context, environment string) (*status.EnvironmentReleaseList, error)
+	GetEnvironmentRelease(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error)
 	GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error)
+
+	// this is useful to use the caching instance to delegate function calls
+	SetSelfLookupInstance(ReleaseAccessor)
 }
 
 type Release struct {
@@ -39,6 +42,8 @@ type Release struct {
 }
 
 type releaseAccessor struct {
+	selfLookupInstance ReleaseAccessor
+
 	aroHCPDir            string
 	numberOfDays         int
 	imageInfoAccessor    release_inspection.ImageInfoAccessor
@@ -50,7 +55,7 @@ type releaseAccessor struct {
 }
 
 func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor, componentGitAccessor release_inspection.ComponentsGitInfo) ReleaseAccessor {
-	return &releaseAccessor{
+	ret := &releaseAccessor{
 		aroHCPDir:            aroHCPDir,
 		numberOfDays:         numberOfDays,
 		imageInfoAccessor:    imageInfoAccessor,
@@ -58,6 +63,8 @@ func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor re
 		releaseNameToInfo:    map[string]*status.ReleaseDetails{},
 		releaseNameToRelease: map[string]*status.Release{},
 	}
+	ret.SetSelfLookupInstance(ret)
+	return ret
 }
 
 func (r *releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error) {
@@ -70,35 +77,9 @@ var interestingFiles = set.New(
 	"config/config.yaml",
 )
 
-func (r *releaseAccessor) getReleaseFromName(ctx context.Context, releaseName string) (*status.Release, error) {
-	r.gitLock.Lock()
-
-	release := r.releaseNameToRelease[releaseName]
-	if release != nil {
-		defer r.gitLock.Unlock()
-		return release, nil
-	}
-
-	r.gitLock.Unlock()
-
-	releases, err := r.ListReleases(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list releases: %w", err)
-	}
-
-	r.gitLock.Lock()
-	defer r.gitLock.Unlock()
-	for _, currRelease := range releases.Items {
-		if currRelease.Name == releaseName {
-			r.releaseNameToRelease[releaseName] = &currRelease
-			return &currRelease, nil
-		}
-	}
-
-	return nil, fmt.Errorf("failed to find release %q", releaseName)
-}
-
-func (r *releaseAccessor) ListReleases(ctx context.Context) (*status.ReleaseList, error) {
+// listEnvironmentReleasesLookupInfo returns the environment releases from newest to oldest.
+// only releases with changes are listed.
+func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context, environmentName string) ([]*release_inspection.EnvironmentReleaseLookupInformation, error) {
 	r.gitLock.Lock()
 	defer r.gitLock.Unlock()
 
@@ -154,14 +135,9 @@ func (r *releaseAccessor) ListReleases(ctx context.Context) (*status.ReleaseList
 	}
 
 	logger.Info("Finding all releases.")
-	releaseList := &status.ReleaseList{
-		TypeMeta: status.TypeMeta{
-			Kind:       "ReleaseList",
-			APIVersion: "service-status.hcm.openshift.io/v1",
-		},
-		Items: nil,
-	}
+	environmentLookupInfoNewestToOldest := []*release_inspection.EnvironmentReleaseLookupInformation{}
 	prevInterestingFiles := map[string][]byte{}
+	prevEnvironmentReleaseInput := map[string][]byte{}
 	for _, commit := range commitsOldestToNewest {
 		firstCommitMessageLine, _, _ := strings.Cut(commit.Message, "\n")
 		if commit.NumParents() != 2 && !strings.HasSuffix(firstCommitMessageLine, ")") {
@@ -193,32 +169,44 @@ func (r *releaseAccessor) ListReleases(ctx context.Context) (*status.ReleaseList
 		}
 		prevInterestingFiles = newInterestingFiles
 
-		releaseList.Items = append([]status.Release{
+		// now merge the content and see if the content for a particular environment in those files changed.
+		environmentReleaseInput, err := release_inspection.CompleteEnvironmentReleaseInput(ctx, r.aroHCPDir, environmentName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to complete environment release input: %w", err)
+		}
+		if reflect.DeepEqual(prevEnvironmentReleaseInput, environmentReleaseInput) {
+			// if no content changed, skip the commit
+			continue
+		}
+		prevEnvironmentReleaseInput = environmentReleaseInput
+
+		releaseName := fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5])
+		environmentLookupInfoNewestToOldest = append([]*release_inspection.EnvironmentReleaseLookupInformation{
 			{
-				TypeMeta: status.TypeMeta{
-					Kind:       "Release",
-					APIVersion: "service-status.hcm.openshift.io/v1",
-				},
-				Name: fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5]),
-				SHA:  commit.Hash.String(),
+				EnvironmentName:    environmentName,
+				ReleaseName:        releaseName,
+				ReleaseSHA:         commit.Hash.String(),
+				InterestingContent: environmentReleaseInput,
 			},
-		}, releaseList.Items...)
+		}, environmentLookupInfoNewestToOldest...)
 	}
-	logger.Info("Found releases.", "releaseCount", len(releaseList.Items))
+	logger.Info("Found environment releases.", "releaseCount", len(environmentLookupInfoNewestToOldest))
 
-	for i, release := range releaseList.Items {
-		r.releaseNameToRelease[release.Name] = &releaseList.Items[i]
-	}
-
-	return releaseList, nil
+	return environmentLookupInfoNewestToOldest, nil
 }
 
-func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentName string) (*status.EnvironmentReleaseDiff, error) {
-	environmentRelease, err := r.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
+	logger := klog.FromContext(ctx)
+	logger = klog.LoggerWithValues(logger, "environmentReleaseName", environmentReleaseName)
+	logger = klog.LoggerWithValues(logger, "otherEnvironmentName", otherEnvironmentReleaseName)
+	ctx = klog.NewContext(ctx, logger)
+	logger.Info("GetReleaseEnvironmentDiff entry")
+
+	environmentRelease, err := r.selfLookupInstance.GetEnvironmentRelease(ctx, environmentReleaseName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release environment info: %w", err)
 	}
-	otherEnvironmentRelease, err := r.GetReleaseEnvironmentInfo(ctx, otherEnvironmentName)
+	otherEnvironmentRelease, err := r.selfLookupInstance.GetEnvironmentRelease(ctx, otherEnvironmentReleaseName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get other release environment info: %w", err)
 	}
@@ -229,7 +217,7 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 			APIVersion: "service-status.hcm.openshift.io/v1",
 		},
 		Name:                        environmentReleaseName,
-		OtherEnvironmentReleaseName: otherEnvironmentName,
+		OtherEnvironmentReleaseName: otherEnvironmentReleaseName,
 		DifferentComponents:         map[string]*status.ComponentDiff{},
 	}
 	for _, component := range environmentRelease.Components {
@@ -374,94 +362,110 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 	return ret, nil
 }
 
-func (r *releaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error) {
-	environmentName, releaseName, _ := SplitEnvironmentReleaseName(environmentReleaseName)
-	releaseInfo, err := r.GetReleaseInfoForAllEnvironments(ctx, releaseName)
+func (r *releaseAccessor) GetEnvironmentRelease(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error) {
+	logger := klog.FromContext(ctx)
+	logger = klog.LoggerWithValues(logger, "environmentReleaseName", environmentReleaseName)
+	ctx = klog.NewContext(ctx, logger)
+	logger.Info("GetEnvironmentRelease entry")
+
+	environmentName, releaseName, ok := SplitEnvironmentReleaseName(environmentReleaseName)
+	if !ok {
+		return nil, fmt.Errorf("failed to split environment release name %q", environmentReleaseName)
+	}
+	environmentReleases, err := r.selfLookupInstance.ListEnvironmentReleasesForEnvironment(ctx, environmentName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release info: %w", err)
 	}
-	return releaseInfo.Environments[environmentName], nil
+
+	for _, currEnvironmentRelease := range environmentReleases.Items {
+		if currEnvironmentRelease.ReleaseName == releaseName {
+			return &currEnvironmentRelease, nil
+		}
+	}
+
+	return nil, fmt.Errorf("error NotFound: did not find environment release %q", releaseName)
 }
 
-func (r *releaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error) {
-	localLogger := klog.FromContext(ctx)
-	localLogger = klog.LoggerWithValues(localLogger, "releaseName", releaseName)
-	localCtx := klog.NewContext(ctx, localLogger)
+func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Context, environmentName string) (*status.EnvironmentReleaseList, error) {
+	logger := klog.FromContext(ctx)
+	logger = klog.LoggerWithValues(logger, "environment", environmentName)
+	ctx = klog.NewContext(ctx, logger)
+	logger.Info("ListEnvironmentReleasesForEnvironment entry")
 
 	intJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-integration")
 	if err != nil {
-		localLogger.Error(err, "failed to list job runs")
+		logger.Error(err, "failed to list job runs")
 	}
 	stageJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-stage")
 	if err != nil {
-		localLogger.Error(err, "failed to list job runs")
+		logger.Error(err, "failed to list job runs")
 	}
 	prodJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-production")
 	if err != nil {
-		localLogger.Error(err, "failed to list job runs")
+		logger.Error(err, "failed to list job runs")
 	}
 	environmentNameToJobRuns := map[string][]sippy.JobRun{
 		"int":  intJobRuns,
 		"stg":  stageJobRuns,
 		"prod": prodJobRuns,
 	}
+	logger.Info("gathered sippy data", "environmentNameToJobRuns", environmentNameToJobRuns)
 
-	enviroments, err := r.ListEnvironments(ctx)
+	environmentReleasesLookupInfoNewestToOldest, err := r.listEnvironmentReleasesLookupInfo(ctx, environmentName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list possible releases: %w", err)
+	}
+
+	ret := &status.EnvironmentReleaseList{
+		TypeMeta: status.TypeMeta{
+			Kind:       "EnvironmentReleaseList",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Items: []status.EnvironmentRelease{},
+	}
+	for _, environmentReleaseLookupInfo := range environmentReleasesLookupInfoNewestToOldest {
+		releaseName := environmentReleaseLookupInfo.ReleaseName
+		logger = klog.LoggerWithValues(logger, "release", releaseName)
+		localCtx := klog.NewContext(ctx, logger)
+
+		newReleaseInfo, err := release_inspection.ReleaseInfo(localCtx, r.imageInfoAccessor, environmentReleaseLookupInfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get release markdowns: %w", err)
+		}
+
+		ret.Items = append(ret.Items, *newReleaseInfo)
+	}
+
+	return ret, nil
+}
+
+func (r *releaseAccessor) ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error) {
+	logger := klog.FromContext(ctx)
+	logger.Info("ListEnvironmentReleases entry")
+
+	environments, err := r.selfLookupInstance.ListEnvironments(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list environments: %w", err)
 	}
 
-	release, err := r.getReleaseFromName(ctx, releaseName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get release: %w", err)
+	ret := &status.EnvironmentReleaseList{
+		TypeMeta: status.TypeMeta{
+			Kind:       "EnvironmentReleaseList",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Items: []status.EnvironmentRelease{},
 	}
-
-	r.gitLock.Lock()
-	defer r.gitLock.Unlock()
-
-	aroHCPRepo, err := git.PlainOpen(r.aroHCPDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open aro hcp repo: %w", err)
-	}
-	aroHCPHead, err := aroHCPRepo.Head()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get aro hcp head: %w", err)
-	}
-	aroHCPWorkTree, err := aroHCPRepo.Worktree()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get aro hcp worktree: %w", err)
-	}
-	defer func() {
-		err = aroHCPWorkTree.Reset(&git.ResetOptions{
-			Commit: aroHCPHead.Hash(),
-			Mode:   git.HardReset,
-		})
+	for _, currEnvironment := range environments {
+		currEnvironmentReleases, err := r.selfLookupInstance.ListEnvironmentReleasesForEnvironment(ctx, currEnvironment)
 		if err != nil {
-			fmt.Printf("failed to reset aro hcp worktree back to original: %v", err)
+			return nil, fmt.Errorf("failed to list environment releases: %w", err)
 		}
-	}()
-
-	err = aroHCPWorkTree.Reset(&git.ResetOptions{
-		Commit: plumbing.NewHash(release.SHA),
-		Mode:   git.HardReset,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to reset aro hcp worktree: %w", err)
+		ret.Items = append(ret.Items, currEnvironmentReleases.Items...)
 	}
 
-	// if we don't have an overlay file, don't bother checking
-	configOverlayFilename := filepath.Join(r.aroHCPDir, "config", "config.msft.clouds-overlay.yaml")
-	if _, err := os.ReadFile(configOverlayFilename); errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
+	return ret, nil
+}
 
-	releaseDiffReporter := release_inspection.NewReleaseDiffReport(r.imageInfoAccessor, releaseName, release.SHA, r.aroHCPDir, enviroments)
-	newReleaseInfo, err := releaseDiffReporter.ReleaseInfoForAllEnvironments(localCtx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get release markdowns: %w", err)
-	}
-
-	r.releaseNameToInfo[releaseName] = newReleaseInfo
-
-	return r.releaseNameToInfo[releaseName], nil
+func (r *releaseAccessor) SetSelfLookupInstance(accessor ReleaseAccessor) {
+	r.selfLookupInstance = accessor
 }

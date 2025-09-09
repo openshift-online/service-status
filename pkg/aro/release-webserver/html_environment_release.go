@@ -23,10 +23,10 @@ type htmlEnvironmentReleaseSummary struct {
 func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	name := c.Param("name")
-	environmentName, releaseName, found := SplitEnvironmentReleaseName(name)
+	environmentReleaseName := c.Param("name")
+	environmentName, releaseName, found := SplitEnvironmentReleaseName(environmentReleaseName)
 	if !found {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", name)})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", environmentReleaseName)})
 	}
 
 	environmentReleaseInfo, err := h.releaseClient.GetEnvironmentRelease(ctx, environmentName, releaseName)
@@ -35,31 +35,28 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		return
 	}
 
-	release, err := h.releaseClient.GetRelease(ctx, environmentReleaseInfo.ReleaseName)
-	if err != nil {
-		c.String(500, "failed to get release %q: %v", environmentReleaseInfo.ReleaseName, err)
-		return
-	}
-
 	var prevReleaseEnvironmentInfo *status.EnvironmentRelease
-	if otherReleaseID := c.Query("from"); len(otherReleaseID) == 0 {
-		// find the previous release. Very expensive, but probably ok
-		releases, err := h.releaseClient.ListReleases(ctx)
+	if otherEnvironmentReleaseName := c.Query("from"); len(otherEnvironmentReleaseName) == 0 {
+		environmentReleases, err := h.releaseClient.ListEnvironmentReleasesForEnvironment(ctx, environmentName)
 		if err != nil {
 			c.String(500, "failed to list releases: %v", err)
 			return
 		}
 
-		for i, currRelease := range releases.Items {
-			if currRelease.Name != releaseName {
-				continue
+		for i, currEnvironmentRelease := range environmentReleases.Items {
+			if i+1 >= len(environmentReleases.Items) {
+				break
 			}
-			if i+1 < len(releases.Items) {
-				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environmentName, releases.Items[i+1].Name)
+			if currEnvironmentRelease.Name == environmentReleaseName {
+				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environmentName, environmentReleases.Items[i+1].ReleaseName)
+				if err != nil {
+					fmt.Printf("failed to get prev release: %v", err)
+				}
+				break
 			}
 		}
 	} else {
-		otherEnvironmentName, otherReleaseName, _ := SplitEnvironmentReleaseName(otherReleaseID)
+		otherEnvironmentName, otherReleaseName, _ := SplitEnvironmentReleaseName(otherEnvironmentReleaseName)
 		var err error
 		prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, otherEnvironmentName, otherReleaseName)
 		if err != nil {
@@ -125,7 +122,6 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		"prevEnvRelease":                prevReleaseEnvironmentInfo,
 		"prevEnvReleaseNameURLEscaped":  prevEnvReleaseNameURLEscaped,
 		"environmentName":               environmentReleaseInfo.Environment,
-		"release":                       release,
 		"changedComponentNames":         changedComponents.SortedList(),
 		"changedComponentNameToDetails": changedNameToDetails,
 		"componentNames":                imageNames,

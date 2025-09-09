@@ -18,16 +18,16 @@ func getEnvironmentReleaseName(environment, release string) string {
 	return fmt.Sprintf("%s---%s", environment, release)
 }
 
-func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseName, releaseSHA, environment string, config *arohcpapi.ConfigSchemaJSON) (*status.EnvironmentRelease, error) {
+func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoAccessor, environmentName, releaseName, releaseSHA string, config *arohcpapi.ConfigSchemaJSON) (*status.EnvironmentRelease, error) {
 	currConfigInfo := &status.EnvironmentRelease{
 		TypeMeta: status.TypeMeta{
 			Kind:       "EnvironmentRelease",
 			APIVersion: "service-status.hcm.openshift.io/v1",
 		},
-		Name:        getEnvironmentReleaseName(environment, releaseName),
+		Name:        getEnvironmentReleaseName(environmentName, releaseName),
 		ReleaseName: releaseName,
 		SHA:         releaseSHA,
-		Environment: environment,
+		Environment: environmentName,
 		Components:  map[string]*status.Component{},
 	}
 

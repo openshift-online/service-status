@@ -13,34 +13,35 @@ import (
 )
 
 type cachingReleaseAccessor struct {
-	delegate ReleaseAccessor
-	clock    clock.Clock
+	selfLookupInstance ReleaseAccessor
+	delegate           ReleaseAccessor
+	clock              clock.Clock
 
-	listReleases                     *stringBasedResultTimeBasedCacher[*status.ReleaseList]
-	listEnvironments                 *stringBasedResultTimeBasedCacher[[]string]
-	getReleaseInfoForAllEnvironments *stringBasedResultTimeBasedCacher[*status.ReleaseDetails]
-	getReleaseEnvironmentInfo        *stringBasedResultTimeBasedCacher[*status.EnvironmentRelease]
-	getReleaseEnvironmentDiff        *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]
+	listEnvironments                      *stringBasedResultTimeBasedCacher[[]string]
+	listEnvironmentReleases               *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseList]
+	listEnvironmentReleasesForEnvironment *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseList]
+	getEnvironmentRelease                 *stringBasedResultTimeBasedCacher[*status.EnvironmentRelease]
+	getReleaseEnvironmentDiff             *stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]
 }
 
 func NewCachingReleaseAccessor(delegate ReleaseAccessor, clock clock.Clock) ReleaseAccessor {
-	return &cachingReleaseAccessor{
+	ret := &cachingReleaseAccessor{
 		delegate: delegate,
 		clock:    clock,
-		listReleases: &stringBasedResultTimeBasedCacher[*status.ReleaseList]{
-			delegate: noKeyAdapter(delegate.ListReleases),
-			clock:    clock,
-		},
 		listEnvironments: &stringBasedResultTimeBasedCacher[[]string]{
 			delegate: noKeyAdapter(delegate.ListEnvironments),
 			clock:    clock,
 		},
-		getReleaseInfoForAllEnvironments: &stringBasedResultTimeBasedCacher[*status.ReleaseDetails]{
-			delegate: delegate.GetReleaseInfoForAllEnvironments,
+		listEnvironmentReleases: &stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseList]{
+			delegate: noKeyAdapter(delegate.ListEnvironmentReleases),
 			clock:    clock,
 		},
-		getReleaseEnvironmentInfo: &stringBasedResultTimeBasedCacher[*status.EnvironmentRelease]{
-			delegate: delegate.GetReleaseEnvironmentInfo,
+		listEnvironmentReleasesForEnvironment: &stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseList]{
+			delegate: delegate.ListEnvironmentReleasesForEnvironment,
+			clock:    clock,
+		},
+		getEnvironmentRelease: &stringBasedResultTimeBasedCacher[*status.EnvironmentRelease]{
+			delegate: delegate.GetEnvironmentRelease,
 			clock:    clock,
 		},
 		getReleaseEnvironmentDiff: &stringBasedResultTimeBasedCacher[*status.EnvironmentReleaseDiff]{
@@ -48,6 +49,9 @@ func NewCachingReleaseAccessor(delegate ReleaseAccessor, clock clock.Clock) Rele
 			clock:    clock,
 		},
 	}
+	ret.SetSelfLookupInstance(ret)
+	delegate.SetSelfLookupInstance(ret)
+	return ret
 }
 
 func noKeyAdapter[T any](fn func(ctx context.Context) (T, error)) func(ctx context.Context, key string) (T, error) {
@@ -113,18 +117,33 @@ func (r *cachingReleaseAccessor) ListEnvironments(ctx context.Context) ([]string
 	return r.listEnvironments.Do(ctx, "")
 }
 
-func (r *cachingReleaseAccessor) ListReleases(ctx context.Context) (*status.ReleaseList, error) {
-	return r.listReleases.Do(ctx, "")
-}
+func (r *cachingReleaseAccessor) GetEnvironmentRelease(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error) {
+	allEnvironmentReleases, err := r.ListEnvironmentReleases(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-func (r *cachingReleaseAccessor) GetReleaseEnvironmentInfo(ctx context.Context, environmentReleaseName string) (*status.EnvironmentRelease, error) {
-	return r.getReleaseEnvironmentInfo.Do(ctx, environmentReleaseName)
-}
+	for _, curr := range allEnvironmentReleases.Items {
+		if curr.Name == environmentReleaseName {
+			return &curr, nil
+		}
+	}
 
-func (r *cachingReleaseAccessor) GetReleaseInfoForAllEnvironments(ctx context.Context, releaseName string) (*status.ReleaseDetails, error) {
-	return r.getReleaseInfoForAllEnvironments.Do(ctx, releaseName)
+	return nil, fmt.Errorf("environment release not found: %s", environmentReleaseName)
 }
 
 func (r *cachingReleaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
 	return r.getReleaseEnvironmentDiff.Do(ctx, fmt.Sprintf("%v###%v", environmentReleaseName, otherEnvironmentReleaseName))
+}
+
+func (r *cachingReleaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Context, environment string) (*status.EnvironmentReleaseList, error) {
+	return r.listEnvironmentReleasesForEnvironment.Do(ctx, environment)
+}
+
+func (r *cachingReleaseAccessor) ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error) {
+	return r.listEnvironmentReleases.Do(ctx, "")
+}
+
+func (r *cachingReleaseAccessor) SetSelfLookupInstance(accessor ReleaseAccessor) {
+	r.selfLookupInstance = accessor
 }

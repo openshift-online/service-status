@@ -17,40 +17,31 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
 		ctx = klog.NewContext(ctx, logger)
 
-		environments, err := accessor.ListEnvironments(ctx)
-		if err != nil {
-			c.String(500, "failed to list environments: %v", err)
-			return
-		}
-
-		releases, err := accessor.ListReleases(ctx)
+		ret, err := accessor.ListEnvironmentReleases(ctx)
 		if err != nil {
 			c.String(500, "failed to list releases: %v", err)
 			return
 		}
 
-		ret := status.EnvironmentReleaseList{
-			TypeMeta: status.TypeMeta{
-				Kind:       "EnvironmentReleaseList",
-				APIVersion: "service-status.hcm.openshift.io/v1",
-			},
-			Items: []status.EnvironmentRelease{},
-		}
-		for _, environment := range environments {
-			for _, release := range releases.Items {
-				currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, GetEnvironmentReleaseName(environment, release.Name))
-				if err != nil {
-					c.String(500, "failed to get release env env=%q, release=%q: %v", environment, release, err)
-					return
-				}
-				if currReleaseEnvironmentInfo == nil {
-					continue
-				}
-				ret.Items = append(ret.Items, *currReleaseEnvironmentInfo)
-			}
+		c.IndentedJSON(http.StatusOK, ret)
+	}
+}
+
+func ListEnvironmentReleasesForEnvironment(accessor ReleaseAccessor) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
+		ctx = klog.NewContext(ctx, logger)
+
+		environmentName := c.Param("name")
+
+		environmentReleases, err := accessor.ListEnvironmentReleasesForEnvironment(ctx, environmentName)
+		if err != nil {
+			c.String(500, "failed to list releases: %v", err)
+			return
 		}
 
-		c.IndentedJSON(http.StatusOK, ret)
+		c.IndentedJSON(http.StatusOK, environmentReleases)
 	}
 }
 
@@ -88,7 +79,7 @@ func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 }
 
 func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
-	currReleaseEnvironmentInfo, err := accessor.GetReleaseEnvironmentInfo(ctx, environmentReleaseName)
+	currReleaseEnvironmentInfo, err := accessor.GetEnvironmentRelease(ctx, environmentReleaseName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release environment info: %w", err)
 	}
