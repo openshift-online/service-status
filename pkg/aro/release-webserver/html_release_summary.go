@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
-	"reflect"
 	"strings"
 	"time"
 
@@ -46,7 +45,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, environment.Name, environmentReleases.Items[i+1].ReleaseName)
 			}
 
-			changedComponents := ChangedComponents(&currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
+			changedComponents := release_inspection.ChangedComponents(&currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo)
 
 			changesList := ""
 			if len(changedComponents) > 0 {
@@ -58,29 +57,9 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				changesList += "</ul>\n"
 			} else {
 				changesList += "No changes"
-				continue // don't display releases with no changes.
 			}
 
-			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = template.HTML(
-				fmt.Sprintf(`
-        <tr>
-            <td class="text-monospace">
-                <a href=%q>%s</a>
-            </td>
-            <td>
-                %s
-            </td>
-            <td>
-                %s
-            </td>
-        </tr>
-`,
-					fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(GetEnvironmentReleaseName(environment.Name, currReleaseEnvironmentInfo.ReleaseName))),
-					currReleaseEnvironmentInfo.ReleaseName,
-					currReleaseEnvironmentInfo.SHA,
-					changesList,
-				),
-			)
+			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = perEnvironmentReleaseRow(currReleaseEnvironmentInfo, changesList)
 
 			if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
 				environmentToSummaryHTML[environment.Name] = summaryForEnvironment(&currReleaseEnvironmentInfo)
@@ -94,6 +73,72 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 		"environmentReleaseToHTML":             environmentReleaseToHTML,
 		"environmentToSummaryHTML":             environmentToSummaryHTML,
 	})
+}
+
+func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelease, changesList string) template.HTML {
+	jobRunsHTML := `<table  id="{{$environment}}_table" class="table text-nowrap small mb-3">
+          <colgroup>
+            <col style="width: 100px;">
+            <col style="width: 200px;">
+          </colgroup>
+`
+	jobRunsHTML += htmlRowsForCIResults(currReleaseEnvironmentInfo.BlockingJobRunResults)
+	jobRunsHTML += htmlRowsForCIResults(currReleaseEnvironmentInfo.InformingJobRunResults)
+	jobRunsHTML += `    </table>
+`
+
+	return template.HTML(
+		fmt.Sprintf(`
+        <tr>
+            <td class="text-monospace">
+                <a href=%q>%s</a>
+            </td>
+            <td >
+                %s
+            </td>
+            <td>
+                %s
+            </td>
+        </tr>
+`,
+			fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(release_inspection.MakeEnvironmentReleaseName(currReleaseEnvironmentInfo.Environment, currReleaseEnvironmentInfo.ReleaseName))),
+			currReleaseEnvironmentInfo.ReleaseName,
+			jobRunsHTML,
+			changesList,
+		),
+	)
+}
+
+func htmlRowsForCIResults(ciResults map[string][]status.JobRunResults) string {
+	retHTML := ""
+	for variantName, currResults := range ciResults {
+		currResultsHTML := ""
+		for i, currResult := range currResults {
+			currResultHTML := ""
+			if i > 0 && i%10 == 0 {
+				currResultsHTML += "<br/>\n"
+			}
+			if currResult.OverallResult == status.JobSucceeded {
+				currResultHTML = fmt.Sprintf(`<a href=%q style="color: green;">%s</a>`, currResult.URL, currResult.OverallResult)
+			} else {
+				currResultHTML = fmt.Sprintf(`<a href=%q style="color: red;">%s</a>`, currResult.URL, currResult.OverallResult)
+			}
+			currResultsHTML += fmt.Sprintf(` %s`, currResultHTML)
+		}
+		variantHTML := fmt.Sprintf(`
+        <tr>
+            <td>
+                %s
+            </td>
+            <td style="text-align: left;" class="text-monospace">
+                %s
+            </td>
+        </tr>
+`, variantName, currResultsHTML)
+
+		retHTML += variantHTML
+	}
+	return retHTML
 }
 
 func summaryForEnvironment(environmentRelease *status.EnvironmentRelease) template.HTML {
@@ -138,24 +183,4 @@ func ServeReleaseSummary(releaseClient client.ReleaseClient) func(c *gin.Context
 		releaseClient: releaseClient,
 	}
 	return h.ServeGin
-}
-
-func ChangedComponents(currReleaseEnvironmentInfo, prevReleaseEnvironmentInfo *status.EnvironmentRelease) set.Set[string] {
-	changedComponents := set.Set[string]{}
-
-	if prevReleaseEnvironmentInfo == nil {
-		for _, currComponent := range currReleaseEnvironmentInfo.Components {
-			changedComponents.Insert(currComponent.Name)
-		}
-		return changedComponents
-	}
-
-	for _, currComponent := range currReleaseEnvironmentInfo.Components {
-		prevComponent := prevReleaseEnvironmentInfo.Components[currComponent.Name]
-		if !reflect.DeepEqual(prevComponent.ImageInfo, currComponent.ImageInfo) {
-			changedComponents.Insert(currComponent.Name)
-		}
-	}
-
-	return changedComponents
 }

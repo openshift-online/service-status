@@ -24,11 +24,13 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			Kind:       "EnvironmentRelease",
 			APIVersion: "service-status.hcm.openshift.io/v1",
 		},
-		Name:        getEnvironmentReleaseName(environmentName, releaseName),
-		ReleaseName: releaseName,
-		SHA:         releaseSHA,
-		Environment: environmentName,
-		Components:  map[string]*status.Component{},
+		Name:                   getEnvironmentReleaseName(environmentName, releaseName),
+		ReleaseName:            releaseName,
+		SHA:                    releaseSHA,
+		Environment:            environmentName,
+		Components:             map[string]*status.Component{},
+		BlockingJobRunResults:  map[string][]status.JobRunResults{},
+		InformingJobRunResults: map[string][]status.JobRunResults{},
 	}
 
 	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {

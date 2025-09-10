@@ -4,10 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 )
 
-func GetEnvironmentReleaseDiff(accessor ReleaseAccessor) func(c *gin.Context) {
+func GetEnvironmentReleaseDiff(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)

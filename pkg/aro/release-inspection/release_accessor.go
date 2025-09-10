@@ -1,4 +1,4 @@
-package release_webserver
+package release_inspection
 
 import (
 	"context"
@@ -18,7 +18,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/openshift-online/service-status/pkg/apis/status"
-	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"github.com/openshift-online/service-status/pkg/aro/sippy"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
@@ -46,15 +45,15 @@ type releaseAccessor struct {
 
 	aroHCPDir            string
 	numberOfDays         int
-	imageInfoAccessor    release_inspection.ImageInfoAccessor
-	componentGitAccessor release_inspection.ComponentsGitInfo
+	imageInfoAccessor    ImageInfoAccessor
+	componentGitAccessor ComponentsGitInfo
 
 	gitLock              sync.Mutex
 	releaseNameToInfo    map[string]*status.ReleaseDetails
 	releaseNameToRelease map[string]*status.Release
 }
 
-func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor release_inspection.ImageInfoAccessor, componentGitAccessor release_inspection.ComponentsGitInfo) ReleaseAccessor {
+func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor ImageInfoAccessor, componentGitAccessor ComponentsGitInfo) ReleaseAccessor {
 	ret := &releaseAccessor{
 		aroHCPDir:            aroHCPDir,
 		numberOfDays:         numberOfDays,
@@ -79,7 +78,7 @@ var interestingFiles = set.New(
 
 // listEnvironmentReleasesLookupInfo returns the environment releases from newest to oldest.
 // only releases with changes are listed.
-func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context, environmentName string) ([]*release_inspection.EnvironmentReleaseLookupInformation, error) {
+func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context, environmentName string) ([]*EnvironmentReleaseLookupInformation, error) {
 	r.gitLock.Lock()
 	defer r.gitLock.Unlock()
 
@@ -135,7 +134,7 @@ func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context,
 	}
 
 	logger.Info("Finding all releases.")
-	environmentLookupInfoNewestToOldest := []*release_inspection.EnvironmentReleaseLookupInformation{}
+	environmentLookupInfoNewestToOldest := []*EnvironmentReleaseLookupInformation{}
 	prevInterestingFiles := map[string][]byte{}
 	prevEnvironmentReleaseInput := map[string][]byte{}
 	for _, commit := range commitsOldestToNewest {
@@ -170,7 +169,7 @@ func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context,
 		prevInterestingFiles = newInterestingFiles
 
 		// now merge the content and see if the content for a particular environment in those files changed.
-		environmentReleaseInput, err := release_inspection.CompleteEnvironmentReleaseInput(ctx, r.aroHCPDir, environmentName)
+		environmentReleaseInput, err := CompleteEnvironmentReleaseInput(ctx, r.aroHCPDir, environmentName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to complete environment release input: %w", err)
 		}
@@ -180,8 +179,8 @@ func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context,
 		}
 		prevEnvironmentReleaseInput = environmentReleaseInput
 
-		releaseName := fmt.Sprintf("%s-%s", commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5])
-		environmentLookupInfoNewestToOldest = append([]*release_inspection.EnvironmentReleaseLookupInformation{
+		releaseName := MakeReleaseNameFromCommit(*commit)
+		environmentLookupInfoNewestToOldest = append([]*EnvironmentReleaseLookupInformation{
 			{
 				EnvironmentName:    environmentName,
 				ReleaseName:        releaseName,
@@ -392,28 +391,48 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 	ctx = klog.NewContext(ctx, logger)
 	logger.Info("ListEnvironmentReleasesForEnvironment entry")
 
-	intJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-integration")
+	ciJobRuns := []sippy.JobRun{}
+	var err error
+	switch environmentName {
+	case "int":
+		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-integration")
+	case "stg":
+		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-stage")
+	case "prod":
+		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-production")
+	}
 	if err != nil {
 		logger.Error(err, "failed to list job runs")
 	}
-	stageJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-stage")
-	if err != nil {
-		logger.Error(err, "failed to list job runs")
-	}
-	prodJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, "aro-production")
-	if err != nil {
-		logger.Error(err, "failed to list job runs")
-	}
-	environmentNameToJobRuns := map[string][]sippy.JobRun{
-		"int":  intJobRuns,
-		"stg":  stageJobRuns,
-		"prod": prodJobRuns,
-	}
-	logger.Info("gathered sippy data", "environmentNameToJobRuns", environmentNameToJobRuns)
 
 	environmentReleasesLookupInfoNewestToOldest, err := r.listEnvironmentReleasesLookupInfo(ctx, environmentName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list possible releases: %w", err)
+	}
+
+	partialEnvironmentReleases := []status.EnvironmentRelease{}
+	for i, environmentReleaseLookupInfo := range environmentReleasesLookupInfoNewestToOldest {
+		releaseName := environmentReleaseLookupInfo.ReleaseName
+		loopLogger := klog.LoggerWithValues(logger, "lookupEnvironment", environmentReleaseLookupInfo.EnvironmentName, "lookupReleaseName", releaseName, "i", i, "len", len(environmentReleasesLookupInfoNewestToOldest))
+		localCtx := klog.NewContext(ctx, loopLogger)
+		loopLogger.Info("starting execution")
+
+		newReleaseInfo, err := ReleaseInfo(localCtx, r.imageInfoAccessor, environmentReleaseLookupInfo)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get release markdowns: %w", err)
+		}
+
+		if len(partialEnvironmentReleases) > 0 {
+			moreRecentPartialEnvironmentRelease := partialEnvironmentReleases[len(partialEnvironmentReleases)-1]
+			changedComponents := ChangedComponents(newReleaseInfo, &moreRecentPartialEnvironmentRelease)
+			if len(changedComponents) == 0 {
+				// if nothing changed, then the more recent release isn't actually a new release, so replace it with this current one
+				partialEnvironmentReleases[len(partialEnvironmentReleases)-1] = *newReleaseInfo
+				continue
+			}
+		}
+
+		partialEnvironmentReleases = append(partialEnvironmentReleases, *newReleaseInfo)
 	}
 
 	ret := &status.EnvironmentReleaseList{
@@ -423,17 +442,55 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 		},
 		Items: []status.EnvironmentRelease{},
 	}
-	for _, environmentReleaseLookupInfo := range environmentReleasesLookupInfoNewestToOldest {
-		releaseName := environmentReleaseLookupInfo.ReleaseName
-		logger = klog.LoggerWithValues(logger, "release", releaseName)
-		localCtx := klog.NewContext(ctx, logger)
+	// now add the CI status to these releases
+	for i, newReleaseInfo := range partialEnvironmentReleases {
+		loopLogger := klog.LoggerWithValues(logger, "newEnvironmentReleaseName", newReleaseInfo.Name)
+		loopLogger.Info("starting execution")
 
-		newReleaseInfo, err := release_inspection.ReleaseInfo(localCtx, r.imageInfoAccessor, environmentReleaseLookupInfo)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get release markdowns: %w", err)
+		nextReleaseTime := time.Now()
+		if nextReleaseIndex := i - 1; nextReleaseIndex >= 0 {
+			_, nextReleaseTime, _, _ = SplitReleaseName(environmentReleasesLookupInfoNewestToOldest[nextReleaseIndex].ReleaseName)
+		}
+		_, newReleaseTime, _, _ := SplitReleaseName(newReleaseInfo.ReleaseName)
+
+		// find all job runs between the newReleaseTime and the nextReleaseTime
+		for _, currJobRun := range ciJobRuns {
+			jobRunTime := time.Unix(0, currJobRun.Timestamp*int64(time.Millisecond))
+			if jobRunTime.After(nextReleaseTime) {
+			}
+			if jobRunTime.After(nextReleaseTime) || jobRunTime.Before(newReleaseTime) {
+				continue
+			}
+
+			var matchingAssigner *HardcodedCIInfo
+			for _, ciAssigner := range HardcodedCIInfos {
+				for _, currRegex := range ciAssigner.JobRegexes {
+					if currRegex.MatchString(currJobRun.Job) {
+						matchingAssigner = &ciAssigner
+						break
+					}
+				}
+				if matchingAssigner != nil {
+					break
+				}
+			}
+
+			jobRunResult := status.JobRunResults{
+				OverallResult: status.JobOverallResult(currJobRun.OverallResult),
+				URL:           currJobRun.URL,
+			}
+
+			switch {
+			case matchingAssigner == nil:
+				loopLogger.Info("No matching assigner found for job run", "jobRun", currJobRun.Job)
+			case matchingAssigner.Category == JobImpactBlocking:
+				newReleaseInfo.BlockingJobRunResults[matchingAssigner.JobVariant] = append(newReleaseInfo.BlockingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
+			case matchingAssigner.Category == JobImpactInforming:
+				newReleaseInfo.InformingJobRunResults[matchingAssigner.JobVariant] = append(newReleaseInfo.InformingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
+			}
 		}
 
-		ret.Items = append(ret.Items, *newReleaseInfo)
+		ret.Items = append(ret.Items, newReleaseInfo)
 	}
 
 	return ret, nil

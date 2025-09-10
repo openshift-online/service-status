@@ -32,8 +32,8 @@ type ReleaseMarkdownOptions struct {
 func (o *ReleaseMarkdownOptions) Run(ctx context.Context) error {
 	logger := klog.FromContext(ctx)
 
-	releaseAccessor := release_webserver.NewCachingReleaseAccessor(
-		release_webserver.NewReleaseAccessor(
+	releaseAccessor := release_inspection.NewCachingReleaseAccessor(
+		release_inspection.NewReleaseAccessor(
 			o.AROHCPDir,
 			o.NumberOfDays,
 			o.ImageInfoAccessor,

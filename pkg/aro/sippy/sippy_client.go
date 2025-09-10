@@ -38,7 +38,7 @@ type JobRun struct {
 	InfrastructureFailure bool             `json:"infrastructure_failure"`
 	KnownFailure          bool             `json:"known_failure"`
 	Succeeded             bool             `json:"succeeded"`
-	Timestamp             int              `json:"timestamp"`
+	Timestamp             int64            `json:"timestamp"`
 	OverallResult         JobOverallResult `json:"overall_result"`
 	PullRequestOrg        string           `json:"pull_request_org"`
 	PullRequestRepo       string           `json:"pull_request_repo"`
@@ -82,7 +82,7 @@ func ListJobRunsForEnvironment(ctx context.Context, sippyRelease string) ([]JobR
 	currURL := &url.URL{
 		Scheme: "https",
 		Host:   "sippy.dptools.openshift.org",
-		Path:   "api/job/runs",
+		Path:   "api/jobs/runs",
 	}
 	queryParams := currURL.Query()
 	queryParams.Add("release", sippyRelease)
