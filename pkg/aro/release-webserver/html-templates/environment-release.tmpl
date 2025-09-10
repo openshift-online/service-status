@@ -49,12 +49,14 @@
             <li>
                 Blocking jobs
                 <ul>
+                    {{.blockingCIHTML}}
 {{/*                    <li><a class="text-success" href="https://prow.ci.openshift.org/view/gs/test-platform-results/logs/aggregated-aws-ovn-upgrade-4.20-minor-release-openshift-release-analysis-aggregator/1950073994744958976">aggregated-aws-ovn-upgrade-4.20-minor Succeeded</a> periodic-ci-openshift-release-master-ci-4.20-upgrade-from-stable-4.19-e2e-aws-ovn-upgrade</li>*/}}
                 </ul>
             </li>
             <li>
                 Informing jobs
                 <ul>
+                    {{.informingCIHTML}}
 {{/*                    <li><a class="text-success" href="https://prow.ci.openshift.org/view/gs/test-platform-results/logs/periodic-ci-openshift-hypershift-release-4.20-periodics-e2e-aks/1950095766957592576">hypershift-e2e-aks Succeeded</a> <span class="text-warning">(1 retries)</span> periodic-ci-openshift-hypershift-release-4.20-periodics-e2e-aks</li>*/}}
                 </ul>
             </li>

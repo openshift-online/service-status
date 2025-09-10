@@ -111,7 +111,8 @@ func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelea
 
 func htmlRowsForCIResults(ciResults map[string][]status.JobRunResults) string {
 	retHTML := ""
-	for variantName, currResults := range ciResults {
+	for _, variantName := range set.KeySet(ciResults).SortedList() {
+		currResults := ciResults[variantName]
 		currResultsHTML := ""
 		for i, currResult := range currResults {
 			currResultHTML := ""
@@ -119,9 +120,9 @@ func htmlRowsForCIResults(ciResults map[string][]status.JobRunResults) string {
 				currResultsHTML += "<br/>\n"
 			}
 			if currResult.OverallResult == status.JobSucceeded {
-				currResultHTML = fmt.Sprintf(`<a href=%q style="color: green;">%s</a>`, currResult.URL, currResult.OverallResult)
+				currResultHTML = fmt.Sprintf(`<a href=%q class="text-success">%s</a>`, currResult.URL, currResult.OverallResult)
 			} else {
-				currResultHTML = fmt.Sprintf(`<a href=%q style="color: red;">%s</a>`, currResult.URL, currResult.OverallResult)
+				currResultHTML = fmt.Sprintf(`<a href=%q class="text-danger" >%s</a>`, currResult.URL, currResult.OverallResult)
 			}
 			currResultsHTML += fmt.Sprintf(` %s`, currResultHTML)
 		}

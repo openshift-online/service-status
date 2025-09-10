@@ -7,6 +7,18 @@ import (
 	"time"
 )
 
+func EnvironmentToSippyReleaseName(environmentName string) string {
+	switch environmentName {
+	case "int":
+		return "aro-integration"
+	case "stg":
+		return "aro-stage"
+	case "prod":
+		return "aro-production"
+	}
+	return "FAIL"
+}
+
 type HardcodedCIInfo struct {
 	JobVariant string
 	JobRegexes []*regexp.Regexp

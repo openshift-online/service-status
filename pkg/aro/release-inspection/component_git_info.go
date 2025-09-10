@@ -114,8 +114,9 @@ func (c *componentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, old
 		logger.Info("Cloning repo", "branchName", c.masterBranch)
 		// clone the repo and then close it.
 		_, err := git.PlainCloneContext(ctx, c.repoDir, false, &git.CloneOptions{
-			Progress: os.Stdout, // TODO wire up to a logger
-			URL:      c.repoURL,
+			Progress:        os.Stdout, // TODO wire up to a logger
+			InsecureSkipTLS: true,      // TODO don't do this if we start sending credentials
+			URL:             c.repoURL,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone repository: %w", err)

@@ -39,6 +39,7 @@ type ReleaseDetails struct {
 }
 
 type JobRunResults struct {
+	JobName       string           `json:"jobName"`
 	OverallResult JobOverallResult `json:"overall_result"`
 	URL           string           `json:"url"`
 }
