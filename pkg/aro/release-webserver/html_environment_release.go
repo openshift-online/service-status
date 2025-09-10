@@ -1,6 +1,7 @@
 package release_webserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -14,7 +15,9 @@ import (
 	"github.com/openshift-online/service-status/pkg/apis/status"
 	"github.com/openshift-online/service-status/pkg/aro/client"
 	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
+	"github.com/openshift-online/service-status/pkg/aro/sippy"
 	"k8s.io/utils/ptr"
+	"k8s.io/utils/set"
 )
 
 type htmlEnvironmentReleaseSummary struct {
@@ -128,6 +131,8 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		"componentNames":                imageNames,
 		"componentNameToDetails":        imageNameToDetails,
 		"allEnvironmentReleases":        allEnvironmentReleases.Items,
+		"blockingCIHTML":                template.HTML(htmlForCIResults(environmentReleaseInfo.Environment, environmentReleaseInfo.BlockingJobRunResults)),
+		"informingCIHTML":               template.HTML(htmlForCIResults(environmentReleaseInfo.Environment, environmentReleaseInfo.InformingJobRunResults)),
 	})
 }
 
@@ -136,6 +141,57 @@ func ServeEnvironmentReleaseSummary(releaseClient client.ReleaseClient) func(c *
 		releaseClient: releaseClient,
 	}
 	return h.ServeGin
+}
+
+func htmlForCIResults(environmentName string, ciResults map[string][]status.JobRunResults) string {
+	retHTML := ""
+	jobNameToResults := map[string][]status.JobRunResults{}
+	for _, currResults := range ciResults {
+		for _, currResult := range currResults {
+			jobNameToResults[currResult.JobName] = append(jobNameToResults[currResult.JobName], currResult)
+		}
+	}
+
+	for _, jobName := range set.KeySet(jobNameToResults).SortedList() {
+		currResults := jobNameToResults[jobName]
+		currResultsHTML := "<li>"
+
+		currURL := &url.URL{
+			Scheme: "https",
+			Host:   "sippy.dptools.openshift.org",
+			Path:   "sippy-ng/jobs/" + release_inspection.EnvironmentToSippyReleaseName(environmentName) + "/analysis",
+		}
+		queryParams := currURL.Query()
+		jobRunQuery := sippy.SippyQueryStruct{
+			Items: []sippy.SippyQueryItem{
+				{
+					ColumnField:   "name",
+					Not:           false,
+					OperatorValue: "equals",
+					Value:         jobName,
+				},
+			},
+		}
+		filterJSON, err := json.Marshal(jobRunQuery)
+		if err == nil {
+			queryParams.Add("filter", string(filterJSON))
+		}
+		currURL.RawQuery = queryParams.Encode()
+
+		currResultsHTML += fmt.Sprintf(`<a href=%q>%s</a>: `, currURL.String(), jobName)
+		for _, currResult := range currResults {
+			if currResult.OverallResult == status.JobSucceeded {
+				currResultsHTML += fmt.Sprintf(`<a href=%q class="text-success">%s</a> `, currResult.URL, currResult.OverallResult)
+			} else {
+				currResultsHTML += fmt.Sprintf(`<a href=%q class="text-danger">%s</a> `, currResult.URL, currResult.OverallResult)
+
+			}
+		}
+		currResultsHTML += "</li>\n"
+		retHTML += currResultsHTML
+	}
+
+	return retHTML
 }
 
 func htmlDetailsForComponent(imageDetails *status.Component) string {

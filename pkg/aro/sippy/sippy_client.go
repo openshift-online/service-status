@@ -13,6 +13,18 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type SippyQueryStruct struct {
+	Items        []SippyQueryItem `json:"items"`
+	LinkOperator string           `json:"linkOperator"`
+}
+
+type SippyQueryItem struct {
+	ColumnField   string `json:"columnField"`
+	Not           bool   `json:"not"`
+	OperatorValue string `json:"operatorValue"`
+	Value         string `json:"value"`
+}
+
 type JobRunPaginationResult struct {
 	Rows      []JobRun `json:"rows"`
 	PageSize  int64    `json:"page_size"`

@@ -245,20 +245,6 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 			ret.DifferentComponents[component.Name] = componentDiff
 			continue
 		}
-		if strings.Contains(*component.RepoURL, "gitlab") {
-			componentDiff := &status.ComponentDiff{
-				Name:            component.Name,
-				NumberOfChanges: -1,
-				Changes: []status.ComponentChange{
-					{
-						ChangeType:  "Unavailable",
-						Unavailable: ptr.To("Cannot yet reach gitlab."),
-					},
-				},
-			}
-			ret.DifferentComponents[component.Name] = componentDiff
-			continue
-		}
 		if len(component.SourceSHA) == 0 {
 			componentDiff := &status.ComponentDiff{
 				Name:            component.Name,
@@ -391,16 +377,7 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 	ctx = klog.NewContext(ctx, logger)
 	logger.Info("ListEnvironmentReleasesForEnvironment entry")
 
-	ciJobRuns := []sippy.JobRun{}
-	var err error
-	switch environmentName {
-	case "int":
-		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-integration")
-	case "stg":
-		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-stage")
-	case "prod":
-		ciJobRuns, err = sippy.ListJobRunsForEnvironment(ctx, "aro-production")
-	}
+	ciJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, EnvironmentToSippyReleaseName(environmentName))
 	if err != nil {
 		logger.Error(err, "failed to list job runs")
 	}
@@ -476,6 +453,7 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 			}
 
 			jobRunResult := status.JobRunResults{
+				JobName:       currJobRun.Job,
 				OverallResult: status.JobOverallResult(currJobRun.OverallResult),
 				URL:           currJobRun.URL,
 			}
