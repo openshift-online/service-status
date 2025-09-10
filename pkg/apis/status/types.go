@@ -105,13 +105,21 @@ type ComponentDiff struct {
 }
 
 type ComponentChange struct {
-	ChangeType  string   `json:"changeType"`
-	PRMerge     *PRMerge `json:"prMerge,omitempty"`
-	Unavailable *string  `json:"unavailable,omitempty"`
+	ChangeType    string         `json:"changeType"`
+	GithubPRMerge *GithubPRMerge `json:"githubPRMerge,omitempty"`
+	GitlabMRMerge *GitlabMRMerge `json:"gitlabMRMerge,omitempty"`
+	Unavailable   *string        `json:"unavailable,omitempty"`
 }
 
-type PRMerge struct {
-	PRNumber      int32    `json:"PRNumber"`
+type GithubPRMerge struct {
+	PRNumber      int32    `json:"prNumber"`
+	SHA           string   `json:"sha"`
+	ChangeSummary string   `json:"topLineCommitMessage"`
+	JIRARefs      []string `json:"jiraRefs,omitempty"`
+}
+
+type GitlabMRMerge struct {
+	MRNumber      int32    `json:"mrNumber"`
 	SHA           string   `json:"SHA"`
 	ChangeSummary string   `json:"topLineCommitMessage"`
 	JIRARefs      []string `json:"jiraRefs,omitempty"`

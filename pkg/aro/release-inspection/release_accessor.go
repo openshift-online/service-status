@@ -318,28 +318,61 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 			}
 			componentDiff.NumberOfChanges++
 
-			currChange := status.ComponentChange{
-				ChangeType: "PRMerge",
-				PRMerge: &status.PRMerge{
-					SHA: diff.Hash.String(),
-				},
-			}
-
-			// Extract PR number from merge commit message
-			if prMatch := regexp.MustCompile(`Merge pull request #(\d+)`).FindStringSubmatch(diff.Message); len(prMatch) > 1 {
-				if prNum, err := strconv.Atoi(prMatch[1]); err == nil {
-					currChange.PRMerge.PRNumber = int32(prNum)
+			switch {
+			case strings.Contains(ptr.Deref(component.RepoURL, ""), "github.com"):
+				currChange := status.ComponentChange{
+					ChangeType: "GithubPRMerge",
+					GithubPRMerge: &status.GithubPRMerge{
+						SHA: diff.Hash.String(),
+					},
 				}
-			}
 
-			messageLines := strings.SplitN(diff.Message, "\n", 4)
-			if len(messageLines) < 3 {
-				currChange.PRMerge.ChangeSummary = fmt.Sprintf("Hash: %s, Message: %s", diff.Hash.String(), messageLines[0])
-			} else {
-				currChange.PRMerge.ChangeSummary = messageLines[2]
-			}
+				// Extract PR number from merge commit message
+				if prMatch := regexp.MustCompile(`Merge pull request #(\d+)`).FindStringSubmatch(diff.Message); len(prMatch) > 1 {
+					if prNum, err := strconv.Atoi(prMatch[1]); err == nil {
+						currChange.GithubPRMerge.PRNumber = int32(prNum)
+					}
+				}
 
-			componentDiff.Changes = append(componentDiff.Changes, currChange)
+				messageLines := strings.SplitN(diff.Message, "\n", 4)
+				if len(messageLines) < 3 {
+					currChange.GithubPRMerge.ChangeSummary = fmt.Sprintf("Hash: %s, Message: %s", diff.Hash.String(), messageLines[0])
+				} else {
+					currChange.GithubPRMerge.ChangeSummary = messageLines[2]
+				}
+
+				componentDiff.Changes = append(componentDiff.Changes, currChange)
+
+			case strings.Contains(ptr.Deref(component.RepoURL, ""), "gitlab.cee.redhat.com"):
+				currChange := status.ComponentChange{
+					ChangeType: "GitlabMRMerge",
+					GitlabMRMerge: &status.GitlabMRMerge{
+						SHA: diff.Hash.String(),
+					},
+				}
+
+				// Extract MR number from merge commit message
+				if mrMatch := regexp.MustCompile(`See merge request .*!(\d+)`).FindStringSubmatch(diff.Message); len(mrMatch) > 1 {
+					if mrNum, err := strconv.Atoi(mrMatch[1]); err == nil {
+						currChange.GitlabMRMerge.MRNumber = int32(mrNum)
+					}
+				}
+
+				messageLines := strings.SplitN(diff.Message, "\n", 4)
+				if len(messageLines) < 3 {
+					currChange.GitlabMRMerge.ChangeSummary = fmt.Sprintf("Hash: %s, Message: %s", diff.Hash.String(), messageLines[0])
+				} else {
+					currChange.GitlabMRMerge.ChangeSummary = messageLines[2]
+				}
+
+				componentDiff.Changes = append(componentDiff.Changes, currChange)
+
+			default:
+				componentDiff.Changes = append(componentDiff.Changes, status.ComponentChange{
+					ChangeType:  "Unavailable",
+					Unavailable: ptr.To(fmt.Sprintf("failed to understand change git accessor: %v", err)),
+				})
+			}
 		}
 		ret.DifferentComponents[component.Name] = componentDiff
 	}
