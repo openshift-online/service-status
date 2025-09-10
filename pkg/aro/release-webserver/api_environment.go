@@ -6,10 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/apis/status"
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 )
 
-func ListEnvironments(accessor ReleaseAccessor) func(c *gin.Context) {
+func ListEnvironments(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
@@ -42,7 +43,7 @@ func ListEnvironments(accessor ReleaseAccessor) func(c *gin.Context) {
 	}
 }
 
-func GetEnvironment(accessor ReleaseAccessor) func(c *gin.Context) {
+func GetEnvironment(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)

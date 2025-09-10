@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/apis/status"
 	"github.com/openshift-online/service-status/pkg/aro/client"
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/utils/ptr"
 )
 
@@ -24,7 +25,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	environmentReleaseName := c.Param("name")
-	environmentName, releaseName, found := SplitEnvironmentReleaseName(environmentReleaseName)
+	environmentName, releaseName, found := release_inspection.SplitEnvironmentReleaseName(environmentReleaseName)
 	if !found {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("%q must be in format <environmentName>---<releaseName>", environmentReleaseName)})
 	}
@@ -56,7 +57,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 			}
 		}
 	} else {
-		otherEnvironmentName, otherReleaseName, _ := SplitEnvironmentReleaseName(otherEnvironmentReleaseName)
+		otherEnvironmentName, otherReleaseName, _ := release_inspection.SplitEnvironmentReleaseName(otherEnvironmentReleaseName)
 		var err error
 		prevReleaseEnvironmentInfo, err = h.releaseClient.GetEnvironmentRelease(ctx, otherEnvironmentName, otherReleaseName)
 		if err != nil {
@@ -65,7 +66,7 @@ func (h *htmlEnvironmentReleaseSummary) ServeGin(c *gin.Context) {
 		}
 	}
 
-	changedComponents := ChangedComponents(environmentReleaseInfo, prevReleaseEnvironmentInfo)
+	changedComponents := release_inspection.ChangedComponents(environmentReleaseInfo, prevReleaseEnvironmentInfo)
 	changedNameToDetails := map[string]template.HTML{}
 	if prevReleaseEnvironmentInfo != nil {
 		diff, err := h.releaseClient.GetEnvironmentReleaseDiff(ctx, environmentReleaseInfo.Name, prevReleaseEnvironmentInfo.Name)

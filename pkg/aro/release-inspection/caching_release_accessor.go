@@ -1,4 +1,4 @@
-package release_webserver
+package release_inspection
 
 import (
 	"context"

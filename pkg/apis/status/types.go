@@ -58,13 +58,14 @@ const (
 )
 
 type EnvironmentRelease struct {
-	TypeMeta              `json:",inline"`
-	Name                  string                `json:"name"`
-	ReleaseName           string                `json:"releaseName"`
-	SHA                   string                `json:"sha"`
-	Environment           string                `json:"environment"`
-	Components            map[string]*Component `json:"components"`
-	ProbableJobRunResults []JobRunResults       `json:"probableJobRunResults"`
+	TypeMeta               `json:",inline"`
+	Name                   string                     `json:"name"`
+	ReleaseName            string                     `json:"releaseName"`
+	SHA                    string                     `json:"sha"`
+	Environment            string                     `json:"environment"`
+	Components             map[string]*Component      `json:"components"`
+	BlockingJobRunResults  map[string][]JobRunResults `json:"blockingJobRunResults"`
+	InformingJobRunResults map[string][]JobRunResults `json:"informingJobRunResults"`
 }
 
 type EnvironmentReleaseList struct {

@@ -2,9 +2,47 @@ package release_inspection
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 )
+
+type HardcodedCIInfo struct {
+	JobVariant string
+	JobRegexes []*regexp.Regexp
+	Category   JobCategory
+}
+
+type JobCategory string
+
+const (
+	JobImpactBlocking  JobCategory = "Blocking"
+	JobImpactInforming JobCategory = "Informing"
+)
+
+var HardcodedCIInfos = []HardcodedCIInfo{
+	{
+		JobVariant: "bare-minimum",
+		JobRegexes: []*regexp.Regexp{
+			regexp.MustCompile("periodic-ci-Azure-ARO-HCP-main-periodic-create-aro-hcp-in-.*"),
+		},
+		Category: JobImpactBlocking,
+	},
+	{
+		JobVariant: "e2e-parallel",
+		JobRegexes: []*regexp.Regexp{
+			regexp.MustCompile("periodic-ci-Azure-ARO-HCP-main-periodic-.*-e2e-parallel"),
+		},
+		Category: JobImpactInforming,
+	},
+	{
+		JobVariant: "unknown",
+		JobRegexes: []*regexp.Regexp{
+			regexp.MustCompile(".*"),
+		},
+		Category: JobImpactInforming,
+	},
+}
 
 type HardcodedComponentInfo struct {
 	Name                string

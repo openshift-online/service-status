@@ -8,10 +8,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/openshift-online/service-status/pkg/apis/status"
+	release_inspection "github.com/openshift-online/service-status/pkg/aro/release-inspection"
 	"k8s.io/klog/v2"
 )
 
-func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
+func ListEnvironmentReleases(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
@@ -27,7 +28,7 @@ func ListEnvironmentReleases(accessor ReleaseAccessor) func(c *gin.Context) {
 	}
 }
 
-func ListEnvironmentReleasesForEnvironment(accessor ReleaseAccessor) func(c *gin.Context) {
+func ListEnvironmentReleasesForEnvironment(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
@@ -45,19 +46,7 @@ func ListEnvironmentReleasesForEnvironment(accessor ReleaseAccessor) func(c *gin
 	}
 }
 
-func GetEnvironmentReleaseName(environment, release string) string {
-	return fmt.Sprintf("%s---%s", environment, release)
-}
-
-func SplitEnvironmentReleaseName(name string) (string, string, bool) {
-	parts := strings.Split(name, "---")
-	if len(parts) != 2 {
-		return "", "", false
-	}
-	return parts[0], parts[1], true
-}
-
-func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
+func GetEnvironmentRelease(accessor release_inspection.ReleaseAccessor) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
 		logger := klog.LoggerWithValues(klog.FromContext(ctx), "URL", c.Request.URL)
@@ -78,7 +67,7 @@ func GetEnvironmentRelease(accessor ReleaseAccessor) func(c *gin.Context) {
 	}
 }
 
-func getEnvironmentRelease(ctx context.Context, accessor ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
+func getEnvironmentRelease(ctx context.Context, accessor release_inspection.ReleaseAccessor, environmentReleaseName string) (*status.EnvironmentRelease, error) {
 	currReleaseEnvironmentInfo, err := accessor.GetEnvironmentRelease(ctx, environmentReleaseName)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get release environment info: %w", err)
