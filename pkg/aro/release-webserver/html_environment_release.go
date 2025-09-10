@@ -174,7 +174,7 @@ func htmlForCIResults(environmentName string, ciResults map[string][]status.JobR
 		}
 		filterJSON, err := json.Marshal(jobRunQuery)
 		if err == nil {
-			queryParams.Add("filter", string(filterJSON))
+			queryParams.Add("filters", string(filterJSON))
 		}
 		currURL.RawQuery = queryParams.Encode()
 
@@ -279,14 +279,24 @@ func htmlDetailsForComponentDiff(currImageDetails, prevImageDetails *status.Comp
 				} else {
 					diffLines = append(diffLines, fmt.Sprintf("<li>Unavailable, %s</li>", *change.Unavailable))
 				}
-			case change.ChangeType == "PRMerge":
-				if change.PRMerge == nil {
+			case change.ChangeType == "GithubPRMerge":
+				if change.GithubPRMerge == nil {
 					diffLines = append(diffLines, "<li>PR merge, no info</li>")
 				} else {
 					diffLines = append(diffLines, fmt.Sprintf("<li>%s <a target=\"_blank\" href=%q>#%d</a></li>",
-						change.PRMerge.ChangeSummary,
-						fmt.Sprintf("%s/pull/%d", ptr.Deref(currImageDetails.RepoURL, ""), change.PRMerge.PRNumber),
-						change.PRMerge.PRNumber,
+						change.GithubPRMerge.ChangeSummary,
+						fmt.Sprintf("%s/pull/%d", ptr.Deref(currImageDetails.RepoURL, ""), change.GithubPRMerge.PRNumber),
+						change.GithubPRMerge.PRNumber,
+					))
+				}
+			case change.ChangeType == "GitlabMRMerge":
+				if change.GitlabMRMerge == nil {
+					diffLines = append(diffLines, "<li>MR merge, no info</li>")
+				} else {
+					diffLines = append(diffLines, fmt.Sprintf("<li>%s <a target=\"_blank\" href=%q>#%d</a></li>",
+						change.GitlabMRMerge.ChangeSummary,
+						fmt.Sprintf("%s/-/merge_requests/%d", ptr.Deref(currImageDetails.RepoURL, ""), change.GitlabMRMerge.MRNumber),
+						change.GitlabMRMerge.MRNumber,
 					))
 				}
 			}
