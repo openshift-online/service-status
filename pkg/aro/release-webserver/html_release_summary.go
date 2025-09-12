@@ -27,15 +27,21 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 		return
 	}
 
-	environmentReleaseToHTML := map[string]template.HTML{}
-	environmentToEnvironmentReleaseNames := map[string][]string{}
-	environmentToSummaryHTML := map[string]template.HTML{}
+	environmentToEnvironmentReleases := map[string]*status.EnvironmentReleaseList{}
 	for _, environment := range environments.Items {
 		environmentReleases, err := h.releaseClient.ListEnvironmentReleasesForEnvironment(ctx, environment.Name)
 		if err != nil {
 			c.String(500, "failed to list environments: %v", err)
 			return
 		}
+		environmentToEnvironmentReleases[environment.Name] = environmentReleases
+	}
+
+	environmentReleaseToHTML := map[string]template.HTML{}
+	environmentToEnvironmentReleaseNames := map[string][]string{}
+	environmentToSummaryHTML := map[string]template.HTML{}
+	for _, environment := range environments.Items {
+		environmentReleases := environmentToEnvironmentReleases[environment.Name]
 
 		for i, currReleaseEnvironmentInfo := range environmentReleases.Items {
 			environmentToEnvironmentReleaseNames[environment.Name] = append(environmentToEnvironmentReleaseNames[environment.Name], currReleaseEnvironmentInfo.Name)
@@ -60,11 +66,12 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 			}
 
 			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = perEnvironmentReleaseRow(currReleaseEnvironmentInfo, changesList)
-
-			if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
-				environmentToSummaryHTML[environment.Name] = summaryForEnvironment(&currReleaseEnvironmentInfo)
-			}
 		}
+
+		if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
+			environmentToSummaryHTML[environment.Name] = summaryForEnvironment(environment.Name, environmentToEnvironmentReleases)
+		}
+
 	}
 
 	c.HTML(200, "http/aro-hcp/summary.html", gin.H{
@@ -142,10 +149,15 @@ func htmlRowsForCIResults(ciResults map[string][]status.JobRunResults) string {
 	return retHTML
 }
 
-func summaryForEnvironment(environmentRelease *status.EnvironmentRelease) template.HTML {
+func summaryForEnvironment(environmentName string, environmentToEnvironmentReleases map[string]*status.EnvironmentReleaseList) template.HTML {
 	now := time.Now()
-	lines := []string{}
-	if environmentRelease.Environment == "int" {
+	if environmentName == "int" {
+		if len(environmentToEnvironmentReleases[environmentName].Items) == 0 {
+			return "No releases found."
+		}
+
+		lines := []string{}
+		environmentRelease := environmentToEnvironmentReleases[environmentName].Items[0]
 		for _, componentName := range set.KeySet(environmentRelease.Components).SortedList() {
 			component := environmentRelease.Components[componentName]
 			if component.ImageCreationTime == nil {
@@ -165,18 +177,89 @@ func summaryForEnvironment(environmentRelease *status.EnvironmentRelease) templa
 				)
 			}
 		}
-	}
 
-	if len(lines) == 0 {
-		return "All images are up to date"
-	}
-
-	return template.HTML(fmt.Sprintf(`
-<ul>
-    %s
-</ul>
+		if len(lines) == 0 {
+			return "All images are up to date."
+		}
+		return template.HTML(fmt.Sprintf(`
+		    <ul>
+    		    %s
+		    </ul>
 `,
-		strings.Join(lines, "\n    ")))
+			strings.Join(lines, "\n    ")))
+	}
+
+	if environmentName == "stg" {
+		lines := []string{}
+		stageEnvironmentReleases := environmentToEnvironmentReleases[environmentName]
+		for _, stageEnvironmentRelease := range stageEnvironmentReleases.Items {
+			minChangedRelease, minChangedComponents := findMatchingEnvironmentRelease(environmentToEnvironmentReleases["int"], &stageEnvironmentRelease)
+			if len(minChangedComponents) == 0 {
+				continue
+			}
+			lines = append(lines,
+				fmt.Sprintf("<li><b>%s</b> was never tested in integration. Closest release is %s which differs by %s.</li>",
+					stageEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
+			)
+		}
+
+		if len(lines) == 0 {
+			return "All stage releases were first tested in integration."
+		}
+		return template.HTML(fmt.Sprintf(`
+		    <ul>
+		        %s
+		    </ul>
+`,
+			strings.Join(lines, "\n    ")))
+	}
+
+	if environmentName == "prod" {
+		lines := []string{}
+		prodEnvironmentReleases := environmentToEnvironmentReleases[environmentName]
+		for _, prodEnvironmentRelease := range prodEnvironmentReleases.Items {
+			minChangedRelease, minChangedComponents := findMatchingEnvironmentRelease(environmentToEnvironmentReleases["stg"], &prodEnvironmentRelease)
+			if len(minChangedComponents) == 0 {
+				continue
+			}
+			lines = append(lines,
+				fmt.Sprintf("<li><b>%s</b> was never tested in stage. Closest release is %s which differs by %s.</li>",
+					prodEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
+			)
+		}
+
+		if len(lines) == 0 {
+			return "All production releases were first tested in staging."
+		}
+		return template.HTML(fmt.Sprintf(`
+		    <ul>
+		        %s
+		    </ul>
+`,
+			strings.Join(lines, "\n    ")))
+	}
+
+	return ""
+}
+
+func findMatchingEnvironmentRelease(haystack *status.EnvironmentReleaseList, needle *status.EnvironmentRelease) (*status.EnvironmentRelease, set.Set[string]) {
+	var minChangedComponents set.Set[string]
+	var minChangedRelease *status.EnvironmentRelease
+	for i := range haystack.Items {
+		currEnvironmentRelease := haystack.Items[i]
+
+		currChangedComponents := release_inspection.ChangedComponents(&currEnvironmentRelease, needle)
+		if len(currChangedComponents) == 0 {
+			return &currEnvironmentRelease, nil
+		}
+
+		if minChangedComponents.Len() == 0 || len(currChangedComponents) < minChangedComponents.Len() {
+			minChangedComponents = currChangedComponents
+			minChangedRelease = &currEnvironmentRelease
+		}
+	}
+
+	return minChangedRelease, minChangedComponents
 }
 
 func ServeReleaseSummary(releaseClient client.ReleaseClient) func(c *gin.Context) {
