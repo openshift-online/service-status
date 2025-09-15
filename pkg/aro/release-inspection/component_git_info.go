@@ -104,8 +104,9 @@ func (c *componentGitAccessor) GetDiffForSHAs(ctx context.Context, newerSHA, old
 			return nil, fmt.Errorf("failed to get worktree: %w", err)
 		}
 		err = worktree.Pull(&git.PullOptions{
-			RemoteName:    "origin",
-			ReferenceName: plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", c.masterBranch)),
+			InsecureSkipTLS: true, // TODO don't do this if we start sending credentials
+			RemoteName:      "origin",
+			ReferenceName:   plumbing.ReferenceName(fmt.Sprintf("refs/heads/%s", c.masterBranch)),
 		})
 		if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 			return nil, fmt.Errorf("failed to fast-forward main branch: %w", err)
