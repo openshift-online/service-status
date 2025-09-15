@@ -65,7 +65,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 				changesList += "No changes"
 			}
 
-			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = perEnvironmentReleaseRow(currReleaseEnvironmentInfo, changesList)
+			environmentReleaseToHTML[currReleaseEnvironmentInfo.Name] = perEnvironmentReleaseRow(currReleaseEnvironmentInfo, changesList, environmentToEnvironmentReleases)
 		}
 
 		if len(environmentToSummaryHTML[environment.Name]) == 0 { // first one is the summary one
@@ -82,7 +82,7 @@ func (h *htmlReleaseSummary) ServeGin(c *gin.Context) {
 	})
 }
 
-func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelease, changesList string) template.HTML {
+func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelease, changesList string, environmentToEnvironmentReleases map[string]*status.EnvironmentReleaseList) template.HTML {
 	jobRunsHTML := `<table  id="{{$environment}}_table" class="table text-nowrap small mb-3">
           <colgroup>
             <col style="width: 100px;">
@@ -93,6 +93,7 @@ func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelea
 	jobRunsHTML += htmlRowsForCIResults(currReleaseEnvironmentInfo.InformingJobRunResults)
 	jobRunsHTML += `    </table>
 `
+	matchingReleasesHTML := htmlCellMatchingReleases(currReleaseEnvironmentInfo, environmentToEnvironmentReleases)
 
 	return template.HTML(
 		fmt.Sprintf(`
@@ -106,14 +107,52 @@ func perEnvironmentReleaseRow(currReleaseEnvironmentInfo status.EnvironmentRelea
             <td>
                 %s
             </td>
+            <td>
+                %s
+            </td>
         </tr>
 `,
 			fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html", url.PathEscape(release_inspection.MakeEnvironmentReleaseName(currReleaseEnvironmentInfo.Environment, currReleaseEnvironmentInfo.ReleaseName))),
 			currReleaseEnvironmentInfo.ReleaseName,
 			jobRunsHTML,
+			matchingReleasesHTML,
 			changesList,
 		),
 	)
+}
+
+func htmlCellMatchingReleases(currReleaseEnvironmentInfo status.EnvironmentRelease, environmentToEnvironmentReleases map[string]*status.EnvironmentReleaseList) string {
+	retMatchingReleases := []string{}
+
+	environmentsToCheck := []string{"int", "stg", "prod"}
+	for _, environmentToCheck := range environmentsToCheck {
+		environmentReleases := environmentToEnvironmentReleases[environmentToCheck]
+		for _, comparisonEnvironmentRelease := range environmentReleases.Items {
+			if comparisonEnvironmentRelease.Name == currReleaseEnvironmentInfo.Name {
+				continue
+			}
+			currChangedComponents := release_inspection.ChangedComponents(&currReleaseEnvironmentInfo, &comparisonEnvironmentRelease)
+			if len(currChangedComponents) == 0 {
+				retMatchingReleases = append(retMatchingReleases,
+					fmt.Sprintf(`
+					<li>
+					    <a href=%q>%s</a>
+					</li>`,
+						fmt.Sprintf("/http/aro-hcp/environmentreleases/%s/summary.html",
+							url.PathEscape(comparisonEnvironmentRelease.Name)),
+						comparisonEnvironmentRelease.Name))
+			}
+		}
+	}
+	if len(retMatchingReleases) == 0 {
+		return ""
+	}
+
+	retHTML := fmt.Sprintf(`
+				<ul class="table text-nowrap small mb-3">
+				%s
+				</ul>`, strings.Join(retMatchingReleases, "\n"))
+	return retHTML
 }
 
 func htmlRowsForCIResults(ciResults map[string][]status.JobRunResults) string {
@@ -192,19 +231,19 @@ func summaryForEnvironment(environmentName string, environmentToEnvironmentRelea
 	if environmentName == "stg" {
 		lines := []string{}
 		stageEnvironmentReleases := environmentToEnvironmentReleases[environmentName]
-		for _, stageEnvironmentRelease := range stageEnvironmentReleases.Items {
+		if len(stageEnvironmentReleases.Items) > 0 {
+			stageEnvironmentRelease := stageEnvironmentReleases.Items[0]
 			minChangedRelease, minChangedComponents := findMatchingEnvironmentRelease(environmentToEnvironmentReleases["int"], &stageEnvironmentRelease)
-			if len(minChangedComponents) == 0 {
-				continue
+			if len(minChangedComponents) > 0 {
+				lines = append(lines,
+					fmt.Sprintf("<li><b>%s</b> was never tested in integration. Closest release is %s which differs by %s.</li>",
+						stageEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
+				)
 			}
-			lines = append(lines,
-				fmt.Sprintf("<li><b>%s</b> was never tested in integration. Closest release is %s which differs by %s.</li>",
-					stageEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
-			)
 		}
 
 		if len(lines) == 0 {
-			return "All stage releases were first tested in integration."
+			return "Latest stage release was first tested in integration."
 		}
 		return template.HTML(fmt.Sprintf(`
 		    <ul>
@@ -217,19 +256,19 @@ func summaryForEnvironment(environmentName string, environmentToEnvironmentRelea
 	if environmentName == "prod" {
 		lines := []string{}
 		prodEnvironmentReleases := environmentToEnvironmentReleases[environmentName]
-		for _, prodEnvironmentRelease := range prodEnvironmentReleases.Items {
+		if len(prodEnvironmentReleases.Items) > 0 {
+			prodEnvironmentRelease := prodEnvironmentReleases.Items[0]
 			minChangedRelease, minChangedComponents := findMatchingEnvironmentRelease(environmentToEnvironmentReleases["stg"], &prodEnvironmentRelease)
-			if len(minChangedComponents) == 0 {
-				continue
+			if len(minChangedComponents) > 0 {
+				lines = append(lines,
+					fmt.Sprintf("<li><b>%s</b> was never tested in stage. Closest release is %s which differs by %s.</li>",
+						prodEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
+				)
 			}
-			lines = append(lines,
-				fmt.Sprintf("<li><b>%s</b> was never tested in stage. Closest release is %s which differs by %s.</li>",
-					prodEnvironmentRelease.Name, minChangedRelease.Name, strings.Join(minChangedComponents.SortedList(), ", ")),
-			)
 		}
 
 		if len(lines) == 0 {
-			return "All production releases were first tested in staging."
+			return "Latest production release was first tested in staging."
 		}
 		return template.HTML(fmt.Sprintf(`
 		    <ul>
