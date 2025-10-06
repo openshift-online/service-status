@@ -171,7 +171,7 @@ func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context,
 		// now merge the content and see if the content for a particular environment in those files changed.
 		environmentReleaseInput, err := CompleteEnvironmentReleaseInput(ctx, r.aroHCPDir, environmentName)
 		if err != nil {
-			return nil, fmt.Errorf("failed to complete environment release input: %w", err)
+			return nil, fmt.Errorf("failed to complete environment (%v) release (%v) input: %w", environmentName, commit.Hash, err)
 		}
 		if reflect.DeepEqual(prevEnvironmentReleaseInput, environmentReleaseInput) {
 			// if no content changed, skip the commit

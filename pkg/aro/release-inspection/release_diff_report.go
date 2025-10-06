@@ -39,6 +39,8 @@ func CompleteEnvironmentReleaseInput(ctx context.Context, repoDir, environmentNa
 	}
 	// it's not actually yaml (eek).  Coerce
 	baseConfigBytes = bytes.ReplaceAll(baseConfigBytes, []byte("{{ .ev2.availabilityZoneCount }}"), []byte("2"))
+	// this existed in a1afdeea19d3d4190d1cae30ce639be338d9f7a8, maybe someone will actually fix the code.
+	baseConfigBytes = bytes.ReplaceAll(baseConfigBytes, []byte("environmentName: {{ .ctx.environment }}"), []byte(`environmentName: ANY_KEY`))
 	baseConfigMap := map[string]interface{}{}
 	if err := yaml.Unmarshal(baseConfigBytes, &baseConfigMap); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config.yaml: %w", err)
