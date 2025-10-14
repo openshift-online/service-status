@@ -243,7 +243,7 @@ func summaryForEnvironment(environmentName string, environmentToEnvironmentRelea
 		}
 
 		if len(lines) == 0 {
-			return "Latest stage release was first tested in integration."
+			return "Latest stage release was previously tested in integration."
 		}
 		return template.HTML(fmt.Sprintf(`
 		    <ul>
@@ -268,7 +268,7 @@ func summaryForEnvironment(environmentName string, environmentToEnvironmentRelea
 		}
 
 		if len(lines) == 0 {
-			return "Latest production release was first tested in staging."
+			return "Latest production release was previously tested in staging."
 		}
 		return template.HTML(fmt.Sprintf(`
 		    <ul>
