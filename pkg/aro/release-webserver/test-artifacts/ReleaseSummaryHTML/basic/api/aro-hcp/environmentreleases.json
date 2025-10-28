@@ -50,12 +50,12 @@
                     "ImageInfo": {
                         "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -177,12 +177,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -304,12 +304,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -431,12 +431,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -558,12 +558,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -685,12 +685,12 @@
                     "ImageInfo": {
                         "digest": "sha256:41c6ff66219ca049036bcfb98e0c134a9315fc8a7b21d20e598f494f94a54649",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-20T18:42:13.320919282Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -812,12 +812,12 @@
                     "ImageInfo": {
                         "digest": "sha256:41c6ff66219ca049036bcfb98e0c134a9315fc8a7b21d20e598f494f94a54649",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-20T18:42:13.320919282Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -939,12 +939,12 @@
                     "ImageInfo": {
                         "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1066,12 +1066,12 @@
                     "ImageInfo": {
                         "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1193,12 +1193,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1320,10 +1320,10 @@
                     "ImageInfo": {
                         "digest": "sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/uhc-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d...\nError: initializing source docker://quay.io/app-sre/uhc-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d: reading manifest sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d in quay.io/app-sre/uhc-clusters-service: manifest unknown\n"
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
+                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/aro-hcp-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d...\nError: initializing source docker://quay.io/app-sre/aro-hcp-clusters-service@sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d: reading manifest sha256:b1b3dfae8c70a60dfd4eda62907a81cb546615621c661b0d9110c9de8203fc2d in quay.io/app-sre/aro-hcp-clusters-service: manifest unknown\n"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1445,12 +1445,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1572,12 +1572,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1699,10 +1699,10 @@
                     "ImageInfo": {
                         "digest": "sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/uhc-clusters-service@sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530...\nError: initializing source docker://quay.io/app-sre/uhc-clusters-service@sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530: reading manifest sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530 in quay.io/app-sre/uhc-clusters-service: manifest unknown\n"
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
+                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/aro-hcp-clusters-service@sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530...\nError: initializing source docker://quay.io/app-sre/aro-hcp-clusters-service@sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530: reading manifest sha256:328bdbc2b4a27175633004482d6774eb920fc6bdd7ef43478be5c62c68fc2530 in quay.io/app-sre/aro-hcp-clusters-service: manifest unknown\n"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1824,10 +1824,10 @@
                     "ImageInfo": {
                         "digest": "sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/uhc-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8...\nError: initializing source docker://quay.io/app-sre/uhc-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8: reading manifest sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8 in quay.io/app-sre/uhc-clusters-service: manifest unknown\n"
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
+                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/aro-hcp-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8...\nError: initializing source docker://quay.io/app-sre/aro-hcp-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8: reading manifest sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8 in quay.io/app-sre/aro-hcp-clusters-service: manifest unknown\n"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -1949,10 +1949,10 @@
                     "ImageInfo": {
                         "digest": "sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
-                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/uhc-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8...\nError: initializing source docker://quay.io/app-sre/uhc-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8: reading manifest sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8 in quay.io/app-sre/uhc-clusters-service: manifest unknown\n"
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
+                    "sourceSHA": "ERROR: Trying to pull quay.io/app-sre/aro-hcp-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8...\nError: initializing source docker://quay.io/app-sre/aro-hcp-clusters-service@sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8: reading manifest sha256:64b4fd5d657f17a13a960f37fde59b25310e9d336e5c727ac121ac7ff98788f8 in quay.io/app-sre/aro-hcp-clusters-service: manifest unknown\n"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2074,12 +2074,12 @@
                     "ImageInfo": {
                         "digest": "sha256:1bb9f13def38ff771df1afb7c47496c2aab89915328f8c3066b966f744b2e26d",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-08-04T17:57:30.336053383Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2201,12 +2201,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2328,12 +2328,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2455,12 +2455,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2582,12 +2582,12 @@
                     "ImageInfo": {
                         "digest": "sha256:8b2e9af554ad3422f5c30830e383eddffdeac37f64677359d6913f53a4a2abfb",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-25T09:35:09.325987404Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2709,12 +2709,12 @@
                     "ImageInfo": {
                         "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2836,12 +2836,12 @@
                     "ImageInfo": {
                         "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",
@@ -2963,12 +2963,12 @@
                     "ImageInfo": {
                         "digest": "sha256:0dee01f6620847b53030ae716547953931769c362364e5de6e4e05991aac1168",
                         "registry": "quay.io",
-                        "repository": "app-sre/uhc-clusters-service"
+                        "repository": "app-sre/aro-hcp-clusters-service"
                     },
                     "imageCreationTime": "2025-07-14T13:28:19.670186603Z",
-                    "RepoURL": "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+                    "RepoURL": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
                     "sourceSHA": "4f8da2b64a13f2a264bd802d8909bf803211fb20",
-                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/uhc-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
+                    "permanentURLForSourceSHA": "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service/-/tree/4f8da2b64a13f2a264bd802d8909bf803211fb20"
                 },
                 "Frontend": {
                     "name": "Frontend",

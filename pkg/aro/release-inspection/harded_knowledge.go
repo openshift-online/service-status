@@ -106,8 +106,8 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	"Cluster Service": {
 		Name:                "Cluster Service",
 		ImagePullRegistry:   "quay.io",
-		ImagePullRepository: "app-sre/uhc-clusters-service",
-		RepositoryURL:       "https://gitlab.cee.redhat.com/service/uhc-clusters-service",
+		ImagePullRepository: "app-sre/aro-hcp-clusters-service",
+		RepositoryURL:       "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
 		MasterBranch:        "master",
 		LatencyThreshold:    orgLatency,
 	},
