@@ -31,9 +31,6 @@ type ACRPull struct {
 }
 
 type AKSAgentPool struct {
-	// AZCount corresponds to the JSON schema field "azCount".
-	AZCount *float64 `json:"azCount,omitempty" yaml:"azCount,omitempty" mapstructure:"azCount,omitempty"`
-
 	// MaxCount corresponds to the JSON schema field "maxCount".
 	MaxCount float64 `json:"maxCount" yaml:"maxCount" mapstructure:"maxCount"`
 
@@ -43,8 +40,17 @@ type AKSAgentPool struct {
 	// OsDiskSizeGB corresponds to the JSON schema field "osDiskSizeGB".
 	OsDiskSizeGB float64 `json:"osDiskSizeGB" yaml:"osDiskSizeGB" mapstructure:"osDiskSizeGB"`
 
+	// PoolCount corresponds to the JSON schema field "poolCount".
+	PoolCount float64 `json:"poolCount" yaml:"poolCount" mapstructure:"poolCount"`
+
 	// VmSize corresponds to the JSON schema field "vmSize".
 	VmSize string `json:"vmSize" yaml:"vmSize" mapstructure:"vmSize"`
+
+	// ZoneRedundantMode corresponds to the JSON schema field "zoneRedundantMode".
+	ZoneRedundantMode ZoneRedundantMode `json:"zoneRedundantMode" yaml:"zoneRedundantMode" mapstructure:"zoneRedundantMode"`
+
+	// Zones to use for the pools.
+	Zones Zones `json:"zones" yaml:"zones" mapstructure:"zones"`
 }
 
 type AKSConfig struct {
@@ -97,11 +103,68 @@ type AKSConfig struct {
 	VnetAddressPrefix string `json:"vnetAddressPrefix" yaml:"vnetAddressPrefix" mapstructure:"vnetAddressPrefix"`
 }
 
+type ARM struct {
+	// The application ID of the ARM application.
+	ApplicationId string `json:"applicationId" yaml:"applicationId" mapstructure:"applicationId"`
+
+	// The audience FQDN of the ARM applications auth tokens.
+	AudienceFQDN string `json:"audienceFQDN" yaml:"audienceFQDN" mapstructure:"audienceFQDN"`
+
+	// The authority/issuer FQDN of the ARM applications auth tokens.
+	AuthorityFQDN string `json:"authorityFQDN" yaml:"authorityFQDN" mapstructure:"authorityFQDN"`
+
+	// The label of the ARM policy.
+	PolicyLabel string `json:"policyLabel" yaml:"policyLabel" mapstructure:"policyLabel"`
+
+	// The tenant ID where the ARM application lives.
+	TenantId string `json:"tenantId" yaml:"tenantId" mapstructure:"tenantId"`
+}
+
 type AccessMode string
 
 const AccessModeAudit AccessMode = "Audit"
 const AccessModeEnforced AccessMode = "Enforced"
 const AccessModeLearning AccessMode = "Learning"
+// Geneva Actions related configuration
+type Actions struct {
+	// AllowedAcisExtensions corresponds to the JSON schema field
+	// "allowedAcisExtensions".
+	AllowedAcisExtensions string `json:"allowedAcisExtensions" yaml:"allowedAcisExtensions" mapstructure:"allowedAcisExtensions"`
+
+	// This is the app our Geneva Actions will use to talk to the Admin API
+	Application EntraApplication `json:"application" yaml:"application" mapstructure:"application"`
+
+	// This is the certificate for the app defined in .application
+	Certificate Certificate `json:"certificate" yaml:"certificate" mapstructure:"certificate"`
+
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty" mapstructure:"enabled,omitempty"`
+
+	// This is the principal ID of the MSFT owned Geneva Actions identity that will
+	// call into our Geneva Actions.
+	GenevaActionsPrincipalId string `json:"genevaActionsPrincipalId" yaml:"genevaActionsPrincipalId" mapstructure:"genevaActionsPrincipalId"`
+
+	// Here we store the certificate for the app defined in .application
+	KeyVault KeyVault `json:"keyVault" yaml:"keyVault" mapstructure:"keyVault"`
+
+	// The Service Tag used by Geneva Actions for their egress traffic.
+	ServiceTag string `json:"serviceTag" yaml:"serviceTag" mapstructure:"serviceTag"`
+}
+
+type AdminAPI struct {
+	// Cert corresponds to the JSON schema field "cert".
+	Cert Cert `json:"cert" yaml:"cert" mapstructure:"cert"`
+
+	// Image corresponds to the JSON schema field "image".
+	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
+
+	// K8S corresponds to the JSON schema field "k8s".
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+
+	// The name of the MSI that will be used by the frontend to interact with Azure
+	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
+}
+
 type Administration struct {
 	// ReaderGroupId corresponds to the JSON schema field "readerGroupId".
 	ReaderGroupId string `json:"readerGroupId" yaml:"readerGroupId" mapstructure:"readerGroupId"`
@@ -123,8 +186,14 @@ type Agent struct {
 	// ConsumerName corresponds to the JSON schema field "consumerName".
 	ConsumerName string `json:"consumerName" yaml:"consumerName" mapstructure:"consumerName"`
 
+	// K8S corresponds to the JSON schema field "k8s".
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+
 	// Loglevel corresponds to the JSON schema field "loglevel".
 	Loglevel int64 `json:"loglevel" yaml:"loglevel" mapstructure:"loglevel"`
+
+	// ManagedIdentityName corresponds to the JSON schema field "managedIdentityName".
+	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
 
 	// Sidecar corresponds to the JSON schema field "sidecar".
 	Sidecar interface{} `json:"sidecar" yaml:"sidecar" mapstructure:"sidecar"`
@@ -132,10 +201,13 @@ type Agent struct {
 
 type Arobit struct {
 	// Forwarder corresponds to the JSON schema field "forwarder".
-	Forwarder Forwarder `json:"forwarder" yaml:"forwarder" mapstructure:"forwarder"`
+	Forwarder *Forwarder `json:"forwarder,omitempty" yaml:"forwarder,omitempty" mapstructure:"forwarder,omitempty"`
+
+	// Kusto corresponds to the JSON schema field "kusto".
+	Kusto *Kusto `json:"kusto,omitempty" yaml:"kusto,omitempty" mapstructure:"kusto,omitempty"`
 
 	// MDSD corresponds to the JSON schema field "mdsd".
-	MDSD MDSD `json:"mdsd" yaml:"mdsd" mapstructure:"mdsd"`
+	MDSD *MDSD `json:"mdsd,omitempty" yaml:"mdsd,omitempty" mapstructure:"mdsd,omitempty"`
 }
 
 type AssistedId struct {
@@ -144,6 +216,9 @@ type AssistedId struct {
 
 	// Certificate corresponds to the JSON schema field "certificate".
 	Certificate CertificateRef `json:"certificate" yaml:"certificate" mapstructure:"certificate"`
+
+	// DstsHost corresponds to the JSON schema field "dstsHost".
+	DstsHost *string `json:"dstsHost,omitempty" yaml:"dstsHost,omitempty" mapstructure:"dstsHost,omitempty"`
 }
 
 type Aub struct {
@@ -155,38 +230,14 @@ type Aub struct {
 }
 
 type Audit struct {
-	// TCPAddress corresponds to the JSON schema field "tcpAddress".
-	TCPAddress string `json:"tcpAddress" yaml:"tcpAddress" mapstructure:"tcpAddress"`
+	// ConnectSocket corresponds to the JSON schema field "connectSocket".
+	ConnectSocket bool `json:"connectSocket" yaml:"connectSocket" mapstructure:"connectSocket"`
 }
 
 type AzureOperatorsManagedIdentities struct {
-	// CloudControllerManager corresponds to the JSON schema field
-	// "cloudControllerManager".
-	CloudControllerManager OperatorConfig `json:"cloudControllerManager" yaml:"cloudControllerManager" mapstructure:"cloudControllerManager"`
-
-	// CloudNetworkConfig corresponds to the JSON schema field "cloudNetworkConfig".
-	CloudNetworkConfig OperatorConfig `json:"cloudNetworkConfig" yaml:"cloudNetworkConfig" mapstructure:"cloudNetworkConfig"`
-
-	// ClusterAPIAzure corresponds to the JSON schema field "clusterApiAzure".
-	ClusterAPIAzure OperatorConfig `json:"clusterApiAzure" yaml:"clusterApiAzure" mapstructure:"clusterApiAzure"`
-
-	// ControlPlane corresponds to the JSON schema field "controlPlane".
-	ControlPlane OperatorConfig `json:"controlPlane" yaml:"controlPlane" mapstructure:"controlPlane"`
-
-	// DiskCSIDriver corresponds to the JSON schema field "diskCsiDriver".
-	DiskCSIDriver OperatorConfig `json:"diskCsiDriver" yaml:"diskCsiDriver" mapstructure:"diskCsiDriver"`
-
-	// FileCSIDriver corresponds to the JSON schema field "fileCsiDriver".
-	FileCSIDriver OperatorConfig `json:"fileCsiDriver" yaml:"fileCsiDriver" mapstructure:"fileCsiDriver"`
-
-	// ImageRegistry corresponds to the JSON schema field "imageRegistry".
-	ImageRegistry OperatorConfig `json:"imageRegistry" yaml:"imageRegistry" mapstructure:"imageRegistry"`
-
-	// Ingress corresponds to the JSON schema field "ingress".
-	Ingress OperatorConfig `json:"ingress" yaml:"ingress" mapstructure:"ingress"`
-
-	// Kms corresponds to the JSON schema field "kms".
-	Kms OperatorConfig `json:"kms" yaml:"kms" mapstructure:"kms"`
+	// The role set name refers to a particular cloud specific set of operator role
+	// definitions, found in the CS values.yaml file
+	RoleSetName RoleSetName `json:"roleSetName" yaml:"roleSetName" mapstructure:"roleSetName"`
 }
 
 type AzureRuntimeConfig struct {
@@ -198,6 +249,12 @@ type AzureRuntimeConfig struct {
 type Backend struct {
 	// Image corresponds to the JSON schema field "image".
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
+
+	// K8S corresponds to the JSON schema field "k8s".
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+
+	// The name of the MSI that will be used by the backend to interact with Azure
+	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
 
 	// Tracing corresponds to the JSON schema field "tracing".
 	Tracing Tracing `json:"tracing" yaml:"tracing" mapstructure:"tracing"`
@@ -212,20 +269,39 @@ type Billing struct {
 	// Aub corresponds to the JSON schema field "aub".
 	Aub Aub `json:"aub" yaml:"aub" mapstructure:"aub"`
 
-	// CosmosDB corresponds to the JSON schema field "cosmosDB".
-	CosmosDB CosmosDB `json:"cosmosDB" yaml:"cosmosDB" mapstructure:"cosmosDB"`
-
 	// EventHub corresponds to the JSON schema field "eventHub".
 	EventHub EventHub `json:"eventHub" yaml:"eventHub" mapstructure:"eventHub"`
 
+	// ImageArtifact corresponds to the JSON schema field "imageArtifact".
+	ImageArtifact ImageArtifact `json:"imageArtifact" yaml:"imageArtifact" mapstructure:"imageArtifact"`
+
 	// Kusto corresponds to the JSON schema field "kusto".
-	Kusto Kusto `json:"kusto" yaml:"kusto" mapstructure:"kusto"`
+	Kusto BillingKusto `json:"kusto" yaml:"kusto" mapstructure:"kusto"`
 
 	// Pav2 corresponds to the JSON schema field "pav2".
 	Pav2 Pav2 `json:"pav2" yaml:"pav2" mapstructure:"pav2"`
 
 	// RG corresponds to the JSON schema field "rg".
 	RG ResourceGroupName `json:"rg" yaml:"rg" mapstructure:"rg"`
+}
+
+type BillingKusto struct {
+	// ClusterName corresponds to the JSON schema field "clusterName".
+	ClusterName string `json:"clusterName" yaml:"clusterName" mapstructure:"clusterName"`
+
+	// ClusterPrincipals corresponds to the JSON schema field "clusterPrincipals".
+	ClusterPrincipals []ClusterPrincipals `json:"clusterPrincipals" yaml:"clusterPrincipals" mapstructure:"clusterPrincipals"`
+
+	// DstsGroups corresponds to the JSON schema field "dstsGroups".
+	DstsGroups []DstsGroups `json:"dstsGroups" yaml:"dstsGroups" mapstructure:"dstsGroups"`
+
+	// Sku corresponds to the JSON schema field "sku".
+	Sku string `json:"sku" yaml:"sku" mapstructure:"sku"`
+
+	// If the latest VM usage event in kusto is older than this threshold compared to
+	// the current time, skip deletion checks for billing documents. 0 to disable this
+	// check.
+	VmUsageStaleThreshold string `json:"vmUsageStaleThreshold" yaml:"vmUsageStaleThreshold" mapstructure:"vmUsageStaleThreshold"`
 }
 
 type Cert struct {
@@ -236,6 +312,7 @@ type Cert struct {
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
 }
 
+// This is the certificate for the app defined in .application
 type Certificate struct {
 	// Issuer corresponds to the JSON schema field "issuer".
 	Issuer CertificateIssuer `json:"issuer" yaml:"issuer" mapstructure:"issuer"`
@@ -260,9 +337,31 @@ type CertificateRef struct {
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
 }
 
+type ChannelGroups struct {
+	// Stable corresponds to the JSON schema field "stable".
+	Stable Stable `json:"stable" yaml:"stable" mapstructure:"stable"`
+}
+
 type Cluster struct {
 	// Account corresponds to the JSON schema field "account".
 	Account string `json:"account" yaml:"account" mapstructure:"account"`
+}
+
+type ClusterPrincipals struct {
+	// Id corresponds to the JSON schema field "id".
+	Id string `json:"id" yaml:"id" mapstructure:"id"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
+
+	// Role corresponds to the JSON schema field "role".
+	Role string `json:"role" yaml:"role" mapstructure:"role"`
+
+	// TenantId corresponds to the JSON schema field "tenantId".
+	TenantId string `json:"tenantId" yaml:"tenantId" mapstructure:"tenantId"`
+
+	// Type corresponds to the JSON schema field "type".
+	Type string `json:"type" yaml:"type" mapstructure:"type"`
 }
 
 type ClustersService struct {
@@ -273,8 +372,21 @@ type ClustersService struct {
 	// AzureRuntimeConfig corresponds to the JSON schema field "azureRuntimeConfig".
 	AzureRuntimeConfig AzureRuntimeConfig `json:"azureRuntimeConfig" yaml:"azureRuntimeConfig" mapstructure:"azureRuntimeConfig"`
 
+	// A comma-separated list of batch processes to execute. If set to an empty
+	// string, no batch processes are executed. No whitespace characters are allowed
+	// before or after the commas, or at the beginning or end of the list.
+	BatchProcesses *string `json:"batchProcesses,omitempty" yaml:"batchProcesses,omitempty" mapstructure:"batchProcesses,omitempty"`
+
+	// If true, batch processes will only log what they would do, without making any
+	// changes.
+	BatchProcessesDryRun *bool `json:"batchProcessesDryRun,omitempty" yaml:"batchProcessesDryRun,omitempty" mapstructure:"batchProcessesDryRun,omitempty"`
+
 	// DenyAssignments corresponds to the JSON schema field "denyAssignments".
 	DenyAssignments DenyAssignments `json:"denyAssignments" yaml:"denyAssignments" mapstructure:"denyAssignments"`
+
+	// If true, debug jobs will be deployed to the cluster. The jobs will be used to
+	// debug the CS service.
+	DeployDebugJobs *bool `json:"deployDebugJobs,omitempty" yaml:"deployDebugJobs,omitempty" mapstructure:"deployDebugJobs,omitempty"`
 
 	// Environment corresponds to the JSON schema field "environment".
 	Environment string `json:"environment" yaml:"environment" mapstructure:"environment"`
@@ -283,13 +395,20 @@ type ClustersService struct {
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
 
 	// K8S corresponds to the JSON schema field "k8s".
-	K8S K8SServiceAccount `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
 
 	// The name of the MSI that will be used by CS to interact with Azure
 	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
 
+	// OCPVersions corresponds to the JSON schema field "ocpVersions".
+	OCPVersions OCPVersions `json:"ocpVersions" yaml:"ocpVersions" mapstructure:"ocpVersions"`
+
 	// Postgres corresponds to the JSON schema field "postgres".
 	Postgres Postgres `json:"postgres" yaml:"postgres" mapstructure:"postgres"`
+
+	// The maximum number of HCPs that can be placed on an MC, sadly not configurable
+	// per MC
+	ProvisionShardClusterLimit *int64 `json:"provisionShardClusterLimit,omitempty" yaml:"provisionShardClusterLimit,omitempty" mapstructure:"provisionShardClusterLimit,omitempty"`
 
 	// Tracing corresponds to the JSON schema field "tracing".
 	Tracing Tracing `json:"tracing" yaml:"tracing" mapstructure:"tracing"`
@@ -302,8 +421,15 @@ type ConfigSchemaJSON struct {
 	// ACR corresponds to the JSON schema field "acr".
 	ACR *ConfigSchemaJSONACR `json:"acr,omitempty" yaml:"acr,omitempty" mapstructure:"acr,omitempty"`
 
+	// The DNS suffix for Azure Container Registry (e.g., azurecr.io, azurecr.us,
+	// azurecr.cn)
+	ACRDNSSuffix string `json:"acrDNSSuffix" yaml:"acrDNSSuffix" mapstructure:"acrDNSSuffix"`
+
 	// ACRPull corresponds to the JSON schema field "acrPull".
 	ACRPull ACRPull `json:"acrPull" yaml:"acrPull" mapstructure:"acrPull"`
+
+	// AdminAPI corresponds to the JSON schema field "adminApi".
+	AdminAPI *AdminAPI `json:"adminApi,omitempty" yaml:"adminApi,omitempty" mapstructure:"adminApi,omitempty"`
 
 	// Administration corresponds to the JSON schema field "administration".
 	Administration Administration `json:"administration" yaml:"administration" mapstructure:"administration"`
@@ -320,6 +446,16 @@ type ConfigSchemaJSON struct {
 
 	// Arobit corresponds to the JSON schema field "arobit".
 	Arobit *Arobit `json:"arobit,omitempty" yaml:"arobit,omitempty" mapstructure:"arobit,omitempty"`
+
+	// Whether automation account runs in dry-run mode
+	AutomationDryRun *bool `json:"automationDryRun,omitempty" yaml:"automationDryRun,omitempty" mapstructure:"automationDryRun,omitempty"`
+
+	// AzureGeoShortId corresponds to the JSON schema field "azureGeoShortId".
+	AzureGeoShortId string `json:"azureGeoShortId" yaml:"azureGeoShortId" mapstructure:"azureGeoShortId"`
+
+	// AzureRegionAvailabilityZoneCount corresponds to the JSON schema field
+	// "azureRegionAvailabilityZoneCount".
+	AzureRegionAvailabilityZoneCount *int64 `json:"azureRegionAvailabilityZoneCount,omitempty" yaml:"azureRegionAvailabilityZoneCount,omitempty" mapstructure:"azureRegionAvailabilityZoneCount,omitempty"`
 
 	// Backend corresponds to the JSON schema field "backend".
 	Backend *Backend `json:"backend,omitempty" yaml:"backend,omitempty" mapstructure:"backend,omitempty"`
@@ -342,6 +478,12 @@ type ConfigSchemaJSON struct {
 	// DNS corresponds to the JSON schema field "dns".
 	DNS *DNS `json:"dns,omitempty" yaml:"dns,omitempty" mapstructure:"dns,omitempty"`
 
+	// E2E corresponds to the JSON schema field "e2e".
+	E2E E2E `json:"e2e" yaml:"e2e" mapstructure:"e2e"`
+
+	// EnvironmentName corresponds to the JSON schema field "environmentName".
+	EnvironmentName *string `json:"environmentName,omitempty" yaml:"environmentName,omitempty" mapstructure:"environmentName,omitempty"`
+
 	// Ev2 corresponds to the JSON schema field "ev2".
 	Ev2 *Ev2 `json:"ev2,omitempty" yaml:"ev2,omitempty" mapstructure:"ev2,omitempty"`
 
@@ -362,9 +504,6 @@ type ConfigSchemaJSON struct {
 	// Geneva corresponds to the JSON schema field "geneva".
 	Geneva *Geneva `json:"geneva,omitempty" yaml:"geneva,omitempty" mapstructure:"geneva,omitempty"`
 
-	// GenevaActions corresponds to the JSON schema field "genevaActions".
-	GenevaActions GenevaActions `json:"genevaActions" yaml:"genevaActions" mapstructure:"genevaActions"`
-
 	// Global corresponds to the JSON schema field "global".
 	Global Global `json:"global" yaml:"global" mapstructure:"global"`
 
@@ -373,6 +512,12 @@ type ConfigSchemaJSON struct {
 
 	// ImageSync corresponds to the JSON schema field "imageSync".
 	ImageSync ImageSync `json:"imageSync" yaml:"imageSync" mapstructure:"imageSync"`
+
+	// KeyVaultDNSSuffix corresponds to the JSON schema field "keyVaultDNSSuffix".
+	KeyVaultDNSSuffix string `json:"keyVaultDNSSuffix" yaml:"keyVaultDNSSuffix" mapstructure:"keyVaultDNSSuffix"`
+
+	// KubeEvents corresponds to the JSON schema field "kubeEvents".
+	KubeEvents *KubeEvents `json:"kubeEvents,omitempty" yaml:"kubeEvents,omitempty" mapstructure:"kubeEvents,omitempty"`
 
 	// Kusto corresponds to the JSON schema field "kusto".
 	Kusto *ConfigSchemaJSONKusto `json:"kusto,omitempty" yaml:"kusto,omitempty" mapstructure:"kusto,omitempty"`
@@ -409,7 +554,7 @@ type ConfigSchemaJSON struct {
 	MiMockPrincipalId *string `json:"miMockPrincipalId,omitempty" yaml:"miMockPrincipalId,omitempty" mapstructure:"miMockPrincipalId,omitempty"`
 
 	// Mise corresponds to the JSON schema field "mise".
-	Mise interface{} `json:"mise,omitempty" yaml:"mise,omitempty" mapstructure:"mise,omitempty"`
+	Mise *Mise `json:"mise,omitempty" yaml:"mise,omitempty" mapstructure:"mise,omitempty"`
 
 	// Monitoring corresponds to the JSON schema field "monitoring".
 	Monitoring Monitoring `json:"monitoring" yaml:"monitoring" mapstructure:"monitoring"`
@@ -432,6 +577,12 @@ type ConfigSchemaJSON struct {
 
 	// Region corresponds to the JSON schema field "region".
 	Region string `json:"region" yaml:"region" mapstructure:"region"`
+
+	// Indicates if the region is still in the process of being deployed. When true,
+	// various operational features are disabled to prevent issues during deployment,
+	// including: ICM alerting. This should be set to false once the region is fully
+	// operational
+	RegionBuildout bool `json:"regionBuildout" yaml:"regionBuildout" mapstructure:"regionBuildout"`
 
 	// RegionRG corresponds to the JSON schema field "regionRG".
 	RegionRG ResourceGroupName `json:"regionRG" yaml:"regionRG" mapstructure:"regionRG"`
@@ -466,11 +617,49 @@ type ConfigSchemaJSONACR struct {
 }
 
 type ConfigSchemaJSONKusto struct {
-	// Cluster corresponds to the JSON schema field "cluster".
-	Cluster string `json:"cluster" yaml:"cluster" mapstructure:"cluster"`
+	// AdminGroups corresponds to the JSON schema field "adminGroups".
+	AdminGroups string `json:"adminGroups" yaml:"adminGroups" mapstructure:"adminGroups"`
 
-	// ResourceGroup corresponds to the JSON schema field "resourceGroup".
-	ResourceGroup string `json:"resourceGroup" yaml:"resourceGroup" mapstructure:"resourceGroup"`
+	// DEPRECATED, for backward compatibility only
+	Cluster *string `json:"cluster,omitempty" yaml:"cluster,omitempty" mapstructure:"cluster,omitempty"`
+
+	// DEPRECATED, for backward compatibility only
+	Enabled *bool `json:"enabled,omitempty" yaml:"enabled,omitempty" mapstructure:"enabled,omitempty"`
+
+	// DEPRECATED, for backward compatibility only
+	EnvironmentName *string `json:"environmentName,omitempty" yaml:"environmentName,omitempty" mapstructure:"environmentName,omitempty"`
+
+	// HostedControlPlaneLogsDatabase corresponds to the JSON schema field
+	// "hostedControlPlaneLogsDatabase".
+	HostedControlPlaneLogsDatabase string `json:"hostedControlPlaneLogsDatabase" yaml:"hostedControlPlaneLogsDatabase" mapstructure:"hostedControlPlaneLogsDatabase"`
+
+	// DEPRECATED, for backward compatibility only
+	IngestionUrl *string `json:"ingestionUrl,omitempty" yaml:"ingestionUrl,omitempty" mapstructure:"ingestionUrl,omitempty"`
+
+	// Name of the kusto cluster. Must begin with a letter and contain between 4 and
+	// 22 lowercase alphanumeric characters.
+	KustoName string `json:"kustoName" yaml:"kustoName" mapstructure:"kustoName"`
+
+	// ManageInstance corresponds to the JSON schema field "manageInstance".
+	ManageInstance bool `json:"manageInstance" yaml:"manageInstance" mapstructure:"manageInstance"`
+
+	// DEPRECATED, for backward compatibility only
+	ResourceGroup *string `json:"resourceGroup,omitempty" yaml:"resourceGroup,omitempty" mapstructure:"resourceGroup,omitempty"`
+
+	// RG corresponds to the JSON schema field "rg".
+	RG *string `json:"rg,omitempty" yaml:"rg,omitempty" mapstructure:"rg,omitempty"`
+
+	// ServiceLogsDatabase corresponds to the JSON schema field "serviceLogsDatabase".
+	ServiceLogsDatabase string `json:"serviceLogsDatabase" yaml:"serviceLogsDatabase" mapstructure:"serviceLogsDatabase"`
+
+	// Sku corresponds to the JSON schema field "sku".
+	Sku string `json:"sku" yaml:"sku" mapstructure:"sku"`
+
+	// Tier corresponds to the JSON schema field "tier".
+	Tier string `json:"tier" yaml:"tier" mapstructure:"tier"`
+
+	// ViewerGroups corresponds to the JSON schema field "viewerGroups".
+	ViewerGroups string `json:"viewerGroups" yaml:"viewerGroups" mapstructure:"viewerGroups"`
 }
 
 // Log infrastructure configuration
@@ -493,9 +682,48 @@ type ContainerImage struct {
 	Repository string `json:"repository" yaml:"repository" mapstructure:"repository"`
 }
 
+type ContainerImageSha struct {
+	// Registry corresponds to the JSON schema field "registry".
+	Registry *string `json:"registry,omitempty" yaml:"registry,omitempty" mapstructure:"registry,omitempty"`
+
+	// Repository corresponds to the JSON schema field "repository".
+	Repository string `json:"repository" yaml:"repository" mapstructure:"repository"`
+
+	// Sha corresponds to the JSON schema field "sha".
+	Sha string `json:"sha" yaml:"sha" mapstructure:"sha"`
+}
+
+type ContainerResources struct {
+	// Limits corresponds to the JSON schema field "limits".
+	Limits *Resources `json:"limits,omitempty" yaml:"limits,omitempty" mapstructure:"limits,omitempty"`
+
+	// Requests corresponds to the JSON schema field "requests".
+	Requests *Resources `json:"requests,omitempty" yaml:"requests,omitempty" mapstructure:"requests,omitempty"`
+}
+
+type ContainerizedDb struct {
+	// Image corresponds to the JSON schema field "image".
+	Image *string `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
+
+	// PvcCapacity corresponds to the JSON schema field "pvcCapacity".
+	PvcCapacity *string `json:"pvcCapacity,omitempty" yaml:"pvcCapacity,omitempty" mapstructure:"pvcCapacity,omitempty"`
+}
+
 type CosmosDB struct {
+	// Deploy corresponds to the JSON schema field "deploy".
+	Deploy bool `json:"deploy" yaml:"deploy" mapstructure:"deploy"`
+
+	// DisableLocalAuth corresponds to the JSON schema field "disableLocalAuth".
+	DisableLocalAuth bool `json:"disableLocalAuth" yaml:"disableLocalAuth" mapstructure:"disableLocalAuth"`
+
 	// Name corresponds to the JSON schema field "name".
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
+
+	// Private corresponds to the JSON schema field "private".
+	Private bool `json:"private" yaml:"private" mapstructure:"private"`
+
+	// ZoneRedundantMode corresponds to the JSON schema field "zoneRedundantMode".
+	ZoneRedundantMode *ZoneRedundantMode `json:"zoneRedundantMode,omitempty" yaml:"zoneRedundantMode,omitempty" mapstructure:"zoneRedundantMode,omitempty"`
 }
 
 type Csv string
@@ -506,6 +734,9 @@ type DNS struct {
 
 	// The parent DNS zone name for regional HCP cluster DNS zones
 	CxParentZoneName string `json:"cxParentZoneName" yaml:"cxParentZoneName" mapstructure:"cxParentZoneName"`
+
+	// The global certificates domain
+	GlobalCertificatesDomain string `json:"globalCertificatesDomain" yaml:"globalCertificatesDomain" mapstructure:"globalCertificatesDomain"`
 
 	// The global parent DNS zone name
 	ParentZoneName *string `json:"parentZoneName,omitempty" yaml:"parentZoneName,omitempty" mapstructure:"parentZoneName,omitempty"`
@@ -518,10 +749,46 @@ type DNS struct {
 	SvcParentZoneName string `json:"svcParentZoneName" yaml:"svcParentZoneName" mapstructure:"svcParentZoneName"`
 }
 
+type DefaultVersion struct {
+	// Version corresponds to the JSON schema field "version".
+	Version SemVer `json:"version" yaml:"version" mapstructure:"version"`
+}
+
 type DenyAssignments string
 
 const DenyAssignmentsDisabled DenyAssignments = "disabled"
 const DenyAssignmentsEnabled DenyAssignments = "enabled"
+type DstsGroups struct {
+	// Description corresponds to the JSON schema field "description".
+	Description string `json:"description" yaml:"description" mapstructure:"description"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
+}
+
+type E2E struct {
+	// Prow corresponds to the JSON schema field "prow".
+	Prow Prow `json:"prow" yaml:"prow" mapstructure:"prow"`
+
+	// RegionTest corresponds to the JSON schema field "regionTest".
+	RegionTest RegionTest `json:"regionTest" yaml:"regionTest" mapstructure:"regionTest"`
+}
+
+type EntraApplication struct {
+	// Manage corresponds to the JSON schema field "manage".
+	Manage *bool `json:"manage,omitempty" yaml:"manage,omitempty" mapstructure:"manage,omitempty"`
+
+	// The name of the application. Needs to be unique within the tenant.
+	// https://eng.ms/docs/microsoft-security/identity/auth/auth-sts-protocols/ests/ests-troubleshooting-guides/tsgs/3p-apps-build-out-automation/gotchas-and-known-issues
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
+
+	// OwnerIds corresponds to the JSON schema field "ownerIds".
+	OwnerIds Csv `json:"ownerIds" yaml:"ownerIds" mapstructure:"ownerIds"`
+
+	// UseSNI corresponds to the JSON schema field "useSNI".
+	UseSNI *bool `json:"useSNI,omitempty" yaml:"useSNI,omitempty" mapstructure:"useSNI,omitempty"`
+}
+
 type Environment string
 
 const EnvironmentBillingProd Environment = "BillingProd"
@@ -588,6 +855,9 @@ type Frontdoor struct {
 	// KeyVault corresponds to the JSON schema field "keyVault".
 	KeyVault KeyVault `json:"keyVault" yaml:"keyVault" mapstructure:"keyVault"`
 
+	// Manage corresponds to the JSON schema field "manage".
+	Manage bool `json:"manage" yaml:"manage" mapstructure:"manage"`
+
 	// MSIName corresponds to the JSON schema field "msiName".
 	MSIName string `json:"msiName" yaml:"msiName" mapstructure:"msiName"`
 
@@ -610,36 +880,36 @@ type Frontend struct {
 	Audit *Audit `json:"audit,omitempty" yaml:"audit,omitempty" mapstructure:"audit,omitempty"`
 
 	// Cert corresponds to the JSON schema field "cert".
-	Cert Cert `json:"cert" yaml:"cert" mapstructure:"cert"`
+	Cert FrontendCert `json:"cert" yaml:"cert" mapstructure:"cert"`
 
 	// CosmosDB corresponds to the JSON schema field "cosmosDB".
-	CosmosDB FrontendCosmosDB `json:"cosmosDB" yaml:"cosmosDB" mapstructure:"cosmosDB"`
+	CosmosDB CosmosDB `json:"cosmosDB" yaml:"cosmosDB" mapstructure:"cosmosDB"`
 
 	// Image corresponds to the JSON schema field "image".
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
+
+	// K8S corresponds to the JSON schema field "k8s".
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+
+	// The name of the MSI that will be used by the frontend to interact with Azure
+	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
 
 	// Tracing corresponds to the JSON schema field "tracing".
 	Tracing Tracing `json:"tracing" yaml:"tracing" mapstructure:"tracing"`
 }
 
-type FrontendCosmosDB struct {
-	// Deploy corresponds to the JSON schema field "deploy".
-	Deploy bool `json:"deploy" yaml:"deploy" mapstructure:"deploy"`
-
-	// DisableLocalAuth corresponds to the JSON schema field "disableLocalAuth".
-	DisableLocalAuth bool `json:"disableLocalAuth" yaml:"disableLocalAuth" mapstructure:"disableLocalAuth"`
+type FrontendCert struct {
+	// Issuer corresponds to the JSON schema field "issuer".
+	Issuer CertificateIssuer `json:"issuer" yaml:"issuer" mapstructure:"issuer"`
 
 	// Name corresponds to the JSON schema field "name".
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
-
-	// Private corresponds to the JSON schema field "private".
-	Private bool `json:"private" yaml:"private" mapstructure:"private"`
-
-	// ZoneRedundantMode corresponds to the JSON schema field "zoneRedundantMode".
-	ZoneRedundantMode *ZoneRedundantMode `json:"zoneRedundantMode,omitempty" yaml:"zoneRedundantMode,omitempty" mapstructure:"zoneRedundantMode,omitempty"`
 }
 
 type Geneva struct {
+	// Geneva Actions related configuration
+	Actions Actions `json:"actions" yaml:"actions" mapstructure:"actions"`
+
 	// Logs corresponds to the JSON schema field "logs".
 	Logs Logs `json:"logs" yaml:"logs" mapstructure:"logs"`
 
@@ -654,8 +924,14 @@ type Geneva struct {
 }
 
 type GenevaActions struct {
-	// ServiceTag corresponds to the JSON schema field "serviceTag".
-	ServiceTag string `json:"serviceTag" yaml:"serviceTag" mapstructure:"serviceTag"`
+	// The audience FQDN of the Geneva Actions applications auth tokens.
+	AudienceFQDN string `json:"audienceFQDN" yaml:"audienceFQDN" mapstructure:"audienceFQDN"`
+
+	// The authority/issuer FQDN of the Geneva Actions applications auth tokens.
+	AuthorityFQDN string `json:"authorityFQDN" yaml:"authorityFQDN" mapstructure:"authorityFQDN"`
+
+	// The label of the Geneva Actions policy.
+	PolicyLabel string `json:"policyLabel" yaml:"policyLabel" mapstructure:"policyLabel"`
 }
 
 type GenevaLogsAccount struct {
@@ -706,8 +982,20 @@ type Global struct {
 }
 
 type GlobalBilling struct {
+	// Digest corresponds to the JSON schema field "digest".
+	Digest string `json:"digest" yaml:"digest" mapstructure:"digest"`
+
 	// RG corresponds to the JSON schema field "rg".
 	RG ResourceGroupName `json:"rg" yaml:"rg" mapstructure:"rg"`
+}
+
+type HcpBackups struct {
+	// StorageAccount corresponds to the JSON schema field "storageAccount".
+	StorageAccount *StorageAccount `json:"storageAccount,omitempty" yaml:"storageAccount,omitempty" mapstructure:"storageAccount,omitempty"`
+
+	// StorageAccountContainerName corresponds to the JSON schema field
+	// "storageAccountContainerName".
+	StorageAccountContainerName *string `json:"storageAccountContainerName,omitempty" yaml:"storageAccountContainerName,omitempty" mapstructure:"storageAccountContainerName,omitempty"`
 }
 
 type Hypershift struct {
@@ -720,6 +1008,9 @@ type Hypershift struct {
 
 	// Namespace corresponds to the JSON schema field "namespace".
 	Namespace string `json:"namespace" yaml:"namespace" mapstructure:"namespace"`
+
+	// SharedIngressIPTag corresponds to the JSON schema field "sharedIngressIPTag".
+	SharedIngressIPTag *SharedIngressIPTag `json:"sharedIngressIPTag,omitempty" yaml:"sharedIngressIPTag,omitempty" mapstructure:"sharedIngressIPTag,omitempty"`
 }
 
 type Icm struct {
@@ -734,6 +1025,9 @@ type Icm struct {
 
 	// ManageConnection corresponds to the JSON schema field "manageConnection".
 	ManageConnection *bool `json:"manageConnection,omitempty" yaml:"manageConnection,omitempty" mapstructure:"manageConnection,omitempty"`
+
+	// Msft corresponds to the JSON schema field "msft".
+	Msft *IcmConnection `json:"msft,omitempty" yaml:"msft,omitempty" mapstructure:"msft,omitempty"`
 
 	// Sl corresponds to the JSON schema field "sl".
 	Sl IcmConnection `json:"sl" yaml:"sl" mapstructure:"sl"`
@@ -756,6 +1050,17 @@ type IcmConnection struct {
 	RoutingId string `json:"routingId" yaml:"routingId" mapstructure:"routingId"`
 }
 
+type ImageArtifact struct {
+	// AdoProject corresponds to the JSON schema field "adoProject".
+	AdoProject string `json:"adoProject" yaml:"adoProject" mapstructure:"adoProject"`
+
+	// ArtifactName corresponds to the JSON schema field "artifactName".
+	ArtifactName string `json:"artifactName" yaml:"artifactName" mapstructure:"artifactName"`
+
+	// BuildId corresponds to the JSON schema field "buildId".
+	BuildId int64 `json:"buildId" yaml:"buildId" mapstructure:"buildId"`
+}
+
 type ImageSync struct {
 	// EnvironmentName corresponds to the JSON schema field "environmentName".
 	EnvironmentName string `json:"environmentName" yaml:"environmentName" mapstructure:"environmentName"`
@@ -769,6 +1074,11 @@ type ImageSync struct {
 	// OutboundServiceTags corresponds to the JSON schema field "outboundServiceTags".
 	OutboundServiceTags KeyColonValueCSV `json:"outboundServiceTags" yaml:"outboundServiceTags" mapstructure:"outboundServiceTags"`
 }
+
+// IntOrString is a type that can hold an int32 or a string.  When used in JSON or
+// YAML marshalling and unmarshalling, it produces or consumes the inner type. This
+// allows you to have, for example, a JSON field that can accept a name or number.
+type IntOrString interface{}
 
 type Istio struct {
 	// IngressGatewayIPAddressIPTags corresponds to the JSON schema field
@@ -793,9 +1103,15 @@ type Istio struct {
 	Versions *string `json:"versions,omitempty" yaml:"versions,omitempty" mapstructure:"versions,omitempty"`
 }
 
-type K8SServiceAccount struct {
+type K8SDeployment struct {
+	// DeploymentStrategy corresponds to the JSON schema field "deploymentStrategy".
+	DeploymentStrategy map[string]interface{} `json:"deploymentStrategy,omitempty" yaml:"deploymentStrategy,omitempty" mapstructure:"deploymentStrategy,omitempty"`
+
 	// Namespace corresponds to the JSON schema field "namespace".
 	Namespace NamespaceName `json:"namespace" yaml:"namespace" mapstructure:"namespace"`
+
+	// Replicas corresponds to the JSON schema field "replicas".
+	Replicas *float64 `json:"replicas,omitempty" yaml:"replicas,omitempty" mapstructure:"replicas,omitempty"`
 
 	// ServiceAccountName corresponds to the JSON schema field "serviceAccountName".
 	ServiceAccountName ServiceAccountName `json:"serviceAccountName" yaml:"serviceAccountName" mapstructure:"serviceAccountName"`
@@ -824,9 +1140,25 @@ type KeyVault struct {
 // a letter, end with a letter or digit, and not contain consecutive hyphens.
 type KeyVaultName string
 
+type KubeEvents struct {
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// Image corresponds to the JSON schema field "image".
+	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
+}
+
+type KubeStateMetrics struct {
+	// Image corresponds to the JSON schema field "image".
+	Image *ContainerImage `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
+}
+
 type Kusto struct {
-	// ClusterName corresponds to the JSON schema field "clusterName".
-	ClusterName string `json:"clusterName" yaml:"clusterName" mapstructure:"clusterName"`
+	// Enabled corresponds to the JSON schema field "enabled".
+	Enabled bool `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
+
+	// EnvironmentName corresponds to the JSON schema field "environmentName".
+	EnvironmentName string `json:"environmentName" yaml:"environmentName" mapstructure:"environmentName"`
 }
 
 // Log Analytics configuration
@@ -889,13 +1221,6 @@ type MCE struct {
 	// Bundle corresponds to the JSON schema field "bundle".
 	Bundle ContainerImage `json:"bundle" yaml:"bundle" mapstructure:"bundle"`
 
-	// MirrorAdditionalVersions corresponds to the JSON schema field
-	// "mirrorAdditionalVersions".
-	MirrorAdditionalVersions Csv `json:"mirrorAdditionalVersions" yaml:"mirrorAdditionalVersions" mapstructure:"mirrorAdditionalVersions"`
-
-	// Pause reconciliation of ACM MCE resources like CRDs and deployments.
-	PauseReconciliation bool `json:"pauseReconciliation" yaml:"pauseReconciliation" mapstructure:"pauseReconciliation"`
-
 	// Version corresponds to the JSON schema field "version".
 	Version string `json:"version" yaml:"version" mapstructure:"version"`
 }
@@ -921,7 +1246,11 @@ type MDSDCert struct {
 
 type MSICredentialsRefresher struct {
 	// Certificate corresponds to the JSON schema field "certificate".
-	Certificate Certificate `json:"certificate" yaml:"certificate" mapstructure:"certificate"`
+	Certificate MSICredentialsRefresherCertificate `json:"certificate" yaml:"certificate" mapstructure:"certificate"`
+
+	// Early refresh interval before credential is eligible for refresh. For testing,
+	// 0 means no early refresh. Example: 24h
+	EarlyRefreshFrequency string `json:"earlyRefreshFrequency" yaml:"earlyRefreshFrequency" mapstructure:"earlyRefreshFrequency"`
 
 	// The client ID of the first party application that will be used by the refresher
 	FirstPartyAppClientId *string `json:"firstPartyAppClientId,omitempty" yaml:"firstPartyAppClientId,omitempty" mapstructure:"firstPartyAppClientId,omitempty"`
@@ -929,11 +1258,31 @@ type MSICredentialsRefresher struct {
 	// Image corresponds to the JSON schema field "image".
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
 
+	// ImageArtifact corresponds to the JSON schema field "imageArtifact".
+	ImageArtifact ImageArtifact `json:"imageArtifact" yaml:"imageArtifact" mapstructure:"imageArtifact"`
+
 	// K8S corresponds to the JSON schema field "k8s".
-	K8S K8SServiceAccount `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
 
 	// The name of the MSI that will be used by the refresher
 	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
+}
+
+type MSICredentialsRefresherCertificate struct {
+	// CommonName corresponds to the JSON schema field "commonName".
+	CommonName string `json:"commonName" yaml:"commonName" mapstructure:"commonName"`
+
+	// Issuer corresponds to the JSON schema field "issuer".
+	Issuer CertificateIssuer `json:"issuer" yaml:"issuer" mapstructure:"issuer"`
+
+	// Manage corresponds to the JSON schema field "manage".
+	Manage bool `json:"manage" yaml:"manage" mapstructure:"manage"`
+
+	// Name corresponds to the JSON schema field "name".
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
+
+	// SANDNSNames corresponds to the JSON schema field "sanDnsNames".
+	SANDNSNames []string `json:"sanDnsNames" yaml:"sanDnsNames" mapstructure:"sanDnsNames"`
 }
 
 type MSIRP struct {
@@ -985,6 +1334,9 @@ type Mgmt struct {
 	// ApplyKubeletFixes corresponds to the JSON schema field "applyKubeletFixes".
 	ApplyKubeletFixes bool `json:"applyKubeletFixes" yaml:"applyKubeletFixes" mapstructure:"applyKubeletFixes"`
 
+	// HcpBackups corresponds to the JSON schema field "hcpBackups".
+	HcpBackups *HcpBackups `json:"hcpBackups,omitempty" yaml:"hcpBackups,omitempty" mapstructure:"hcpBackups,omitempty"`
+
 	// Jaeger corresponds to the JSON schema field "jaeger".
 	Jaeger interface{} `json:"jaeger,omitempty" yaml:"jaeger,omitempty" mapstructure:"jaeger,omitempty"`
 
@@ -1005,6 +1357,24 @@ type MinTLSVersion string
 
 const MinTLSVersionTLSV12 MinTLSVersion = "TLSV1.2"
 const MinTLSVersionTLSV13 MinTLSVersion = "TLSV1.3"
+type Mise struct {
+	// ARM corresponds to the JSON schema field "arm".
+	ARM ARM `json:"arm" yaml:"arm" mapstructure:"arm"`
+
+	// Whether to deploy MISE. Be careful where to enable MISE as it can't be deployed
+	// in non-MSFT tenants.
+	Deploy bool `json:"deploy" yaml:"deploy" mapstructure:"deploy"`
+
+	// GenevaActions corresponds to the JSON schema field "genevaActions".
+	GenevaActions GenevaActions `json:"genevaActions" yaml:"genevaActions" mapstructure:"genevaActions"`
+
+	// Image corresponds to the JSON schema field "image".
+	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
+
+	// Tracing configuration for OTLP traces.
+	Tracing Tracing `json:"tracing" yaml:"tracing" mapstructure:"tracing"`
+}
+
 type Monitoring struct {
 	// GrafanaMajorVersion corresponds to the JSON schema field "grafanaMajorVersion".
 	GrafanaMajorVersion *string `json:"grafanaMajorVersion,omitempty" yaml:"grafanaMajorVersion,omitempty" mapstructure:"grafanaMajorVersion,omitempty"`
@@ -1057,12 +1427,20 @@ type NetworkPolicy string
 
 const NetworkPolicyAzure NetworkPolicy = "azure"
 const NetworkPolicyCilium NetworkPolicy = "cilium"
+type OCPVersions struct {
+	// ChannelGroups corresponds to the JSON schema field "channelGroups".
+	ChannelGroups ChannelGroups `json:"channelGroups" yaml:"channelGroups" mapstructure:"channelGroups"`
+
+	// DefaultVersion corresponds to the JSON schema field "defaultVersion".
+	DefaultVersion DefaultVersion `json:"defaultVersion" yaml:"defaultVersion" mapstructure:"defaultVersion"`
+}
+
 type OIDC struct {
 	// Frontdoor corresponds to the JSON schema field "frontdoor".
 	Frontdoor Frontdoor `json:"frontdoor" yaml:"frontdoor" mapstructure:"frontdoor"`
 
 	// StorageAccount corresponds to the JSON schema field "storageAccount".
-	StorageAccount StorageAccount `json:"storageAccount" yaml:"storageAccount" mapstructure:"storageAccount"`
+	StorageAccount interface{} `json:"storageAccount" yaml:"storageAccount" mapstructure:"storageAccount"`
 }
 
 type OcMirror struct {
@@ -1074,6 +1452,10 @@ type OcMirror struct {
 
 	// JobNamePrefix corresponds to the JSON schema field "jobNamePrefix".
 	JobNamePrefix *string `json:"jobNamePrefix,omitempty" yaml:"jobNamePrefix,omitempty" mapstructure:"jobNamePrefix,omitempty"`
+
+	// OperatorVersionsToMirror corresponds to the JSON schema field
+	// "operatorVersionsToMirror".
+	OperatorVersionsToMirror Csv `json:"operatorVersionsToMirror" yaml:"operatorVersionsToMirror" mapstructure:"operatorVersionsToMirror"`
 
 	// PullSecretName corresponds to the JSON schema field "pullSecretName".
 	PullSecretName string `json:"pullSecretName" yaml:"pullSecretName" mapstructure:"pullSecretName"`
@@ -1087,10 +1469,6 @@ type OndemandSync struct {
 type Operator struct {
 	// Bundle corresponds to the JSON schema field "bundle".
 	Bundle ContainerImage `json:"bundle" yaml:"bundle" mapstructure:"bundle"`
-
-	// MirrorAdditionalVersions corresponds to the JSON schema field
-	// "mirrorAdditionalVersions".
-	MirrorAdditionalVersions Csv `json:"mirrorAdditionalVersions" yaml:"mirrorAdditionalVersions" mapstructure:"mirrorAdditionalVersions"`
 
 	// Version corresponds to the JSON schema field "version".
 	Version string `json:"version" yaml:"version" mapstructure:"version"`
@@ -1113,6 +1491,12 @@ type Pko struct {
 	// ImagePackage corresponds to the JSON schema field "imagePackage".
 	ImagePackage ContainerImage `json:"imagePackage" yaml:"imagePackage" mapstructure:"imagePackage"`
 
+	// K8S corresponds to the JSON schema field "k8s".
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+
+	// ManagedIdentityName corresponds to the JSON schema field "managedIdentityName".
+	ManagedIdentityName string `json:"managedIdentityName" yaml:"managedIdentityName" mapstructure:"managedIdentityName"`
+
 	// RemotePhaseManager corresponds to the JSON schema field "remotePhaseManager".
 	RemotePhaseManager ContainerImage `json:"remotePhaseManager" yaml:"remotePhaseManager" mapstructure:"remotePhaseManager"`
 }
@@ -1120,6 +1504,9 @@ type Pko struct {
 type Postgres struct {
 	// Number of days to retain backups for the PostgreSQL server.
 	BackupRetentionDays int64 `json:"backupRetentionDays" yaml:"backupRetentionDays" mapstructure:"backupRetentionDays"`
+
+	// ContainerizedDb corresponds to the JSON schema field "containerizedDb".
+	ContainerizedDb *ContainerizedDb `json:"containerizedDb,omitempty" yaml:"containerizedDb,omitempty" mapstructure:"containerizedDb,omitempty"`
 
 	// DatabaseName corresponds to the JSON schema field "databaseName".
 	DatabaseName string `json:"databaseName" yaml:"databaseName" mapstructure:"databaseName"`
@@ -1135,6 +1522,9 @@ type Postgres struct {
 
 	// Name corresponds to the JSON schema field "name".
 	Name PostgresName `json:"name" yaml:"name" mapstructure:"name"`
+
+	// Password corresponds to the JSON schema field "password".
+	Password *string `json:"password,omitempty" yaml:"password,omitempty" mapstructure:"password,omitempty"`
 
 	// Private corresponds to the JSON schema field "private".
 	Private bool `json:"private" yaml:"private" mapstructure:"private"`
@@ -1157,11 +1547,15 @@ type Postgres struct {
 type PostgresName string
 
 type Prometheus struct {
+	// KubeStateMetrics corresponds to the JSON schema field "kubeStateMetrics".
+	KubeStateMetrics *KubeStateMetrics `json:"kubeStateMetrics,omitempty" yaml:"kubeStateMetrics,omitempty" mapstructure:"kubeStateMetrics,omitempty"`
+
 	// Namespace corresponds to the JSON schema field "namespace".
 	Namespace *string `json:"namespace,omitempty" yaml:"namespace,omitempty" mapstructure:"namespace,omitempty"`
 
-	// NamespaceLabel corresponds to the JSON schema field "namespaceLabel".
-	NamespaceLabel *string `json:"namespaceLabel,omitempty" yaml:"namespaceLabel,omitempty" mapstructure:"namespaceLabel,omitempty"`
+	// NamespaceNetworkPolicyGroup corresponds to the JSON schema field
+	// "namespaceNetworkPolicyGroup".
+	NamespaceNetworkPolicyGroup *string `json:"namespaceNetworkPolicyGroup,omitempty" yaml:"namespaceNetworkPolicyGroup,omitempty" mapstructure:"namespaceNetworkPolicyGroup,omitempty"`
 
 	// PrometheusConfigReloader corresponds to the JSON schema field
 	// "prometheusConfigReloader".
@@ -1176,15 +1570,24 @@ type Prometheus struct {
 
 type PrometheusConfigReloader struct {
 	// Image corresponds to the JSON schema field "image".
-	Image *ContainerImage `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
+	Image *ContainerImageSha `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
 }
 
 type PrometheusSpec struct {
 	// Image corresponds to the JSON schema field "image".
-	Image *ContainerImage `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
+	Image *ContainerImageSha `json:"image,omitempty" yaml:"image,omitempty" mapstructure:"image,omitempty"`
 
 	// Replicas corresponds to the JSON schema field "replicas".
 	Replicas *float64 `json:"replicas,omitempty" yaml:"replicas,omitempty" mapstructure:"replicas,omitempty"`
+
+	// Resources corresponds to the JSON schema field "resources".
+	Resources *ContainerResources `json:"resources,omitempty" yaml:"resources,omitempty" mapstructure:"resources,omitempty"`
+
+	// Retention corresponds to the JSON schema field "retention".
+	Retention *string `json:"retention,omitempty" yaml:"retention,omitempty" mapstructure:"retention,omitempty"`
+
+	// RetentionSize corresponds to the JSON schema field "retentionSize".
+	RetentionSize *string `json:"retentionSize,omitempty" yaml:"retentionSize,omitempty" mapstructure:"retentionSize,omitempty"`
 
 	// Shards corresponds to the JSON schema field "shards".
 	Shards *float64 `json:"shards,omitempty" yaml:"shards,omitempty" mapstructure:"shards,omitempty"`
@@ -1193,9 +1596,23 @@ type PrometheusSpec struct {
 	Version *string `json:"version,omitempty" yaml:"version,omitempty" mapstructure:"version,omitempty"`
 }
 
+type Prow struct {
+	// The name of the KeyVault secret in the global AKV that stores the token used to
+	// authenticate with Prow.
+	GlobalKeyVaultTokenSecret *string `json:"globalKeyVaultTokenSecret,omitempty" yaml:"globalKeyVaultTokenSecret,omitempty" mapstructure:"globalKeyVaultTokenSecret,omitempty"`
+}
+
 type RP struct {
 	// Account corresponds to the JSON schema field "account".
 	Account string `json:"account" yaml:"account" mapstructure:"account"`
+}
+
+type RegionTest struct {
+	// GatePromotion corresponds to the JSON schema field "gatePromotion".
+	GatePromotion bool `json:"gatePromotion" yaml:"gatePromotion" mapstructure:"gatePromotion"`
+
+	// ProwJobName corresponds to the JSON schema field "prowJobName".
+	ProwJobName string `json:"prowJobName" yaml:"prowJobName" mapstructure:"prowJobName"`
 }
 
 type ReleaseApprover struct {
@@ -1208,13 +1625,23 @@ type ReleaseApprover struct {
 
 type ResourceGroupName string
 
+type Resources struct {
+	// Cpu corresponds to the JSON schema field "cpu".
+	Cpu *string `json:"cpu,omitempty" yaml:"cpu,omitempty" mapstructure:"cpu,omitempty"`
+
+	// Memory corresponds to the JSON schema field "memory".
+	Memory *string `json:"memory,omitempty" yaml:"memory,omitempty" mapstructure:"memory,omitempty"`
+}
+
+type RoleSetName string
+
+const RoleSetNameDev RoleSetName = "dev"
+const RoleSetNameFf RoleSetName = "ff"
+const RoleSetNamePublic RoleSetName = "public"
 type RouteMonitorOperator struct {
 	// BlackboxExporterImage corresponds to the JSON schema field
 	// "blackboxExporterImage".
 	BlackboxExporterImage ContainerImage `json:"blackboxExporterImage" yaml:"blackboxExporterImage" mapstructure:"blackboxExporterImage"`
-
-	// BundleVersion corresponds to the JSON schema field "bundleVersion".
-	BundleVersion string `json:"bundleVersion" yaml:"bundleVersion" mapstructure:"bundleVersion"`
 
 	// OperatorImage corresponds to the JSON schema field "operatorImage".
 	OperatorImage ContainerImage `json:"operatorImage" yaml:"operatorImage" mapstructure:"operatorImage"`
@@ -1225,12 +1652,14 @@ type SecretSyncController struct {
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
 
 	// ProviderImage corresponds to the JSON schema field "providerImage".
-	ProviderImage string `json:"providerImage" yaml:"providerImage" mapstructure:"providerImage"`
+	ProviderImage ContainerImage `json:"providerImage" yaml:"providerImage" mapstructure:"providerImage"`
 }
+
+type SemVer string
 
 type Server struct {
 	// K8S corresponds to the JSON schema field "k8s".
-	K8S K8SServiceAccount `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
+	K8S K8SDeployment `json:"k8s" yaml:"k8s" mapstructure:"k8s"`
 
 	// Loglevel corresponds to the JSON schema field "loglevel".
 	Loglevel int64 `json:"loglevel" yaml:"loglevel" mapstructure:"loglevel"`
@@ -1274,10 +1703,23 @@ type ServiceKeyVault struct {
 	TagValue string `json:"tagValue" yaml:"tagValue" mapstructure:"tagValue"`
 }
 
+type SharedIngressIPTag string
+
+const SharedIngressIPTagBlank SharedIngressIPTag = ""
+const SharedIngressIPTagFirstPartyUsageAROHcpProdInboundCustomerapi SharedIngressIPTag = "FirstPartyUsage=/aro-hcp-prod-inbound-customerapi"
+const SharedIngressIPTagFirstPartyUsageNonProd SharedIngressIPTag = "FirstPartyUsage=/NonProd"
 type Sku string
 
 const SkuPremiumAzureFrontDoor Sku = "Premium_AzureFrontDoor"
 const SkuStandardAzureFrontDoor Sku = "Standard_AzureFrontDoor"
+type Stable struct {
+	// MaxVersion corresponds to the JSON schema field "maxVersion".
+	MaxVersion interface{} `json:"maxVersion" yaml:"maxVersion" mapstructure:"maxVersion"`
+
+	// MinVersion corresponds to the JSON schema field "minVersion".
+	MinVersion SemVer `json:"minVersion" yaml:"minVersion" mapstructure:"minVersion"`
+}
+
 type StorageAccount struct {
 	// Name corresponds to the JSON schema field "name".
 	Name string `json:"name" yaml:"name" mapstructure:"name"`
@@ -1305,11 +1747,17 @@ type SubscriptionMetadata struct {
 	// DisplayName corresponds to the JSON schema field "displayName".
 	DisplayName string `json:"displayName" yaml:"displayName" mapstructure:"displayName"`
 
+	// FeatureFlags corresponds to the JSON schema field "featureFlags".
+	FeatureFlags []string `json:"featureFlags,omitempty" yaml:"featureFlags,omitempty" mapstructure:"featureFlags,omitempty"`
+
 	// Key corresponds to the JSON schema field "key".
 	Key string `json:"key" yaml:"key" mapstructure:"key"`
 
 	// Providers corresponds to the JSON schema field "providers".
 	Providers map[string]interface{} `json:"providers,omitempty" yaml:"providers,omitempty" mapstructure:"providers,omitempty"`
+
+	// UsePlannedQuota corresponds to the JSON schema field "usePlannedQuota".
+	UsePlannedQuota *bool `json:"usePlannedQuota,omitempty" yaml:"usePlannedQuota,omitempty" mapstructure:"usePlannedQuota,omitempty"`
 }
 
 type Svc struct {
@@ -1356,3 +1804,7 @@ type ZoneRedundantMode string
 const ZoneRedundantModeAuto ZoneRedundantMode = "Auto"
 const ZoneRedundantModeDisabled ZoneRedundantMode = "Disabled"
 const ZoneRedundantModeEnabled ZoneRedundantMode = "Enabled"
+// Zones to use for the pools.
+type Zones interface{}
+
+type Zones_1 interface{}

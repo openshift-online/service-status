@@ -41,7 +41,9 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 			containerImage,
 		)
 	}
-
+	addComponentInfoForSHA := func(componentName string, containerImageSHA *arohcpapi.ContainerImageSha) {
+		// TODO fix later
+	}
 	if config.ACM != nil {
 		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle)
 	}
@@ -65,10 +67,10 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	}
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		addComponentInfo("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
+		addComponentInfoForSHA("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		addComponentInfo("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
+		addComponentInfoForSHA("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
