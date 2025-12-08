@@ -429,7 +429,9 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 
 		newReleaseInfo, err := ReleaseInfo(localCtx, r.imageInfoAccessor, environmentReleaseLookupInfo)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get release markdowns: %w", err)
+			continue
+			// TODO un-nerf
+			//return nil, fmt.Errorf("failed to get release markdowns: %w", err)
 		}
 
 		if len(partialEnvironmentReleases) > 0 {
