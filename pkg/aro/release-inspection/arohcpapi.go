@@ -33,11 +33,21 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		InformingJobRunResults: map[string][]status.JobRunResults{},
 	}
 
-	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage, containerImageSha *arohcpapi.ContainerImageSha) {
+	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
 		var digestOrSha *string
 		if containerImage != nil {
 			digestOrSha = ptr.To(containerImage.Digest)
 		}
+		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
+			imageInfoAccessor,
+			componentName,
+			HardcodedComponents[componentName].RepositoryURL,
+			digestOrSha,
+		)
+	}
+
+	addComponentInfoSha := func(componentName string, containerImageSha *arohcpapi.ContainerImageSha) {
+		var digestOrSha *string
 		if containerImageSha != nil {
 			digestOrSha = ptr.To(containerImageSha.Sha)
 		}
@@ -50,32 +60,32 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	}
 
 	if config.ACM != nil {
-		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle, nil)
+		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle)
 	}
-	addComponentInfo("ACR Pull", &config.ACRPull.Image, nil)
+	addComponentInfo("ACR Pull", &config.ACRPull.Image)
 	if config.Backend != nil {
-		addComponentInfo("Backend", &config.Backend.Image, nil)
+		addComponentInfo("Backend", &config.Backend.Image)
 	}
-	addComponentInfo("Backplane", &config.BackplaneAPI.Image, nil)
-	addComponentInfo("Cluster Service", &config.ClustersService.Image, nil)
-	addComponentInfo("Frontend", &config.Frontend.Image, nil)
-	addComponentInfo("Hypershift", config.Hypershift.Image, nil)
-	addComponentInfo("Maestro", &config.Maestro.Image, nil)
+	addComponentInfo("Backplane", &config.BackplaneAPI.Image)
+	addComponentInfo("Cluster Service", &config.ClustersService.Image)
+	addComponentInfo("Frontend", &config.Frontend.Image)
+	addComponentInfo("Hypershift", config.Hypershift.Image)
+	addComponentInfo("Maestro", &config.Maestro.Image)
 	if config.ACM != nil {
-		addComponentInfo("MCE", &config.ACM.MCE.Bundle, nil)
+		addComponentInfo("MCE", &config.ACM.MCE.Bundle)
 	}
-	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image, nil)
+	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
 	if config.Pko != nil {
-		addComponentInfo("Package Operator Package", &config.Pko.ImagePackage, nil)
-		addComponentInfo("Package Operator Manager", &config.Pko.ImageManager, nil)
-		addComponentInfo("Package Operator Remote Phase Manager", &config.Pko.RemotePhaseManager, nil)
+		addComponentInfo("Package Operator Package", &config.Pko.ImagePackage)
+		addComponentInfo("Package Operator Manager", &config.Pko.ImageManager)
+		addComponentInfo("Package Operator Remote Phase Manager", &config.Pko.RemotePhaseManager)
 	}
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		addComponentInfo("Management Prometheus Spec", nil, config.Mgmt.Prometheus.PrometheusSpec.Image)
+		addComponentInfoSha("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		addComponentInfo("Service Prometheus Spec", nil, config.Svc.Prometheus.PrometheusSpec.Image)
+		addComponentInfoSha("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
