@@ -33,44 +33,49 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 		InformingJobRunResults: map[string][]status.JobRunResults{},
 	}
 
-	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
+	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage, containerImageSha *arohcpapi.ContainerImageSha) {
+		var digestOrSha *string
+		if containerImage != nil {
+			digestOrSha = ptr.To(containerImage.Digest)
+		}
+		if containerImageSha != nil {
+			digestOrSha = ptr.To(containerImageSha.Sha)
+		}
 		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
 			imageInfoAccessor,
 			componentName,
 			HardcodedComponents[componentName].RepositoryURL,
-			containerImage,
+			digestOrSha,
 		)
 	}
-	addComponentInfoForSHA := func(componentName string, containerImageSHA *arohcpapi.ContainerImageSha) {
-		// TODO fix later
-	}
+
 	if config.ACM != nil {
-		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle)
+		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle, nil)
 	}
-	addComponentInfo("ACR Pull", &config.ACRPull.Image)
+	addComponentInfo("ACR Pull", &config.ACRPull.Image, nil)
 	if config.Backend != nil {
-		addComponentInfo("Backend", &config.Backend.Image)
+		addComponentInfo("Backend", &config.Backend.Image, nil)
 	}
-	addComponentInfo("Backplane", &config.BackplaneAPI.Image)
-	addComponentInfo("Cluster Service", &config.ClustersService.Image)
-	addComponentInfo("Frontend", &config.Frontend.Image)
-	addComponentInfo("Hypershift", config.Hypershift.Image)
-	addComponentInfo("Maestro", &config.Maestro.Image)
+	addComponentInfo("Backplane", &config.BackplaneAPI.Image, nil)
+	addComponentInfo("Cluster Service", &config.ClustersService.Image, nil)
+	addComponentInfo("Frontend", &config.Frontend.Image, nil)
+	addComponentInfo("Hypershift", config.Hypershift.Image, nil)
+	addComponentInfo("Maestro", &config.Maestro.Image, nil)
 	if config.ACM != nil {
-		addComponentInfo("MCE", &config.ACM.MCE.Bundle)
+		addComponentInfo("MCE", &config.ACM.MCE.Bundle, nil)
 	}
-	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image)
+	addComponentInfo("OcMirror", &config.ImageSync.OcMirror.Image, nil)
 	if config.Pko != nil {
-		addComponentInfo("Package Operator Package", &config.Pko.ImagePackage)
-		addComponentInfo("Package Operator Manager", &config.Pko.ImageManager)
-		addComponentInfo("Package Operator Remote Phase Manager", &config.Pko.RemotePhaseManager)
+		addComponentInfo("Package Operator Package", &config.Pko.ImagePackage, nil)
+		addComponentInfo("Package Operator Manager", &config.Pko.ImageManager, nil)
+		addComponentInfo("Package Operator Remote Phase Manager", &config.Pko.RemotePhaseManager, nil)
 	}
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		addComponentInfoForSHA("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
+		addComponentInfo("Management Prometheus Spec", nil, config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		addComponentInfoForSHA("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
+		addComponentInfo("Service Prometheus Spec", nil, config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
@@ -92,16 +97,16 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *status.Component {
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, digestOrSha *string) *status.Component {
 	componentInfo := &status.Component{
 		Name: name,
 	}
 	if len(repoURL) > 0 {
 		componentInfo.RepoURL = ptr.To(repoURL)
 	}
-	if containerImage != nil {
+	if digestOrSha != nil {
 		registry, repository, err := imagePullLocationForName(name)
-		componentInfo.ImageInfo.Digest = containerImage.Digest
+		componentInfo.ImageInfo.Digest = *digestOrSha
 		componentInfo.ImageInfo.Repository = repository
 		componentInfo.ImageInfo.Registry = registry
 		if err != nil {

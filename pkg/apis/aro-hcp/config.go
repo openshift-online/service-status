@@ -125,6 +125,10 @@ type AccessMode string
 const AccessModeAudit AccessMode = "Audit"
 const AccessModeEnforced AccessMode = "Enforced"
 const AccessModeLearning AccessMode = "Learning"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 // Geneva Actions related configuration
 type Actions struct {
 	// AllowedAcisExtensions corresponds to the JSON schema field
@@ -329,6 +333,7 @@ type CertificateIssuer string
 const CertificateIssuerOneCertV2PrivateCA CertificateIssuer = "OneCertV2-PrivateCA"
 const CertificateIssuerOneCertV2PublicCA CertificateIssuer = "OneCertV2-PublicCA"
 const CertificateIssuerSelf CertificateIssuer = "Self"
+
 type CertificateRef struct {
 	// KeyVault corresponds to the JSON schema field "keyVault".
 	KeyVault KeyVaultName `json:"keyVault" yaml:"keyVault" mapstructure:"keyVault"`
@@ -758,6 +763,10 @@ type DenyAssignments string
 
 const DenyAssignmentsDisabled DenyAssignments = "disabled"
 const DenyAssignmentsEnabled DenyAssignments = "enabled"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type DstsGroups struct {
 	// Description corresponds to the JSON schema field "description".
 	Description string `json:"description" yaml:"description" mapstructure:"description"`
@@ -802,6 +811,7 @@ const EnvironmentStage Environment = "Stage"
 const EnvironmentTest Environment = "Test"
 const EnvironmentUsNat Environment = "UsNat"
 const EnvironmentUsSec Environment = "UsSec"
+
 type Ev2 struct {
 	// AssistedId corresponds to the JSON schema field "assistedId".
 	AssistedId AssistedId `json:"assistedId" yaml:"assistedId" mapstructure:"assistedId"`
@@ -1105,7 +1115,11 @@ type Istio struct {
 
 type K8SDeployment struct {
 	// DeploymentStrategy corresponds to the JSON schema field "deploymentStrategy".
+<<<<<<< HEAD
 	DeploymentStrategy map[string]interface{} `json:"deploymentStrategy,omitempty" yaml:"deploymentStrategy,omitempty" mapstructure:"deploymentStrategy,omitempty"`
+=======
+	DeploymentStrategy *K8SDeploymentStrategy `json:"deploymentStrategy,omitempty" yaml:"deploymentStrategy,omitempty" mapstructure:"deploymentStrategy,omitempty"`
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 
 	// Namespace corresponds to the JSON schema field "namespace".
 	Namespace NamespaceName `json:"namespace" yaml:"namespace" mapstructure:"namespace"`
@@ -1115,6 +1129,36 @@ type K8SDeployment struct {
 
 	// ServiceAccountName corresponds to the JSON schema field "serviceAccountName".
 	ServiceAccountName ServiceAccountName `json:"serviceAccountName" yaml:"serviceAccountName" mapstructure:"serviceAccountName"`
+}
+
+type K8SDeploymentStrategy struct {
+	// Rolling update config params
+	RollingUpdate *RollingUpdate `json:"rollingUpdate,omitempty" yaml:"rollingUpdate,omitempty" mapstructure:"rollingUpdate,omitempty"`
+}
+
+// Spec to control the desired behavior of rolling update.
+type K8SRollingUpdateDeploymentStrategy struct {
+	// The maximum number of pods that can be scheduled above the desired number of
+	// pods. Value can be an absolute number (ex: 5) or a percentage of desired pods
+	// (ex: 10%). This can not be 0 if MaxUnavailable is 0. Absolute number is
+	// calculated from percentage by rounding up. Defaults to 25%. Example: when this
+	// is set to 30%, the new ReplicaSet can be scaled up immediately when the rolling
+	// update starts, such that the total number of old and new pods do not exceed
+	// 130% of desired pods. Once old pods have been killed, new ReplicaSet can be
+	// scaled up further, ensuring that total number of pods running at any time
+	// during the update is at most 130% of desired pods.
+	MaxSurge interface{} `json:"maxSurge,omitempty" yaml:"maxSurge,omitempty" mapstructure:"maxSurge,omitempty"`
+
+	// The maximum number of pods that can be unavailable during the update. Value can
+	// be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%).
+	// Absolute number is calculated from percentage by rounding down. This can not be
+	// 0 if MaxSurge is 0. Defaults to 25%. Example: when this is set to 30%, the old
+	// ReplicaSet can be scaled down to 70% of desired pods immediately when the
+	// rolling update starts. Once new pods are ready, old ReplicaSet can be scaled
+	// down further, followed by scaling up the new ReplicaSet, ensuring that the
+	// total number of pods available at all times during the update is at least 70%
+	// of desired pods.
+	MaxUnavailable interface{} `json:"maxUnavailable,omitempty" yaml:"maxUnavailable,omitempty" mapstructure:"maxUnavailable,omitempty"`
 }
 
 type KeyColonValueCSV string
@@ -1357,6 +1401,10 @@ type MinTLSVersion string
 
 const MinTLSVersionTLSV12 MinTLSVersion = "TLSV1.2"
 const MinTLSVersionTLSV13 MinTLSVersion = "TLSV1.3"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Mise struct {
 	// ARM corresponds to the JSON schema field "arm".
 	ARM ARM `json:"arm" yaml:"arm" mapstructure:"arm"`
@@ -1423,10 +1471,15 @@ type NetworkDataplane string
 
 const NetworkDataplaneAzure NetworkDataplane = "azure"
 const NetworkDataplaneCilium NetworkDataplane = "cilium"
+
 type NetworkPolicy string
 
 const NetworkPolicyAzure NetworkPolicy = "azure"
 const NetworkPolicyCilium NetworkPolicy = "cilium"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type OCPVersions struct {
 	// ChannelGroups corresponds to the JSON schema field "channelGroups".
 	ChannelGroups ChannelGroups `json:"channelGroups" yaml:"channelGroups" mapstructure:"channelGroups"`
@@ -1638,6 +1691,35 @@ type RoleSetName string
 const RoleSetNameDev RoleSetName = "dev"
 const RoleSetNameFf RoleSetName = "ff"
 const RoleSetNamePublic RoleSetName = "public"
+<<<<<<< HEAD
+=======
+
+// Spec to control the desired behavior of rolling update.
+type RollingUpdate struct {
+	// The maximum number of pods that can be scheduled above the desired number of
+	// pods. Value can be an absolute number (ex: 5) or a percentage of desired pods
+	// (ex: 10%). This can not be 0 if MaxUnavailable is 0. Absolute number is
+	// calculated from percentage by rounding up. Defaults to 25%. Example: when this
+	// is set to 30%, the new ReplicaSet can be scaled up immediately when the rolling
+	// update starts, such that the total number of old and new pods do not exceed
+	// 130% of desired pods. Once old pods have been killed, new ReplicaSet can be
+	// scaled up further, ensuring that total number of pods running at any time
+	// during the update is at most 130% of desired pods.
+	MaxSurge interface{} `json:"maxSurge,omitempty" yaml:"maxSurge,omitempty" mapstructure:"maxSurge,omitempty"`
+
+	// The maximum number of pods that can be unavailable during the update. Value can
+	// be an absolute number (ex: 5) or a percentage of desired pods (ex: 10%).
+	// Absolute number is calculated from percentage by rounding down. This can not be
+	// 0 if MaxSurge is 0. Defaults to 25%. Example: when this is set to 30%, the old
+	// ReplicaSet can be scaled down to 70% of desired pods immediately when the
+	// rolling update starts. Once new pods are ready, old ReplicaSet can be scaled
+	// down further, followed by scaling up the new ReplicaSet, ensuring that the
+	// total number of pods available at all times during the update is at least 70%
+	// of desired pods.
+	MaxUnavailable interface{} `json:"maxUnavailable,omitempty" yaml:"maxUnavailable,omitempty" mapstructure:"maxUnavailable,omitempty"`
+}
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type RouteMonitorOperator struct {
 	// BlackboxExporterImage corresponds to the JSON schema field
 	// "blackboxExporterImage".
@@ -1652,7 +1734,11 @@ type SecretSyncController struct {
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
 
 	// ProviderImage corresponds to the JSON schema field "providerImage".
+<<<<<<< HEAD
 	ProviderImage ContainerImage `json:"providerImage" yaml:"providerImage" mapstructure:"providerImage"`
+=======
+	ProviderImage *ContainerImage `json:"providerImage,omitempty" yaml:"providerImage,omitempty" mapstructure:"providerImage,omitempty"`
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 }
 
 type SemVer string
@@ -1708,10 +1794,18 @@ type SharedIngressIPTag string
 const SharedIngressIPTagBlank SharedIngressIPTag = ""
 const SharedIngressIPTagFirstPartyUsageAROHcpProdInboundCustomerapi SharedIngressIPTag = "FirstPartyUsage=/aro-hcp-prod-inbound-customerapi"
 const SharedIngressIPTagFirstPartyUsageNonProd SharedIngressIPTag = "FirstPartyUsage=/NonProd"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Sku string
 
 const SkuPremiumAzureFrontDoor Sku = "Premium_AzureFrontDoor"
 const SkuStandardAzureFrontDoor Sku = "Standard_AzureFrontDoor"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Stable struct {
 	// MaxVersion corresponds to the JSON schema field "maxVersion".
 	MaxVersion interface{} `json:"maxVersion" yaml:"maxVersion" mapstructure:"maxVersion"`
@@ -1804,6 +1898,10 @@ type ZoneRedundantMode string
 const ZoneRedundantModeAuto ZoneRedundantMode = "Auto"
 const ZoneRedundantModeDisabled ZoneRedundantMode = "Disabled"
 const ZoneRedundantModeEnabled ZoneRedundantMode = "Enabled"
+<<<<<<< HEAD
+=======
+
+>>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 // Zones to use for the pools.
 type Zones interface{}
 
