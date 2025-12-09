@@ -125,6 +125,7 @@ type AccessMode string
 const AccessModeAudit AccessMode = "Audit"
 const AccessModeEnforced AccessMode = "Enforced"
 const AccessModeLearning AccessMode = "Learning"
+
 // Geneva Actions related configuration
 type Actions struct {
 	// AllowedAcisExtensions corresponds to the JSON schema field
@@ -329,6 +330,7 @@ type CertificateIssuer string
 const CertificateIssuerOneCertV2PrivateCA CertificateIssuer = "OneCertV2-PrivateCA"
 const CertificateIssuerOneCertV2PublicCA CertificateIssuer = "OneCertV2-PublicCA"
 const CertificateIssuerSelf CertificateIssuer = "Self"
+
 type CertificateRef struct {
 	// KeyVault corresponds to the JSON schema field "keyVault".
 	KeyVault KeyVaultName `json:"keyVault" yaml:"keyVault" mapstructure:"keyVault"`
@@ -758,6 +760,7 @@ type DenyAssignments string
 
 const DenyAssignmentsDisabled DenyAssignments = "disabled"
 const DenyAssignmentsEnabled DenyAssignments = "enabled"
+
 type DstsGroups struct {
 	// Description corresponds to the JSON schema field "description".
 	Description string `json:"description" yaml:"description" mapstructure:"description"`
@@ -802,6 +805,7 @@ const EnvironmentStage Environment = "Stage"
 const EnvironmentTest Environment = "Test"
 const EnvironmentUsNat Environment = "UsNat"
 const EnvironmentUsSec Environment = "UsSec"
+
 type Ev2 struct {
 	// AssistedId corresponds to the JSON schema field "assistedId".
 	AssistedId AssistedId `json:"assistedId" yaml:"assistedId" mapstructure:"assistedId"`
@@ -1388,6 +1392,7 @@ type MinTLSVersion string
 
 const MinTLSVersionTLSV12 MinTLSVersion = "TLSV1.2"
 const MinTLSVersionTLSV13 MinTLSVersion = "TLSV1.3"
+
 type Mise struct {
 	// ARM corresponds to the JSON schema field "arm".
 	ARM ARM `json:"arm" yaml:"arm" mapstructure:"arm"`
@@ -1454,10 +1459,12 @@ type NetworkDataplane string
 
 const NetworkDataplaneAzure NetworkDataplane = "azure"
 const NetworkDataplaneCilium NetworkDataplane = "cilium"
+
 type NetworkPolicy string
 
 const NetworkPolicyAzure NetworkPolicy = "azure"
 const NetworkPolicyCilium NetworkPolicy = "cilium"
+
 type OCPVersions struct {
 	// ChannelGroups corresponds to the JSON schema field "channelGroups".
 	ChannelGroups ChannelGroups `json:"channelGroups" yaml:"channelGroups" mapstructure:"channelGroups"`
@@ -1669,6 +1676,7 @@ type RoleSetName string
 const RoleSetNameDev RoleSetName = "dev"
 const RoleSetNameFf RoleSetName = "ff"
 const RoleSetNamePublic RoleSetName = "public"
+
 // Spec to control the desired behavior of rolling update.
 type RollingUpdate struct {
 	// The maximum number of pods that can be scheduled above the desired number of
@@ -1706,9 +1714,6 @@ type RouteMonitorOperator struct {
 type SecretSyncController struct {
 	// Image corresponds to the JSON schema field "image".
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
-
-	// ProviderImage corresponds to the JSON schema field "providerImage".
-	ProviderImage ContainerImage `json:"providerImage" yaml:"providerImage" mapstructure:"providerImage"`
 }
 
 type SemVer string
@@ -1764,10 +1769,12 @@ type SharedIngressIPTag string
 const SharedIngressIPTagBlank SharedIngressIPTag = ""
 const SharedIngressIPTagFirstPartyUsageAROHcpProdInboundCustomerapi SharedIngressIPTag = "FirstPartyUsage=/aro-hcp-prod-inbound-customerapi"
 const SharedIngressIPTagFirstPartyUsageNonProd SharedIngressIPTag = "FirstPartyUsage=/NonProd"
+
 type Sku string
 
 const SkuPremiumAzureFrontDoor Sku = "Premium_AzureFrontDoor"
 const SkuStandardAzureFrontDoor Sku = "Standard_AzureFrontDoor"
+
 type Stable struct {
 	// MaxVersion corresponds to the JSON schema field "maxVersion".
 	MaxVersion interface{} `json:"maxVersion" yaml:"maxVersion" mapstructure:"maxVersion"`
@@ -1860,6 +1867,7 @@ type ZoneRedundantMode string
 const ZoneRedundantModeAuto ZoneRedundantMode = "Auto"
 const ZoneRedundantModeDisabled ZoneRedundantMode = "Disabled"
 const ZoneRedundantModeEnabled ZoneRedundantMode = "Enabled"
+
 // Zones to use for the pools.
 type Zones interface{}
 
