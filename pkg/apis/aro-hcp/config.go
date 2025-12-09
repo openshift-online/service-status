@@ -125,10 +125,6 @@ type AccessMode string
 const AccessModeAudit AccessMode = "Audit"
 const AccessModeEnforced AccessMode = "Enforced"
 const AccessModeLearning AccessMode = "Learning"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 // Geneva Actions related configuration
 type Actions struct {
 	// AllowedAcisExtensions corresponds to the JSON schema field
@@ -333,7 +329,6 @@ type CertificateIssuer string
 const CertificateIssuerOneCertV2PrivateCA CertificateIssuer = "OneCertV2-PrivateCA"
 const CertificateIssuerOneCertV2PublicCA CertificateIssuer = "OneCertV2-PublicCA"
 const CertificateIssuerSelf CertificateIssuer = "Self"
-
 type CertificateRef struct {
 	// KeyVault corresponds to the JSON schema field "keyVault".
 	KeyVault KeyVaultName `json:"keyVault" yaml:"keyVault" mapstructure:"keyVault"`
@@ -763,10 +758,6 @@ type DenyAssignments string
 
 const DenyAssignmentsDisabled DenyAssignments = "disabled"
 const DenyAssignmentsEnabled DenyAssignments = "enabled"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type DstsGroups struct {
 	// Description corresponds to the JSON schema field "description".
 	Description string `json:"description" yaml:"description" mapstructure:"description"`
@@ -811,7 +802,6 @@ const EnvironmentStage Environment = "Stage"
 const EnvironmentTest Environment = "Test"
 const EnvironmentUsNat Environment = "UsNat"
 const EnvironmentUsSec Environment = "UsSec"
-
 type Ev2 struct {
 	// AssistedId corresponds to the JSON schema field "assistedId".
 	AssistedId AssistedId `json:"assistedId" yaml:"assistedId" mapstructure:"assistedId"`
@@ -1085,9 +1075,10 @@ type ImageSync struct {
 	OutboundServiceTags KeyColonValueCSV `json:"outboundServiceTags" yaml:"outboundServiceTags" mapstructure:"outboundServiceTags"`
 }
 
-// IntOrString is a type that can hold an int32 or a string.  When used in JSON or
-// YAML marshalling and unmarshalling, it produces or consumes the inner type. This
-// allows you to have, for example, a JSON field that can accept a name or number.
+// THIS IS CURRENTLY NOT COMPATIBLE WITH SERVICE-STATUS. IntOrString is a type that
+// can hold an int32 or a string.  When used in JSON or YAML marshalling and
+// unmarshalling, it produces or consumes the inner type. This allows you to have,
+// for example, a JSON field that can accept a name or number.
 type IntOrString interface{}
 
 type Istio struct {
@@ -1115,11 +1106,7 @@ type Istio struct {
 
 type K8SDeployment struct {
 	// DeploymentStrategy corresponds to the JSON schema field "deploymentStrategy".
-<<<<<<< HEAD
-	DeploymentStrategy map[string]interface{} `json:"deploymentStrategy,omitempty" yaml:"deploymentStrategy,omitempty" mapstructure:"deploymentStrategy,omitempty"`
-=======
 	DeploymentStrategy *K8SDeploymentStrategy `json:"deploymentStrategy,omitempty" yaml:"deploymentStrategy,omitempty" mapstructure:"deploymentStrategy,omitempty"`
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 
 	// Namespace corresponds to the JSON schema field "namespace".
 	Namespace NamespaceName `json:"namespace" yaml:"namespace" mapstructure:"namespace"`
@@ -1401,10 +1388,6 @@ type MinTLSVersion string
 
 const MinTLSVersionTLSV12 MinTLSVersion = "TLSV1.2"
 const MinTLSVersionTLSV13 MinTLSVersion = "TLSV1.3"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Mise struct {
 	// ARM corresponds to the JSON schema field "arm".
 	ARM ARM `json:"arm" yaml:"arm" mapstructure:"arm"`
@@ -1471,15 +1454,10 @@ type NetworkDataplane string
 
 const NetworkDataplaneAzure NetworkDataplane = "azure"
 const NetworkDataplaneCilium NetworkDataplane = "cilium"
-
 type NetworkPolicy string
 
 const NetworkPolicyAzure NetworkPolicy = "azure"
 const NetworkPolicyCilium NetworkPolicy = "cilium"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type OCPVersions struct {
 	// ChannelGroups corresponds to the JSON schema field "channelGroups".
 	ChannelGroups ChannelGroups `json:"channelGroups" yaml:"channelGroups" mapstructure:"channelGroups"`
@@ -1691,9 +1669,6 @@ type RoleSetName string
 const RoleSetNameDev RoleSetName = "dev"
 const RoleSetNameFf RoleSetName = "ff"
 const RoleSetNamePublic RoleSetName = "public"
-<<<<<<< HEAD
-=======
-
 // Spec to control the desired behavior of rolling update.
 type RollingUpdate struct {
 	// The maximum number of pods that can be scheduled above the desired number of
@@ -1719,7 +1694,6 @@ type RollingUpdate struct {
 	MaxUnavailable interface{} `json:"maxUnavailable,omitempty" yaml:"maxUnavailable,omitempty" mapstructure:"maxUnavailable,omitempty"`
 }
 
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type RouteMonitorOperator struct {
 	// BlackboxExporterImage corresponds to the JSON schema field
 	// "blackboxExporterImage".
@@ -1734,11 +1708,7 @@ type SecretSyncController struct {
 	Image ContainerImage `json:"image" yaml:"image" mapstructure:"image"`
 
 	// ProviderImage corresponds to the JSON schema field "providerImage".
-<<<<<<< HEAD
 	ProviderImage ContainerImage `json:"providerImage" yaml:"providerImage" mapstructure:"providerImage"`
-=======
-	ProviderImage *ContainerImage `json:"providerImage,omitempty" yaml:"providerImage,omitempty" mapstructure:"providerImage,omitempty"`
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 }
 
 type SemVer string
@@ -1794,18 +1764,10 @@ type SharedIngressIPTag string
 const SharedIngressIPTagBlank SharedIngressIPTag = ""
 const SharedIngressIPTagFirstPartyUsageAROHcpProdInboundCustomerapi SharedIngressIPTag = "FirstPartyUsage=/aro-hcp-prod-inbound-customerapi"
 const SharedIngressIPTagFirstPartyUsageNonProd SharedIngressIPTag = "FirstPartyUsage=/NonProd"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Sku string
 
 const SkuPremiumAzureFrontDoor Sku = "Premium_AzureFrontDoor"
 const SkuStandardAzureFrontDoor Sku = "Standard_AzureFrontDoor"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 type Stable struct {
 	// MaxVersion corresponds to the JSON schema field "maxVersion".
 	MaxVersion interface{} `json:"maxVersion" yaml:"maxVersion" mapstructure:"maxVersion"`
@@ -1898,10 +1860,6 @@ type ZoneRedundantMode string
 const ZoneRedundantModeAuto ZoneRedundantMode = "Auto"
 const ZoneRedundantModeDisabled ZoneRedundantMode = "Disabled"
 const ZoneRedundantModeEnabled ZoneRedundantMode = "Enabled"
-<<<<<<< HEAD
-=======
-
->>>>>>> c1d75d1 (Fix references, prometheus changed to sha, make it compatible)
 // Zones to use for the pools.
 type Zones interface{}
 
