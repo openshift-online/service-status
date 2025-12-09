@@ -34,16 +34,31 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	}
 
 	addComponentInfo := func(componentName string, containerImage *arohcpapi.ContainerImage) {
+		var digestOrSha *string
+		if containerImage != nil {
+			digestOrSha = ptr.To(containerImage.Digest)
+		}
 		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
 			imageInfoAccessor,
 			componentName,
 			HardcodedComponents[componentName].RepositoryURL,
-			containerImage,
+			digestOrSha,
 		)
 	}
-	addComponentInfoForSHA := func(componentName string, containerImageSHA *arohcpapi.ContainerImageSha) {
-		// TODO fix later
+
+	addComponentInfoSha := func(componentName string, containerImageSha *arohcpapi.ContainerImageSha) {
+		var digestOrSha *string
+		if containerImageSha != nil {
+			digestOrSha = ptr.To(containerImageSha.Sha)
+		}
+		currConfigInfo.Components[componentName] = createComponentInfo(ctx,
+			imageInfoAccessor,
+			componentName,
+			HardcodedComponents[componentName].RepositoryURL,
+			digestOrSha,
+		)
 	}
+
 	if config.ACM != nil {
 		addComponentInfo("ACM Operator", &config.ACM.Operator.Bundle)
 	}
@@ -67,10 +82,10 @@ func scrapeInfoForAROHCPConfig(ctx context.Context, imageInfoAccessor ImageInfoA
 	}
 
 	if config.Mgmt.Prometheus.PrometheusSpec != nil {
-		addComponentInfoForSHA("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
+		addComponentInfoSha("Management Prometheus Spec", config.Mgmt.Prometheus.PrometheusSpec.Image)
 	}
 	if config.Svc.Prometheus != nil && config.Svc.Prometheus.PrometheusSpec != nil {
-		addComponentInfoForSHA("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
+		addComponentInfoSha("Service Prometheus Spec", config.Svc.Prometheus.PrometheusSpec.Image)
 	}
 
 	return currConfigInfo, nil
@@ -92,16 +107,16 @@ func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor
 	}
 }
 
-func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, containerImage *arohcpapi.ContainerImage) *status.Component {
+func createComponentInfo(ctx context.Context, imageInfoAccessor ImageInfoAccessor, name, repoURL string, digestOrSha *string) *status.Component {
 	componentInfo := &status.Component{
 		Name: name,
 	}
 	if len(repoURL) > 0 {
 		componentInfo.RepoURL = ptr.To(repoURL)
 	}
-	if containerImage != nil {
+	if digestOrSha != nil {
 		registry, repository, err := imagePullLocationForName(name)
-		componentInfo.ImageInfo.Digest = containerImage.Digest
+		componentInfo.ImageInfo.Digest = *digestOrSha
 		componentInfo.ImageInfo.Repository = repository
 		componentInfo.ImageInfo.Registry = registry
 		if err != nil {

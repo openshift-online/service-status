@@ -3,6 +3,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+ARO_HCP_DIR=${ARO_HCP_DIR:-/home/deads/workspaces/aro-hcp/src/github.com/Azure/ARO-HCP}
+
 go get github.com/atombender/go-jsonschema/...
 go install github.com/atombender/go-jsonschema@latest
 
@@ -12,7 +14,7 @@ go-jsonschema \
     --only-models \
     --minimal-names \
     -p github.com/openshift-online/service-status/pkg/apis/aro-hcp \
-    /home/deads/workspaces/aro-hcp/src/github.com/Azure/ARO-HCP/config/config.schema.json \
+    ${ARO_HCP_DIR}/config/config.schema.json \
     > pkg/apis/aro-hcp/config.go
 
 go-jsonschema \
@@ -21,7 +23,7 @@ go-jsonschema \
     --only-models \
     --minimal-names \
     -p github.com/openshift-online/service-status/pkg/apis/aro-hcp \
-    /home/deads/workspaces/aro-hcp/src/github.com/Azure/ARO-HCP/config/config.meta.schema.json \
+    ${ARO_HCP_DIR}/config/config.meta.schema.json \
     > pkg/apis/aro-hcp/config_meta.go
 
 sed -i 's/package aro-hcp/package arohcpapi/' pkg/apis/aro-hcp/config.go
