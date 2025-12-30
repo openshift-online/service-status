@@ -1,7 +1,6 @@
 package release_inspection
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -58,6 +57,7 @@ var HardcodedCIInfos = []HardcodedCIInfo{
 
 type HardcodedComponentInfo struct {
 	Name                string
+	ReleaseClientID     string
 	ImagePullRegistry   string
 	ImagePullRepository string
 	RepositoryURL       string
@@ -76,6 +76,7 @@ var (
 var HardcodedComponents = map[string]HardcodedComponentInfo{
 	"ACM Operator": {
 		Name:                "ACM Operator",
+		ReleaseClientID:     "acm.operator.bundle",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "rhacm2/acm-operator-bundle",
 		RepositoryURL:       "https://github.com/stolostron/acm-operator-bundle",
@@ -83,6 +84,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"ACR Pull": {
 		Name:                "ACR Pull",
+		ReleaseClientID:     "acr-pull.image",
 		ImagePullRegistry:   "mcr.microsoft.com",
 		ImagePullRepository: "aks/msi-acrpull",
 		RepositoryURL:       "",
@@ -90,6 +92,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Backend": {
 		Name:                "Backend",
+		ReleaseClientID:     "backend.image",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "arohcpbackend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
@@ -98,6 +101,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Backplane": {
 		Name:                "Backplane",
+		ReleaseClientID:     "unknown",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "app-sre/backplane-api",
 		RepositoryURL:       "https://gitlab.cee.redhat.com/service/backplane-api",
@@ -105,6 +109,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Cluster Service": {
 		Name:                "Cluster Service",
+		ReleaseClientID:     "clusters-service.image",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "app-sre/aro-hcp-clusters-service",
 		RepositoryURL:       "https://gitlab.cee.redhat.com/service/aro-hcp-clusters-service",
@@ -113,6 +118,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Frontend": {
 		Name:                "Frontend",
+		ReleaseClientID:     "frontend.image",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "arohcpfrontend",
 		RepositoryURL:       "https://github.com/Azure/ARO-HCP",
@@ -121,6 +127,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Hypershift": {
 		Name:                "Hypershift",
+		ReleaseClientID:     "hypershift.image",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "acm-d/rhtap-hypershift-operator",
 		RepositoryURL:       "https://github.com/openshift/hypershift",
@@ -129,6 +136,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Maestro": {
 		Name:                "Maestro",
+		ReleaseClientID:     "maestro.image",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "redhat-user-workloads/maestro-rhtap-tenant/maestro/maestro",
 		RepositoryURL:       "https://github.com/openshift-online/maestro/",
@@ -136,6 +144,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"MCE": {
 		Name:                "MCE",
+		ReleaseClientID:     "acm.mce.bundle",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "multicluster-engine/mce-operator-bundle",
 		RepositoryURL:       "https://github.com/stolostron/mce-operator-bundle",
@@ -143,6 +152,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"OcMirror": {
 		Name:                "OcMirror",
+		ReleaseClientID:     "image-sync.oc-mirror.image",
 		ImagePullRegistry:   "arohcpsvcdev.azurecr.io",
 		ImagePullRepository: "image-sync/oc-mirror",
 		RepositoryURL:       "https://github.com/openshift/oc-mirror",
@@ -150,6 +160,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Package Operator Package": {
 		Name:                "Package Operator Package",
+		ReleaseClientID:     "pko.image-package",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "package-operator/package-operator-package",
 		RepositoryURL:       "https://github.com/package-operator/package-operator",
@@ -157,6 +168,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Package Operator Manager": {
 		Name:                "Package Operator Manager",
+		ReleaseClientID:     "pko.image-manager",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "package-operator/package-operator-manager",
 		RepositoryURL:       "https://github.com/package-operator/package-operator",
@@ -164,6 +176,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Package Operator Remote Phase Manager": {
 		Name:                "Package Operator Remote Phase Manager",
+		ReleaseClientID:     "pko.remote-phase-manager",
 		ImagePullRegistry:   "quay.io",
 		ImagePullRepository: "package-operator/remote-phase-manager",
 		RepositoryURL:       "https://github.com/package-operator/package-operator",
@@ -171,6 +184,7 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Management Prometheus Spec": {
 		Name:                "Management Prometheus Spec",
+		ReleaseClientID:     "mgmt.prometheus.prometheus-spec.image",
 		ImagePullRegistry:   "mcr.microsoft.com/oss/v2",
 		ImagePullRepository: "prometheus/prometheus",
 		RepositoryURL:       "",
@@ -179,21 +193,13 @@ var HardcodedComponents = map[string]HardcodedComponentInfo{
 	},
 	"Service Prometheus Spec": {
 		Name:                "Service Prometheus Spec",
+		ReleaseClientID:     "svc.prometheus.prometheus-spec.image",
 		ImagePullRegistry:   "mcr.microsoft.com/oss/v2",
 		ImagePullRepository: "prometheus/prometheus",
 		RepositoryURL:       "",
 		MasterBranch:        "",
 		LatencyThreshold:    worldLatency,
 	},
-}
-
-// imagePullLocationForName returns the registry and repository for a given image name, or an error if the name isn't recognized.
-func imagePullLocationForName(name string) (string, string, error) {
-	info, exists := HardcodedComponents[name]
-	if !exists {
-		return "", "", fmt.Errorf("image pull location not found for image name %q", name)
-	}
-	return info.ImagePullRegistry, info.ImagePullRepository, nil
 }
 
 // credentialFile returns the filename in the credential directory to use for the image pull.

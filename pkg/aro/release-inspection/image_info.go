@@ -123,7 +123,7 @@ func pullImage(ctx context.Context, imagePullSpec string, credentialFilePath str
 
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
-			return fmt.Errorf(stderr.String())
+			return fmt.Errorf("%s", stderr.String())
 		}
 		return fmt.Errorf("failed to wait for pull process: %w", err)
 	}
@@ -157,7 +157,7 @@ func inspectImage(ctx context.Context, imagePullSpec string) (map[string]interfa
 		logger.Info("Failed to inspect image", "imagePullSpec", imagePullSpec, "duration", duration)
 		var exitErr *exec.ExitError
 		if errors.As(err, &exitErr) {
-			return nil, fmt.Errorf(stderr.String())
+			return nil, fmt.Errorf("failed to inspect image: %s", stderr.String())
 		}
 		return nil, fmt.Errorf("failed to wait for process: %w", err)
 	}

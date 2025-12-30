@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 func MakeEnvironmentReleaseName(environment, release string) string {
@@ -21,11 +19,10 @@ func SplitEnvironmentReleaseName(name string) (string, string, bool) {
 }
 
 func MakeReleaseName(commitTime, sha string) string {
-	return fmt.Sprintf("%s-%s", commitTime, sha)
-}
-
-func MakeReleaseNameFromCommit(commit object.Commit) string {
-	return MakeReleaseName(commit.Committer.When.Format(time.RFC3339), commit.Hash.String()[:5])
+	if len(sha) < 7 {
+		return fmt.Sprintf("%s-%s", commitTime, sha)
+	}
+	return fmt.Sprintf("%s-%s", commitTime, sha[:7])
 }
 
 func SplitReleaseName(name string) (string, time.Time, string, bool) {
