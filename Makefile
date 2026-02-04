@@ -13,8 +13,5 @@ clean:
 	go clean
 	rm -rf ${BINARY_NAME}
 
-update:
-	hack/update-aro-hcp-types.sh
-
 images:
 	$(DOCKER) build .

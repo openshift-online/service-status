@@ -2,26 +2,20 @@ package release_inspection
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/object"
+	aro_tools_release_client "github.com/Azure/ARO-Tools/pkg/release/client"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/service"
 	"github.com/openshift-online/service-status/pkg/apis/status"
 	"github.com/openshift-online/service-status/pkg/aro/sippy"
 	"k8s.io/klog/v2"
 	"k8s.io/utils/ptr"
-	"k8s.io/utils/set"
 )
 
 type ReleaseAccessor interface {
@@ -35,163 +29,48 @@ type ReleaseAccessor interface {
 	SetSelfLookupInstance(ReleaseAccessor)
 }
 
-type Release struct {
-	Name   string
-	Commit plumbing.Hash
-}
-
 type releaseAccessor struct {
 	selfLookupInstance ReleaseAccessor
 
-	aroHCPDir            string
 	numberOfDays         int
 	imageInfoAccessor    ImageInfoAccessor
 	componentGitAccessor ComponentsGitInfo
 
-	gitLock              sync.Mutex
-	releaseNameToInfo    map[string]*status.ReleaseDetails
-	releaseNameToRelease map[string]*status.Release
+	releaseClientComponentIDToComponentName map[string]string
+	azServiceClient                         *service.Client
 }
 
-func NewReleaseAccessor(aroHCPDir string, numberOfDays int, imageInfoAccessor ImageInfoAccessor, componentGitAccessor ComponentsGitInfo) ReleaseAccessor {
+func NewReleaseAccessor(numberOfDays int, imageInfoAccessor ImageInfoAccessor, componentGitAccessor ComponentsGitInfo) (ReleaseAccessor, error) {
 	ret := &releaseAccessor{
-		aroHCPDir:            aroHCPDir,
 		numberOfDays:         numberOfDays,
 		imageInfoAccessor:    imageInfoAccessor,
 		componentGitAccessor: componentGitAccessor,
-		releaseNameToInfo:    map[string]*status.ReleaseDetails{},
-		releaseNameToRelease: map[string]*status.Release{},
 	}
+
+	ret.releaseClientComponentIDToComponentName = make(map[string]string)
+	for _, currComponent := range HardcodedComponents {
+		ret.releaseClientComponentIDToComponentName[currComponent.ReleaseClientID] = currComponent.Name
+	}
+
+	azCredential, err := azidentity.NewDefaultAzureCredential(nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Azure credential: %w", err)
+	}
+	ret.azServiceClient, err = service.NewClient(aro_tools_release_client.DefaultStorageAccountURL, azCredential, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create service client: %w", err)
+	}
+
 	ret.SetSelfLookupInstance(ret)
-	return ret
+	return ret, nil
 }
 
 func (r *releaseAccessor) ListEnvironments(ctx context.Context) ([]string, error) {
-	// TODO list the releases to locate all the available names.
-	return []string{"int", "stg", "prod"}, nil
-}
-
-var interestingFiles = set.New(
-	"config/config.msft.clouds-overlay.yaml",
-	"config/config.yaml",
-)
-
-// listEnvironmentReleasesLookupInfo returns the environment releases from newest to oldest.
-// only releases with changes are listed.
-func (r *releaseAccessor) listEnvironmentReleasesLookupInfo(ctx context.Context, environmentName string) ([]*EnvironmentReleaseLookupInformation, error) {
-	r.gitLock.Lock()
-	defer r.gitLock.Unlock()
-
-	logger := klog.FromContext(ctx)
-
-	aroHCPRepo, err := git.PlainOpen(r.aroHCPDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open aro hcp repo: %w", err)
-	}
-	aroHCPHead, err := aroHCPRepo.Head()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get aro hcp head: %w", err)
-	}
-	aroHCPWorkTree, err := aroHCPRepo.Worktree()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get aro hcp worktree: %w", err)
-	}
-	defer func() {
-		err = aroHCPWorkTree.Reset(&git.ResetOptions{
-			Commit: aroHCPHead.Hash(),
-			Mode:   git.HardReset,
-		})
-		if err != nil {
-			fmt.Printf("failed to reset aro hcp worktree back to original: %v", err)
-		}
-	}()
-
-	logger.Info("Working ARO HCP Head", "AROHCPHead", aroHCPHead.Hash())
-
-	configLog, err := aroHCPRepo.Log(ptr.To(git.LogOptions{
-		PathFilter: func(path string) bool {
-			if strings.HasPrefix(path, "config") {
-				return true
-			}
-			return false
-		},
-		Since: ptr.To(time.Now().Add(-time.Duration(r.numberOfDays) * 24 * time.Hour)),
-	}))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get aro hcp config log: %w", err)
-	}
-
-	commitsOldestToNewest := []*object.Commit{}
-	for {
-		commit, err := configLog.Next()
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("failed to read aro hcp config log: %w", err)
-		}
-		commitsOldestToNewest = append([]*object.Commit{commit}, commitsOldestToNewest...)
-	}
-
-	logger.Info("Finding all releases.")
-	environmentLookupInfoNewestToOldest := []*EnvironmentReleaseLookupInformation{}
-	prevInterestingFiles := map[string][]byte{}
-	prevEnvironmentReleaseInput := map[string][]byte{}
-	for _, commit := range commitsOldestToNewest {
-		firstCommitMessageLine, _, _ := strings.Cut(commit.Message, "\n")
-		if commit.NumParents() != 2 && !strings.HasSuffix(firstCommitMessageLine, ")") {
-			// only use commits that are due to merged PRs
-			continue
-		}
-
-		err = aroHCPWorkTree.Reset(&git.ResetOptions{
-			Commit: commit.Hash,
-			Mode:   git.HardReset,
-		})
-		if err != nil {
-			return nil, fmt.Errorf("failed to reset aro hcp worktree: %w", err)
-		}
-		newInterestingFiles := map[string][]byte{}
-		for _, filename := range interestingFiles.SortedList() {
-			fileBytes, err := os.ReadFile(filepath.Join(r.aroHCPDir, filename))
-			if errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-			if err != nil {
-				return nil, fmt.Errorf("failed to read file: %w", err)
-			}
-			newInterestingFiles[filename] = fileBytes
-		}
-		if reflect.DeepEqual(prevInterestingFiles, newInterestingFiles) {
-			// if no content changed, skip the commit.
-			continue
-		}
-		prevInterestingFiles = newInterestingFiles
-
-		// now merge the content and see if the content for a particular environment in those files changed.
-		environmentReleaseInput, err := CompleteEnvironmentReleaseInput(ctx, r.aroHCPDir, environmentName)
-		if err != nil {
-			return nil, fmt.Errorf("failed to complete environment (%v) release (%v) input: %w", environmentName, commit.Hash, err)
-		}
-		if reflect.DeepEqual(prevEnvironmentReleaseInput, environmentReleaseInput) {
-			// if no content changed, skip the commit
-			continue
-		}
-		prevEnvironmentReleaseInput = environmentReleaseInput
-
-		releaseName := MakeReleaseNameFromCommit(*commit)
-		environmentLookupInfoNewestToOldest = append([]*EnvironmentReleaseLookupInformation{
-			{
-				EnvironmentName:    environmentName,
-				ReleaseName:        releaseName,
-				ReleaseSHA:         commit.Hash.String(),
-				InterestingContent: environmentReleaseInput,
-			},
-		}, environmentLookupInfoNewestToOldest...)
-	}
-	logger.Info("Found environment releases.", "releaseCount", len(environmentLookupInfoNewestToOldest))
-
-	return environmentLookupInfoNewestToOldest, nil
+	return []string{
+		string(aro_tools_release_client.IntEnv),
+		string(aro_tools_release_client.StgEnv),
+		string(aro_tools_release_client.ProdEnv),
+	}, nil
 }
 
 func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environmentReleaseName string, otherEnvironmentReleaseName string) (*status.EnvironmentReleaseDiff, error) {
@@ -220,14 +99,8 @@ func (r *releaseAccessor) GetReleaseEnvironmentDiff(ctx context.Context, environ
 		DifferentComponents:         map[string]*status.ComponentDiff{},
 	}
 	for _, component := range environmentRelease.Components {
-		var otherComponent *status.Component
-		for _, currOtherComponent := range otherEnvironmentRelease.Components {
-			if component.Name == currOtherComponent.Name {
-				otherComponent = currOtherComponent
-				break
-			}
-		}
-		if otherComponent == nil {
+		otherComponent, exists := otherEnvironmentRelease.Components[component.Name]
+		if !exists {
 			continue
 		}
 
@@ -410,41 +283,50 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 	ctx = klog.NewContext(ctx, logger)
 	logger.Info("ListEnvironmentReleasesForEnvironment entry")
 
+	releaseClient := aro_tools_release_client.NewOptions(
+		aro_tools_release_client.NewFilter(
+			aro_tools_release_client.WithEnvironment(aro_tools_release_client.Environment(environmentName)),
+			aro_tools_release_client.WithSince(time.Now().Add(-time.Duration(r.numberOfDays)*24*time.Hour)),
+			aro_tools_release_client.WithUntil(time.Now()),
+		),
+		aro_tools_release_client.WithServiceClient(r.azServiceClient),
+		aro_tools_release_client.WithIncludeComponents(true),
+	)
+
+	// Fetch releases from blob storage
+	deployments, err := releaseClient.ListReleaseDeployments(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list release deployments: %w", err)
+	}
+
+	// We need to remove "empty" deployments from the slice. An empty deployment
+	// is one with all its components having the same SHA as the previous deployment.
+	// The first (oldest) deployment is always considered effective.
+	filtered := make([]*aro_tools_release_client.ReleaseDeployment, 0, len(deployments))
+	var lastComponents map[string]string
+	for _, d := range deployments {
+		if !reflect.DeepEqual(lastComponents, d.Components) {
+			filtered = append(filtered, d)
+			lastComponents = d.Components
+		}
+	}
+
+	logger.Info("Found deployments from blob storage", "count", len(filtered))
+
+	// Convert to EnvironmentRelease objects
+	environmentReleases := []status.EnvironmentRelease{}
+	for _, deployment := range filtered {
+		envRelease, err := r.releaseDeploymentToEnvironmentRelease(ctx, deployment, r.imageInfoAccessor)
+		if err != nil {
+			logger.Error(err, "failed to convert deployment", "deployment", deployment.Metadata.UpstreamRevision)
+			continue
+		}
+		environmentReleases = append(environmentReleases, *envRelease)
+	}
+
 	ciJobRuns, err := sippy.ListJobRunsForEnvironment(ctx, EnvironmentToSippyReleaseName(environmentName))
 	if err != nil {
 		logger.Error(err, "failed to list job runs")
-	}
-
-	environmentReleasesLookupInfoNewestToOldest, err := r.listEnvironmentReleasesLookupInfo(ctx, environmentName)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list possible releases: %w", err)
-	}
-
-	partialEnvironmentReleases := []status.EnvironmentRelease{}
-	for i, environmentReleaseLookupInfo := range environmentReleasesLookupInfoNewestToOldest {
-		releaseName := environmentReleaseLookupInfo.ReleaseName
-		loopLogger := klog.LoggerWithValues(logger, "lookupEnvironment", environmentReleaseLookupInfo.EnvironmentName, "lookupReleaseName", releaseName, "i", i, "len", len(environmentReleasesLookupInfoNewestToOldest))
-		localCtx := klog.NewContext(ctx, loopLogger)
-		loopLogger.Info("starting execution")
-
-		newReleaseInfo, err := ReleaseInfo(localCtx, r.imageInfoAccessor, environmentReleaseLookupInfo)
-		if err != nil {
-			continue
-			// TODO un-nerf
-			//return nil, fmt.Errorf("failed to get release markdowns: %w", err)
-		}
-
-		if len(partialEnvironmentReleases) > 0 {
-			moreRecentPartialEnvironmentRelease := partialEnvironmentReleases[len(partialEnvironmentReleases)-1]
-			changedComponents := ChangedComponents(newReleaseInfo, &moreRecentPartialEnvironmentRelease)
-			if len(changedComponents) == 0 {
-				// if nothing changed, then the more recent release isn't actually a new release, so replace it with this current one
-				partialEnvironmentReleases[len(partialEnvironmentReleases)-1] = *newReleaseInfo
-				continue
-			}
-		}
-
-		partialEnvironmentReleases = append(partialEnvironmentReleases, *newReleaseInfo)
 	}
 
 	ret := &status.EnvironmentReleaseList{
@@ -454,59 +336,164 @@ func (r *releaseAccessor) ListEnvironmentReleasesForEnvironment(ctx context.Cont
 		},
 		Items: []status.EnvironmentRelease{},
 	}
-	// now add the CI status to these releases
-	for i, newReleaseInfo := range partialEnvironmentReleases {
-		loopLogger := klog.LoggerWithValues(logger, "newEnvironmentReleaseName", newReleaseInfo.Name)
-		loopLogger.Info("starting execution")
+
+	for i := range environmentReleases {
+		envRelease := &environmentReleases[i]
 
 		nextReleaseTime := time.Now()
 		if nextReleaseIndex := i - 1; nextReleaseIndex >= 0 {
-			_, nextReleaseTime, _, _ = SplitReleaseName(environmentReleasesLookupInfoNewestToOldest[nextReleaseIndex].ReleaseName)
-		}
-		_, newReleaseTime, _, _ := SplitReleaseName(newReleaseInfo.ReleaseName)
-
-		// find all job runs between the newReleaseTime and the nextReleaseTime
-		for _, currJobRun := range ciJobRuns {
-			jobRunTime := time.Unix(0, currJobRun.Timestamp*int64(time.Millisecond))
-			if jobRunTime.After(nextReleaseTime) {
-			}
-			if jobRunTime.After(nextReleaseTime) || jobRunTime.Before(newReleaseTime) {
-				continue
-			}
-
-			var matchingAssigner *HardcodedCIInfo
-			for _, ciAssigner := range HardcodedCIInfos {
-				for _, currRegex := range ciAssigner.JobRegexes {
-					if currRegex.MatchString(currJobRun.Job) {
-						matchingAssigner = &ciAssigner
-						break
-					}
-				}
-				if matchingAssigner != nil {
-					break
-				}
-			}
-
-			jobRunResult := status.JobRunResults{
-				JobName:       currJobRun.Job,
-				OverallResult: status.JobOverallResult(currJobRun.OverallResult),
-				URL:           currJobRun.URL,
-			}
-
-			switch {
-			case matchingAssigner == nil:
-				loopLogger.Info("No matching assigner found for job run", "jobRun", currJobRun.Job)
-			case matchingAssigner.Category == JobImpactBlocking:
-				newReleaseInfo.BlockingJobRunResults[matchingAssigner.JobVariant] = append(newReleaseInfo.BlockingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
-			case matchingAssigner.Category == JobImpactInforming:
-				newReleaseInfo.InformingJobRunResults[matchingAssigner.JobVariant] = append(newReleaseInfo.InformingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
-			}
+			_, nextReleaseTime, _, _ = SplitReleaseName(environmentReleases[nextReleaseIndex].ReleaseName)
 		}
 
-		ret.Items = append(ret.Items, newReleaseInfo)
+		if err := attachCIResultsToRelease(ctx, envRelease, nextReleaseTime, ciJobRuns); err != nil {
+			logger.Error(err, "failed to attach CI results to release", "release", envRelease.ReleaseName)
+		}
+
+		ret.Items = append(ret.Items, *envRelease)
 	}
 
 	return ret, nil
+}
+
+func (r *releaseAccessor) releaseDeploymentToEnvironmentRelease(ctx context.Context, deployment *aro_tools_release_client.ReleaseDeployment, imageInfoAccessor ImageInfoAccessor) (*status.EnvironmentRelease, error) {
+
+	releaseName := MakeReleaseName(
+		deployment.Metadata.Timestamp,
+		deployment.Metadata.UpstreamRevision,
+	)
+
+	environmentRelease := &status.EnvironmentRelease{
+		TypeMeta: status.TypeMeta{
+			Kind:       "EnvironmentRelease",
+			APIVersion: "service-status.hcm.openshift.io/v1",
+		},
+		Name:                   MakeEnvironmentReleaseName(string(deployment.Target.Environment), releaseName),
+		ReleaseName:            releaseName,
+		SHA:                    deployment.Metadata.UpstreamRevision,
+		Environment:            string(deployment.Target.Environment),
+		Components:             map[string]*status.Component{},
+		BlockingJobRunResults:  map[string][]status.JobRunResults{},
+		InformingJobRunResults: map[string][]status.JobRunResults{},
+	}
+
+	// Convert components from digest map to Component objects
+	// The ARO-Tools client returns: {"frontend": "abc123", "backend": "def456"}
+	for releaseClientComponentID, digest := range deployment.Components {
+		component := r.createComponentFromDigest(ctx, imageInfoAccessor, releaseClientComponentID, digest)
+		if component == nil {
+			continue // Skip unknown components
+		}
+		environmentRelease.Components[component.Name] = component
+	}
+
+	return environmentRelease, nil
+}
+
+func (r *releaseAccessor) getHardcodedComponentInfo(releaseClientComponentID string) *HardcodedComponentInfo {
+	componentName, exists := r.releaseClientComponentIDToComponentName[releaseClientComponentID]
+	if !exists {
+		return nil
+	}
+	return ptr.To(HardcodedComponents[componentName])
+}
+
+func (r *releaseAccessor) createComponentFromDigest(ctx context.Context, imageInfoAccessor ImageInfoAccessor, releaseClientComponentID string, digest string) *status.Component {
+	logger := klog.FromContext(ctx)
+
+	hardcodedInfo := r.getHardcodedComponentInfo(releaseClientComponentID)
+	if hardcodedInfo == nil {
+		logger.Error(fmt.Errorf("no hardcoded knowledge for %q", releaseClientComponentID), "unknown release client component ID")
+		return nil
+	}
+
+	component := &status.Component{
+		Name: hardcodedInfo.Name,
+		ImageInfo: status.ContainerImage{
+			Digest:     "sha256:" + digest,
+			Registry:   hardcodedInfo.ImagePullRegistry,
+			Repository: hardcodedInfo.ImagePullRepository,
+		},
+	}
+
+	if len(hardcodedInfo.RepositoryURL) > 0 {
+		component.RepoURL = ptr.To(hardcodedInfo.RepositoryURL)
+	}
+
+	completeSourceSHAs(ctx, imageInfoAccessor, component)
+
+	return component
+}
+
+func completeSourceSHAs(ctx context.Context, imageInfoAccessor ImageInfoAccessor, currInfo *status.Component) {
+	if imageInfo, err := imageInfoAccessor.GetImageInfo(ctx, &currInfo.ImageInfo); err != nil {
+		currInfo.SourceSHA = fmt.Sprintf("ERROR: %v", err)
+	} else {
+		currInfo.ImageCreationTime = imageInfo.ImageCreationTime
+		currInfo.SourceSHA = imageInfo.SourceSHA
+
+		switch {
+		case currInfo.RepoURL != nil && strings.Contains(*currInfo.RepoURL, "github.com"):
+			currInfo.PermanentURLForSourceSHA = ptr.To(*currInfo.RepoURL + "/tree/" + currInfo.SourceSHA + "/")
+		case currInfo.RepoURL != nil && strings.Contains(*currInfo.RepoURL, "gitlab.cee.redhat.com"):
+			currInfo.PermanentURLForSourceSHA = ptr.To(*currInfo.RepoURL + "/-/tree/" + currInfo.SourceSHA)
+		}
+	}
+}
+
+func attachCIResultsToRelease(
+	ctx context.Context,
+	envRelease *status.EnvironmentRelease,
+	nextReleaseTime time.Time,
+	ciJobRuns []sippy.JobRun,
+) error {
+	logger := klog.FromContext(ctx)
+
+	_, currReleaseTime, _, _ := SplitReleaseName(envRelease.ReleaseName)
+
+	for _, currJobRun := range ciJobRuns {
+		jobRunTime := time.Unix(0, currJobRun.Timestamp*int64(time.Millisecond))
+
+		// Attach jobs within the release window:
+		// currReleaseTime <= jobRunTime < nextReleaseTime
+		if nextReleaseTime.Before(currReleaseTime) || nextReleaseTime.Equal(currReleaseTime) {
+			return fmt.Errorf("invalid release time window '%s - %s'", currReleaseTime, nextReleaseTime)
+		}
+		if jobRunTime.Before(currReleaseTime) || !jobRunTime.Before(nextReleaseTime) {
+			continue
+		}
+
+		// Match job to hardcoded CI info
+		var matchingAssigner *HardcodedCIInfo
+		for _, ciAssigner := range HardcodedCIInfos {
+			for _, currRegex := range ciAssigner.JobRegexes {
+				if currRegex.MatchString(currJobRun.Job) {
+					matchingAssigner = &ciAssigner
+					break
+				}
+			}
+			if matchingAssigner != nil {
+				break
+			}
+		}
+
+		jobRunResult := status.JobRunResults{
+			JobName:       currJobRun.Job,
+			OverallResult: status.JobOverallResult(currJobRun.OverallResult),
+			URL:           currJobRun.URL,
+		}
+
+		switch {
+		case matchingAssigner == nil:
+			logger.Info("No matching assigner found for job run", "jobRun", currJobRun.Job)
+		case matchingAssigner.Category == JobImpactBlocking:
+			envRelease.BlockingJobRunResults[matchingAssigner.JobVariant] = append(
+				envRelease.BlockingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
+		case matchingAssigner.Category == JobImpactInforming:
+			envRelease.InformingJobRunResults[matchingAssigner.JobVariant] = append(
+				envRelease.InformingJobRunResults[matchingAssigner.JobVariant], jobRunResult)
+		}
+	}
+	return nil
 }
 
 func (r *releaseAccessor) ListEnvironmentReleases(ctx context.Context) (*status.EnvironmentReleaseList, error) {

@@ -19,7 +19,6 @@ type ReleaseMarkdownFlags struct {
 	BindPort    int
 
 	FileBasedAPIDir           string
-	AROHCPDir                 string
 	PullSecretDir             string
 	ComponentGitRepoParentDir string
 	NumberOfDays              int
@@ -68,40 +67,29 @@ func NewReleaseMarkdownFlags(streams util.IOStreams) *ReleaseMarkdownFlags {
 
 func (f *ReleaseMarkdownFlags) BindFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&f.FileBasedAPIDir, "filebased-api-dir", f.FileBasedAPIDir, "The directory to read canned responses.")
-	flags.StringVar(&f.AROHCPDir, "aro-hcp-dir", f.AROHCPDir, "The directory where the https://github.com/Azure/ARO-HCP repo is extracted.")
 	flags.StringVar(&f.PullSecretDir, "pull-secret-dir", f.PullSecretDir, "The directory where dockerconfig.json's are located.")
 	flags.StringVar(&f.ComponentGitRepoParentDir, "component-git-repo-storage-dir", f.ComponentGitRepoParentDir, "The parent directory where components will be extracted for diff analysis.")
 
-	flags.IPVar(&f.BindAddress, "bind-address", f.BindAddress, "The IP address on which to listen for the --secure-port port.")
-	flags.IntVar(&f.BindPort, "bind-port", f.BindPort, "The port on which to serve HTTP with authentication and authorization.")
+	flags.IPVar(&f.BindAddress, "bind-address", f.BindAddress, "The IP address on which to listen for the --bind-port port.")
+	flags.IntVar(&f.BindPort, "bind-port", f.BindPort, "The port on which to serve HTTP.")
 
 	flags.IntVar(&f.NumberOfDays, "num-days", f.NumberOfDays, "The number of days to look back for releases.")
 
 }
 
 func (f *ReleaseMarkdownFlags) Validate() error {
-	switch {
-	case len(f.AROHCPDir) > 0 && len(f.FileBasedAPIDir) > 0:
-		return fmt.Errorf("only one of --filebased-api-dir and --aro-hcp-dir can be specified")
-	case len(f.AROHCPDir) == 0 && len(f.FileBasedAPIDir) == 0:
-		return fmt.Errorf("one of --filebased-api-dir and --aro-hcp-dir must be specified")
-	}
-
 	if len(f.PullSecretDir) == 0 {
 		return fmt.Errorf("--pull-secret-dir must be specified")
-	}
-	if len(f.AROHCPDir) > 0 {
-		return nil
-	}
-	if len(f.FileBasedAPIDir) > 0 {
 	}
 
 	if len(f.BindAddress) == 0 || f.BindAddress.IsUnspecified() {
 		return fmt.Errorf("--bind-address must be specified")
 	}
+
 	if f.BindPort == 0 {
-		return fmt.Errorf("--secure-port must be specified")
+		return fmt.Errorf("--bind-port must be specified")
 	}
+
 	return nil
 }
 
@@ -115,7 +103,6 @@ func (f *ReleaseMarkdownFlags) ToOptions() (*ReleaseMarkdownOptions, error) {
 		BindAddress:       f.BindAddress,
 		BindPort:          f.BindPort,
 		FileBasedAPIDir:   f.FileBasedAPIDir,
-		AROHCPDir:         f.AROHCPDir,
 		NumberOfDays:      f.NumberOfDays,
 		ImageInfoAccessor: release_inspection.NewThreadSafeImageInfoAccessor(f.PullSecretDir),
 		GitAccessor:       gitAccessor,
