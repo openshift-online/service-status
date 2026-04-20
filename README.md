@@ -15,3 +15,47 @@ CI configuration https://github.com/openshift/release/tree/master/ci-operator/co
 Site configuration is located at https://github.com/openshift/continuous-release-jobs/blob/master/argocd/clusters/apps/projects/openshift-online/service-status
 
 Secrets can be edited by chatting with folks in #forum-ocp-crt and following the docs [here](https://github.com/openshift/continuous-release-jobs/blob/master/docs/openshift-dpcr-access.md#secrets)
+
+## Installation
+
+### Prerequisites
+
+- Go 1.24+
+- Podman (for container builds)
+
+### Building
+
+```bash
+make build            # Build the service-status binary
+```
+
+## Usage
+
+Generate release reports:
+
+```bash
+./service-status aro hcp release-markdown   --aro-hcp-dir=/path/to/ARO-HCP   --output-dir=artifacts
+```
+
+The output includes:
+
+- `releases.md` — summary of all releases
+- Per-release directories with `environment-comparison.md` and environment-specific content
+
+## Development
+
+### Building and Testing
+
+```bash
+make build            # Build the binary
+make test             # Run tests
+make images           # Build container images
+make clean            # Remove build artifacts
+```
+
+### Contributing
+
+1. Fork this repository
+2. Make your changes
+3. Run `make test`
+4. Submit a pull request
