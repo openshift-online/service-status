@@ -1,6 +1,14 @@
 # service-status
 Project to harvest information about managed services and render it.
 
+## Quick Start
+
+```bash
+make build       # Build the service-status binary
+make test        # Run tests
+make clean       # Remove build artifacts
+```
+
 ## To use
 1. Extract github.com/ARO/ARO-HCP somewhere
 2. Log into quay using podman (yeah, doesn't work with docker)
